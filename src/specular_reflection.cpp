@@ -76,7 +76,6 @@ void fill_with_avg(Mat& src, Mat& mask, Mat& dst)
     Mat v;
     queue< pair<int, int> > q;
     
-    //mask.copyTo(v);
     v = 255 - mask;
     erode(v, v, Mat());
     imshow("v", v);
@@ -122,4 +121,70 @@ void fill_with_avg(Mat& src, Mat& mask, Mat& dst)
             }
         }
     }
+}
+
+struct pq_d2 {
+    int x;
+    int y;
+    int px;
+    int py;
+    float d;
+};
+
+bool operator<(const pq_d2& a, const pq_d2& b)
+{
+    return a.d < b.d;
+}
+
+void fill_with_d2(Mat& src, Mat& mask, Mat& dst)
+{
+    Mat v;
+    priority_queue<pq_d2> q;
+
+    v = 255 - mask;
+    erode(v, v, Mat());
+    imshow("v", v);
+
+    medianBlur(src, dst, 3);
+    
+    /*
+    for ( int x = 0; x < v.rows; x++ ){
+        for ( int y = 0; y < v.cols; y++ ){
+            if ( v.at<uchar>(x,y) == 0 &&
+                 num_neighbors_with_information(v, x, y) > 0 )
+            {
+                q.push( make_pair(x,y) );
+            }
+        }
+    }
+    while ( !q.empty() ){
+        pair<int, int> next = q.front();
+        q.pop();
+
+        int x = next.first;
+        int y = next.second;
+        Vec3b new_pixel(0,0,0);
+
+        if ( v.at<uchar>(x, y) != 0 ){
+            continue;
+        }
+
+        get_neighbors_avg(dst, v, x, y, dst.at<Vec3b>(x, y));
+        v.at<uchar>(x, y) = 255;
+
+        for ( int dx = -1; dx < 2; dx++ ){
+            for ( int dy = -1; dy < 2; dy++ ){
+                int nx = x + dx;
+                int ny = y + dy;
+
+                if ( 0 <= nx && nx < v.rows && 0 <= ny && ny < v.cols &&
+                     v.at<uchar>(nx, ny) == 0
+                   )
+                {
+                    q.push( make_pair(nx, ny) );
+                }
+            }
+        }
+    }
+    */
 }

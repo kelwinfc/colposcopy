@@ -20,22 +20,26 @@ int main(int argc, const char* argv[])
         aux.copyTo(src);
     }
     
-    Mat mask, dst;
+    Mat mask, dst_avg, dst_d2;
     
     detect_specular_reflection_das(src, mask, 150);
-    fill_with_avg(src, mask, dst);
-
-    string s, m, d;
+    fill_with_avg(src, mask, dst_avg);
+    //fill_with_d2(src, mask, dst_d2);
+    
+    string s, m, davg, dd2;
     s = argv[1];
     s += "_src.jpg";
     m = argv[1];
     m += "_mask.jpg";
-    d = argv[1];
-    d += "_dst.jpg";
+    davg = argv[1];
+    davg += "_dst_avg.jpg";
+    //dd2 = argv[1];
+    //dd2 += "_dst_d2.jpg";
     
     imwrite(s.c_str(), src);
     imwrite(m.c_str(), mask);
-    imwrite(d.c_str(), dst);
+    imwrite(davg.c_str(), dst_avg);
+    //imwrite(dd2.c_str(), dst_d2);
     
     cout << "Bye!" << endl;
     return 0;

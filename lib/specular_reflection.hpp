@@ -15,5 +15,6 @@ using namespace cv;
 
 void detect_specular_reflection_das(Mat& src, Mat& dst, uchar thr=230);
 void fill_with_avg(Mat& src, Mat& mask, Mat& dst);
+void fill_with_d2(Mat& src, Mat& mask, Mat& dst);
 
 #endif
