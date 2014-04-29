@@ -1,0 +1,24 @@
+{
+    "labels": [
+        {
+            "is_global": false, 
+            "is_unique": false, 
+            "name": "diagnosis_step", 
+            "features": [
+                {
+                    "default": null, 
+                    "values": [
+                        "transition", 
+                        "plain", 
+                        "green", 
+                        "hinselmann", 
+                        "schiller"
+                    ], 
+                    "type": "choice", 
+                    "name": "step"
+                }
+            ]
+        }
+    ], 
+    "name": "colposcopy"
+}
