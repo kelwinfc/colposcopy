@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson
+END
+stringbuffer.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/stringbuffer.h
+END
+reader.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/reader.h
+END
+prettywriter.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/prettywriter.h
+END
+rapidjson.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/rapidjson.h
+END
+filestream.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/filestream.h
+END
+writer.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/writer.h
+END
+document.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/document.h
+END
