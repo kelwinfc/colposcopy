@@ -33,6 +33,27 @@ void diagnosis_phase_detector::train(vector<Mat>& src, vector<phase>& labels)
     
 }
 
+float diagnosis_phase_detector::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    int n = labels.size();
+    uint f = 0;
+
+    if ( n == 0 ){
+        return 0.0;
+    }
+
+    vector<phase> output;
+    this->detect(src, output);
+
+    for ( int i = 0; i < n; i++ ){
+        if ( output[i] != labels[i] ){
+            f++;
+        }
+    }
+    
+    return ((float)f) / labels.size();
+}
+
 void diagnosis_phase_detector::detect(vector<Mat>& src, vector<phase>& dst)
 {
     vector<Mat>::iterator it, end;
@@ -46,9 +67,44 @@ void diagnosis_phase_detector::detect(vector<Mat>& src, vector<phase>& dst)
     }
 }
 
+float diagnosis_phase_detector::get_confussion_matrix(vector<Mat>& src,
+                 vector<phase>& labels, map< pair<phase, phase>, int>& matrix)
+{
+    phase steps[] = {
+                     diagnosis_green,
+                     diagnosis_hinselmann,
+                     diagnosis_plain,
+                     diagnosis_schiller,
+                     diagnosis_transition,
+                     diagnosis_unknown
+                    };
+    int num_steps = 6;
+
+    matrix.clear();
+    for ( int i=0; i<num_steps; i++ ){
+        for ( int j=0; j<num_steps; j++ ){
+            matrix[ make_pair(steps[i],steps[j]) ] = 0;
+        }
+    }
+
+    vector<phase> output;
+    this->detect(src, output);
+
+    int f = 0;
+    for ( uint i=0; i<src.size(); i++ ){
+        pair<phase, phase> p = make_pair( labels[i], output[i] );
+        matrix[p] = matrix[p] + 1;
+        if ( labels[i] != output[i] ){
+            f++;
+        }
+    }
+
+    return ((float)f) / ((float)output.size());
+}
+
 histogram_based_dp_detector::histogram_based_dp_detector()
 {
-    this->max_error = 0.05;
+    this->max_error = 0.01;
     this->bindw = 1;
 }
 
@@ -59,13 +115,16 @@ void histogram_based_dp_detector::read(string filename)
 
 void histogram_based_dp_detector::detect(vector<Mat>& src, vector<phase>& dst)
 {
-    //TODO
+    vector< vector<float> > hists;
+    this->compute_histograms(src, hists);
+    this->detect(hists, dst);
 }
 
 float histogram_based_dp_detector::eval(vector<Mat>& src, vector<phase>& labels)
 {
-    //TODO
-    return 0.0;
+    vector< vector<float> > hists;
+    this->compute_histograms(src, hists);
+    return this->eval(hists, labels);
 }
 
 void histogram_based_dp_detector::get_histogram(Mat& a, vector<float>& h)
@@ -263,7 +322,6 @@ void histogram_based_dp_detector::detect(vector< vector<float> >& src,
         }
         
         if ( has ){
-            //cout << "1";
             phase best_phase = diagnosis_unknown;
             float best_r = 0.0;
             map<phase, float>::iterator it;
@@ -275,7 +333,6 @@ void histogram_based_dp_detector::detect(vector< vector<float> >& src,
             }
             dst.push_back(best_phase);
         } else {
-            //cout << "0";
             dst.push_back(diagnosis_unknown);
         }
     }
@@ -331,6 +388,7 @@ void histogram_based_dp_detector::train(vector<Mat>& src, vector<phase>& labels)
     
     int n = labels.size();
     float current_error = 1.0;
+    float previous_error = -1.0;
     
     indexed.resize(n);
     fill(indexed.begin(), indexed.end(), false);
@@ -343,8 +401,12 @@ void histogram_based_dp_detector::train(vector<Mat>& src, vector<phase>& labels)
     cout << "Reliability computed\n";
     
     while ( current_error > this->max_error &&
-            this->index_histogram.size() < src.size() )
+            this->index_histogram.size() < src.size() && 
+            ( previous_error < 0.0 || previous_error > current_error )
+          )
     {
+        previous_error = current_error;
+        
         pair<int, float> best = this->best_frame(src, labels, indexed, hists,
                                                  threshold, reliability);
 
@@ -352,8 +414,11 @@ void histogram_based_dp_detector::train(vector<Mat>& src, vector<phase>& labels)
                            threshold[best.first], reliability[best.first]);
         indexed[best.first] = true;
         current_error = best.second;
-        cout << "adding " << best.first << ": " << current_error << endl;
-
+        cout << "Add (" << labels[best.first] << ") "
+             << best.first << ": " << current_error
+             << " (total: " << this->index_histogram.size() << ")"
+             << endl;
+        
         stringstream ss;
         string filename;
         ss <<  "results/phase_index/"

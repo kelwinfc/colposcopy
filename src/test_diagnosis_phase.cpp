@@ -9,7 +9,8 @@ int cols = 64;
 
 void get_sequence(const char* filename,
                   vector<Mat>& images,
-                  vector<diagnosis_phase_detector::phase>& labels
+                  vector<diagnosis_phase_detector::phase>& labels,
+                  int mod_rate
                  )
 {
     anonadado::instance inst;
@@ -27,7 +28,7 @@ void get_sequence(const char* filename,
     labels.clear();
 
     for ( int f = 0; f < num_frames; f++ ){
-        if ( f % 5 != 0 ){
+        if ( f % mod_rate != 0 ){
             continue;
         }
         
@@ -70,12 +71,45 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    vector<Mat> images;
-    vector<diagnosis_phase_detector::phase> labels;
+    vector<Mat> images, test_images;
+    vector<diagnosis_phase_detector::phase> labels, test_labels;
     
-    get_sequence(argv[0], images, labels);
-
+    get_sequence(argv[0], images, labels, 10);
     histogram_based_dp_detector hd;
     hd.train(images, labels);
-    cout << labels.size() << endl;
+    
+    get_sequence(argv[0], test_images, test_labels, 1);
+
+    map< pair<diagnosis_phase_detector::phase,
+              diagnosis_phase_detector::phase>, int> matrix;
+    cout << "Test error: "
+         << hd.get_confussion_matrix(test_images, test_labels, matrix)
+         << endl;
+
+    diagnosis_phase_detector::phase steps[] =
+        {
+         diagnosis_phase_detector::diagnosis_transition,
+         diagnosis_phase_detector::diagnosis_plain,
+         diagnosis_phase_detector::diagnosis_hinselmann,
+         diagnosis_phase_detector::diagnosis_schiller,
+         diagnosis_phase_detector::diagnosis_green
+        };
+    const char* names[] =
+        {
+            "transition",
+            "plain     ",
+            "hinselmann",
+            "schiller  ",
+            "green     "
+        };
+    
+    int num_steps = 5;
+    
+    for ( int i=0; i<num_steps; i++ ){
+        printf("%s ", names[i]);
+        for ( int j=0; j<num_steps; j++ ){
+            printf("%4d ", matrix[make_pair(steps[i], steps[j])]);
+        }
+        printf("\n");
+    }
 }

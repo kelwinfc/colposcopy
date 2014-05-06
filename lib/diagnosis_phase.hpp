@@ -30,8 +30,11 @@ class diagnosis_phase_detector {
         diagnosis_phase_detector();
         virtual void read(string filename);
         virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
 
+        float get_confussion_matrix(vector<Mat>& src, vector<phase>& labels,
+                                    map< pair<phase, phase>, int>& matrix);
         static phase string_to_phase(string s);
 };
 
@@ -51,14 +54,15 @@ class histogram_based_dp_detector : public diagnosis_phase_detector {
         histogram_based_dp_detector();
         virtual void read(string filename);
         virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
 
+    
     private:
         void get_histogram(Mat& a, vector<float>& h);
         float distance(Mat& a, Mat& b);
         float distance(vector<float>& ha, vector<float>& hb);
-        
-        float eval(vector<Mat>& src, vector<phase>& labels);
+
         float eval(vector< vector<float> >& src, vector<phase>& labels);
         void detect(vector< vector<float> >& src, vector<phase>& dst);
         
