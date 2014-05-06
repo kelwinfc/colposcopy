@@ -75,8 +75,9 @@ int main(int argc, const char* argv[])
     vector<diagnosis_phase_detector::phase> labels, test_labels;
     
     get_sequence(argv[0], images, labels, 10);
-    histogram_based_dp_detector hd;
+    histogram_based_dpd hd;
     hd.train(images, labels);
+    hd.write("dp.json");
     
     get_sequence(argv[0], test_images, test_labels, 1);
 
@@ -112,4 +113,5 @@ int main(int argc, const char* argv[])
         }
         printf("\n");
     }
+
 }

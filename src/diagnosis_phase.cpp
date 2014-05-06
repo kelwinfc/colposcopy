@@ -28,6 +28,11 @@ void diagnosis_phase_detector::read(string filename)
     
 }
 
+void diagnosis_phase_detector::write(string filename)
+{
+    
+}
+
 void diagnosis_phase_detector::train(vector<Mat>& src, vector<phase>& labels)
 {
     
@@ -102,32 +107,152 @@ float diagnosis_phase_detector::get_confussion_matrix(vector<Mat>& src,
     return ((float)f) / ((float)output.size());
 }
 
-histogram_based_dp_detector::histogram_based_dp_detector()
+histogram_based_dpd::histogram_based_dpd()
 {
     this->max_error = 0.01;
     this->bindw = 1;
 }
 
-void histogram_based_dp_detector::read(string filename)
+void histogram_based_dpd::read(string filename)
 {
+    FILE * pFile = fopen (filename.c_str(), "r");
+    rapidjson::FileStream is(pFile);
+    rapidjson::Document d;
+    d.ParseStream<0>(is);
+
+    if ( !d.HasMember("type") || !d["type"].IsString() ||
+         strcmp(d["type"].GetString(), "histogram_based") != 0 ||
+         !d.HasMember("config") || !d["config"].IsObject()
+       )
+    {
+        return;
+    }
+
+    const rapidjson::Value& config = d["config"];
+
+    if ( config.HasMember("max_error") && config["max_error"].IsDouble() ){
+        this->max_error = (float)config["max_error"].GetDouble();
+    }
     
+    if ( config.HasMember("bindw") && config["bindw"].IsDouble() ){
+        this->bindw = (float)config["bindw"].GetDouble();
+    }
+
+    if ( config.HasMember("histogram") &&
+         config["histogram"].IsArray() )
+    {
+        const rapidjson::Value& h = config["histogram"];
+
+        for (rapidjson::SizeType i = 0; i < h.Size(); i++){
+            const rapidjson::Value& nh = h[i];
+
+            vector<float> next_h;
+            if ( nh.IsArray() ){
+                for (rapidjson::SizeType j = 0; j < nh.Size(); j++){
+                    const rapidjson::Value& nv = nh[j];
+                    next_h.push_back((float)nv.GetDouble());
+                }
+            }
+            this->index_histogram.push_back(next_h);
+        }
+    }
+    
+    if ( config.HasMember("phase") &&
+         config["phase"].IsArray() )
+    {
+        const rapidjson::Value& ph = config["phase"];
+        
+        for (rapidjson::SizeType i = 0; i < ph.Size(); i++){
+            const rapidjson::Value& next_value = ph[i];
+            this->index_phase.push_back((phase)next_value.GetInt());
+        }
+    }
+    
+    if ( config.HasMember("reliability") &&
+         config["reliability"].IsArray() )
+    {
+        const rapidjson::Value& r = config["reliability"];
+
+        for (rapidjson::SizeType i = 0; i < r.Size(); i++){
+            const rapidjson::Value& next = r[i];
+            this->index_reliability.push_back((float)next.GetDouble());
+        }
+    }
+
+    if ( config.HasMember("threshold") &&
+         config["threshold"].IsArray() )
+    {
+        const rapidjson::Value& t = config["threshold"];
+
+        for (rapidjson::SizeType i = 0; i < t.Size(); i++){
+            const rapidjson::Value& next = t[i];
+            this->index_threshold.push_back((float)next.GetDouble());
+        }
+    }
+    
+    fclose(pFile);
 }
 
-void histogram_based_dp_detector::detect(vector<Mat>& src, vector<phase>& dst)
+void histogram_based_dpd::write(string filename)
+{
+    FILE * pFile = fopen(filename.c_str(), "w");
+    rapidjson::Document d;
+    d.SetObject();
+
+    d.AddMember("type", "histogram_based", d.GetAllocator());
+
+    rapidjson::Value config(rapidjson::kObjectType);
+
+    config.AddMember("max_error", this->max_error, d.GetAllocator());
+    config.AddMember("bindw", this->bindw, d.GetAllocator());
+
+    rapidjson::Value phase_json(rapidjson::kArrayType);
+    rapidjson::Value rel_json(rapidjson::kArrayType);
+    rapidjson::Value thrs_json(rapidjson::kArrayType);
+    rapidjson::Value h_json(rapidjson::kArrayType);
+    
+    for ( uint i = 0; i < this->index_histogram.size(); i++ ){
+        rel_json.PushBack(this->index_reliability[i], d.GetAllocator());
+        phase_json.PushBack(this->index_phase[i], d.GetAllocator());
+        thrs_json.PushBack(this->index_threshold[i], d.GetAllocator());
+
+        rapidjson::Value next_hist(rapidjson::kArrayType);
+        for ( uint j = 0; j < this->index_histogram[i].size(); j++ ){
+            next_hist.PushBack(this->index_histogram[i][j], d.GetAllocator());
+        }
+        
+        h_json.PushBack(next_hist, d.GetAllocator());
+    }
+    
+    config.AddMember("histogram", h_json, d.GetAllocator());
+    config.AddMember("phase", phase_json, d.GetAllocator());
+    config.AddMember("reliability", rel_json, d.GetAllocator());
+    config.AddMember("threshold", thrs_json, d.GetAllocator());
+    
+    d.AddMember("config", config, d.GetAllocator());
+    
+    rapidjson::FileStream f(pFile);
+    rapidjson::Writer<rapidjson::FileStream> writer(f);
+    d.Accept(writer);
+
+    fclose(pFile);
+}
+    
+void histogram_based_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 {
     vector< vector<float> > hists;
     this->compute_histograms(src, hists);
     this->detect(hists, dst);
 }
 
-float histogram_based_dp_detector::eval(vector<Mat>& src, vector<phase>& labels)
+float histogram_based_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 {
     vector< vector<float> > hists;
     this->compute_histograms(src, hists);
     return this->eval(hists, labels);
 }
 
-void histogram_based_dp_detector::get_histogram(Mat& a, vector<float>& h)
+void histogram_based_dpd::get_histogram(Mat& a, vector<float>& h)
 {
     Mat aux;
     float max_v = 0;
@@ -135,24 +260,24 @@ void histogram_based_dp_detector::get_histogram(Mat& a, vector<float>& h)
 
     cvtColor(a, aux, CV_BGR2HSV);
     split( aux, hsv_planes );
-
-    h.resize( 256 / this->bindw);
+    
+    h.resize( 256 / this->bindw );
     fill(h.begin(), h.end(), 0.0);
     
-    for ( int r=0; r<a.rows; r++ ){
-        for ( int c=0; c<a.rows; c++ ){
-            int b = hsv_planes[0].at<uchar>(r,c) / this->bindw;
+    for ( int r = 0; r < a.rows; r++ ){
+        for ( int c = 0; c < a.cols; c++ ){
+            int b = hsv_planes[0].at<uchar>(r, c) / this->bindw;
             h[b] += 1.0;
             max_v = max(max_v, h[b]);
         }
     }
-
+    
     for ( uint i = 0; i < h.size(); i++ ){
         h[i] /= max_v;
     }
 }
 
-float histogram_based_dp_detector::distance(Mat& a, Mat& b)
+float histogram_based_dpd::distance(Mat& a, Mat& b)
 {
     vector<float> ha, hb;
 
@@ -162,8 +287,8 @@ float histogram_based_dp_detector::distance(Mat& a, Mat& b)
     return this->distance(ha, hb);
 }
 
-float histogram_based_dp_detector::distance(vector<float>& ha,
-                                            vector<float>& hb)
+float histogram_based_dpd::distance(vector<float>& ha,
+                                    vector<float>& hb)
 {
     float ret = 0.0;
     float total = 0.0;
@@ -176,10 +301,10 @@ float histogram_based_dp_detector::distance(vector<float>& ha,
     return 1.0 - ret / total;
 }
 
-float histogram_based_dp_detector::compute_threshold(vector<Mat>& src,
-                                                     vector<phase>& labels,
-                                                     vector< vector<float> >& h,
-                                                     int index)
+float histogram_based_dpd::compute_threshold(vector<Mat>& src,
+                                             vector<phase>& labels,
+                                             vector< vector<float> >& h,
+                                             int index)
 {
     vector< pair<float, int> > q;
     uint n = labels.size();
@@ -216,10 +341,10 @@ float histogram_based_dp_detector::compute_threshold(vector<Mat>& src,
     return q[best_threshold].first;
 }
 
-void histogram_based_dp_detector::compute_thresholds(vector<Mat>& src,
-                                                     vector<phase>& labels,
-                                                     vector< vector<float> >& h,
-                                                     vector<float>& threshold)
+void histogram_based_dpd::compute_thresholds(vector<Mat>& src,
+                                             vector<phase>& labels,
+                                             vector< vector<float> >& h,
+                                             vector<float>& threshold)
 {
     uint n = labels.size();
     
@@ -229,9 +354,11 @@ void histogram_based_dp_detector::compute_thresholds(vector<Mat>& src,
     }
 }
 
-void histogram_based_dp_detector::compute_reliability(vector<Mat>& src,
-        vector<phase>& labels, vector< vector<float> >& h,
-        vector<float>& threshold, vector<float>& reliability)
+void histogram_based_dpd::compute_reliability(vector<Mat>& src,
+                                              vector<phase>& labels,
+                                              vector< vector<float> >& h,
+                                              vector<float>& threshold,
+                                              vector<float>& reliability)
 {
     int t=0,f=0;
     uint n = labels.size();
@@ -257,10 +384,10 @@ void histogram_based_dp_detector::compute_reliability(vector<Mat>& src,
     }
 }
 
-void histogram_based_dp_detector::add_to_index(vector<float>& hist,
-                                               phase label,
-                                               float threshold,
-                                               float reliability)
+void histogram_based_dpd::add_to_index(vector<float>& hist,
+                                       phase label,
+                                       float threshold,
+                                       float reliability)
 {
     this->index_histogram.push_back(hist);
     this->index_phase.push_back(label);
@@ -268,7 +395,7 @@ void histogram_based_dp_detector::add_to_index(vector<float>& hist,
     this->index_reliability.push_back(reliability);
 }
 
-void histogram_based_dp_detector::remove_last()
+void histogram_based_dpd::remove_last()
 {
     this->index_histogram.pop_back();
     this->index_phase.pop_back();
@@ -276,8 +403,8 @@ void histogram_based_dp_detector::remove_last()
     this->index_reliability.pop_back();
 }
 
-float histogram_based_dp_detector::eval(vector< vector<float> >& src,
-                                        vector<phase>& labels)
+float histogram_based_dpd::eval(vector< vector<float> >& src,
+                                vector<phase>& labels)
 {
     int n = labels.size();
     uint f = 0;
@@ -298,8 +425,8 @@ float histogram_based_dp_detector::eval(vector< vector<float> >& src,
     return ((float)f) / labels.size();
 }
 
-void histogram_based_dp_detector::detect(vector< vector<float> >& src,
-                                         vector<phase>& dst)
+void histogram_based_dpd::detect(vector< vector<float> >& src,
+                                 vector<phase>& dst)
 {
     uint n = src.size();
     for ( uint i = 0; i < n; i++ ){
@@ -338,10 +465,12 @@ void histogram_based_dp_detector::detect(vector< vector<float> >& src,
     }
 }
 
-pair<int, float> histogram_based_dp_detector::best_frame(vector<Mat>& src,
-                        vector<phase>& labels, vector<bool>& indexed,
-                        vector<vector<float> >& hists, vector<float>& threshold,
-                        vector<float>& reliability)
+pair<int, float> histogram_based_dpd::best_frame(vector<Mat>& src,
+                                                 vector<phase>& labels,
+                                                 vector<bool>& indexed,
+                                                 vector<vector<float> >& hists,
+                                                 vector<float>& threshold,
+                                                 vector<float>& reliability)
 {
     float min_error = 1.0;
     int ret = 0;
@@ -367,8 +496,8 @@ pair<int, float> histogram_based_dp_detector::best_frame(vector<Mat>& src,
     return make_pair(ret, min_error);
 }
 
-void histogram_based_dp_detector::compute_histograms(vector<Mat>& src,
-                                                     vector<vector<float> >& h)
+void histogram_based_dpd::compute_histograms(vector<Mat>& src,
+                                             vector<vector<float> >& h)
 {
     uint n = src.size();
     for ( uint i = 0; i < n; i++ ){
@@ -378,7 +507,7 @@ void histogram_based_dp_detector::compute_histograms(vector<Mat>& src,
     }
 }
 
-void histogram_based_dp_detector::train(vector<Mat>& src, vector<phase>& labels)
+void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
     cout << "Training\n";
     
