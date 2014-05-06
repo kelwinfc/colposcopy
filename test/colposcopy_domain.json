@@ -1,6 +1,27 @@
 {
     "labels": [
         {
+            "is_global": true, 
+            "is_unique": true, 
+            "name": "roi", 
+            "features": [
+                {
+                    "default": [
+                        [
+                            5,
+                            3
+                        ],
+                        [
+                            596,
+                            390
+                        ]
+                    ], 
+                    "type": "bbox", 
+                    "name": "roi"
+                }
+            ]
+        }, 
+        {
             "is_global": false, 
             "is_unique": false, 
             "name": "diagnosis_step", 

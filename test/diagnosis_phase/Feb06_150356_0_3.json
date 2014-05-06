@@ -8,11 +8,11 @@
                 "name": "diagnosis_step", 
                 "features": [
                     {
-                        "name": "step",
+                        "name": "step", 
                         "value": "transition"
                     }
                 ]
-            },
+            }, 
             {
                 "frame": 2478, 
                 "name": "diagnosis_step", 
@@ -100,6 +100,46 @@
                     {
                         "name": "step", 
                         "value": "transition"
+                    }
+                ]
+            }
+        ], 
+        [
+            {
+                "frame": 0, 
+                "name": "roi", 
+                "features": [
+                    {
+                        "name": "roi", 
+                        "value": [
+                            [
+                                5, 
+                                3
+                            ], 
+                            [
+                                596, 
+                                390
+                            ]
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "frame": 7105, 
+                "name": "roi", 
+                "features": [
+                    {
+                        "name": "roi", 
+                        "value": [
+                            [
+                                5, 
+                                3
+                            ], 
+                            [
+                                596, 
+                                390
+                            ]
+                        ]
                     }
                 ]
             }
