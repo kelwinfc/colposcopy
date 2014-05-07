@@ -110,7 +110,8 @@ float diagnosis_phase_detector::get_confussion_matrix(vector<Mat>& src,
 histogram_based_dpd::histogram_based_dpd()
 {
     this->max_error = 0.01;
-    this->bindw = 1;
+    this->bindw = 5;
+    this->max_samples = 20;
 }
 
 void histogram_based_dpd::read(string filename)
@@ -255,26 +256,40 @@ float histogram_based_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 void histogram_based_dpd::get_histogram(Mat& a, vector<float>& h)
 {
     Mat aux;
-    float max_v = 0;
+    float max_vh = 0, max_vs;
     vector<Mat> hsv_planes;
-
+    vector<float> hue, sat;
+    
     cvtColor(a, aux, CV_BGR2HSV);
     split( aux, hsv_planes );
     
-    h.resize( 256 / this->bindw );
-    fill(h.begin(), h.end(), 0.0);
+    hue.resize( 256 / this->bindw );
+    fill(hue.begin(), hue.end(), 0.0);
+
+    sat.resize( 256 / this->bindw );
+    fill(sat.begin(), sat.end(), 0.0);
     
     for ( int r = 0; r < a.rows; r++ ){
         for ( int c = 0; c < a.cols; c++ ){
-            int b = hsv_planes[0].at<uchar>(r, c) / this->bindw;
-            h[b] += 1.0;
-            max_v = max(max_v, h[b]);
+            int bh = hsv_planes[0].at<uchar>(r, c) / this->bindw;
+            hue[bh] += 1.0;
+            max_vh = max(max_vh, hue[bh]);
+
+            int bs = hsv_planes[1].at<uchar>(r, c) / this->bindw;
+            sat[bs] += 1.0;
+            max_vs = max(max_vs, sat[bs]);
         }
     }
     
-    for ( uint i = 0; i < h.size(); i++ ){
-        h[i] /= max_v;
+    for ( uint i = 0; i < hue.size(); i++ ){
+        hue[i] /= max_vh;
+        sat[i] /= max_vs;
     }
+    
+    h.clear();
+    h.reserve( hue.size() + sat.size() );
+    h.insert( h.end(), hue.begin(), hue.end() );
+    //h.insert( h.end(), sat.begin(), sat.end() );
 }
 
 float histogram_based_dpd::distance(Mat& a, Mat& b)
@@ -531,14 +546,16 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     
     while ( current_error > this->max_error &&
             this->index_histogram.size() < src.size() && 
-            ( previous_error < 0.0 || previous_error > current_error )
+            ( previous_error < 0.0 || previous_error > current_error ) &&
+            (this->max_samples < 0 || (int)this->index_histogram.size() <
+                                           this->max_samples)
           )
     {
         previous_error = current_error;
         
         pair<int, float> best = this->best_frame(src, labels, indexed, hists,
                                                  threshold, reliability);
-
+        
         this->add_to_index(hists[best.first], labels[best.first],
                            threshold[best.first], reliability[best.first]);
         indexed[best.first] = true;
@@ -557,4 +574,97 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     }
     
     cout << "Done\n";
+}
+
+w_dpd::w_dpd()
+{
+    this->underlying_detector = 0;
+    this->w = 0;
+}
+
+w_dpd::w_dpd(diagnosis_phase_detector* d, int w)
+{
+    this->underlying_detector = d;
+    this->w = w;
+}
+
+void w_dpd::read(string filename)
+{
+    //TODO
+}
+
+void w_dpd::write(string filename)
+{
+    //TODO
+}
+
+void w_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+    //TODO
+}
+
+float w_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    return diagnosis_phase_detector::eval(src, labels);
+}
+
+void initialize_diagnosis_phase_map(map<diagnosis_phase_detector::phase,
+                                    int>& h)
+{
+    h[diagnosis_phase_detector::diagnosis_green] = 0;
+    h[diagnosis_phase_detector::diagnosis_hinselmann] = 0;
+    h[diagnosis_phase_detector::diagnosis_plain] = 0;
+    h[diagnosis_phase_detector::diagnosis_schiller] = 0;
+    h[diagnosis_phase_detector::diagnosis_unknown] = 0;
+}
+
+diagnosis_phase_detector::phase get_highest(map<diagnosis_phase_detector::phase,
+                                            int>& h)
+{
+    diagnosis_phase_detector::phase ret =
+        diagnosis_phase_detector::diagnosis_unknown;
+    int max_ret = 0;
+    
+    map<diagnosis_phase_detector::phase, int>::iterator it;
+
+    for ( it = h.begin(); it != h.end(); ++it ){
+        if ( it->second > max_ret ){
+            max_ret = it->second;
+            ret = it->first;
+        }
+    }
+
+    return ret;
+}
+
+void w_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    if ( this->w == 0 || this->underlying_detector == 0 ){
+        diagnosis_phase_detector::detect(src, dst);
+    } else {
+        uint n = src.size();
+        dst.clear();
+        
+        map<diagnosis_phase_detector::phase, int> h;
+        queue<diagnosis_phase_detector::phase> q;
+
+        initialize_diagnosis_phase_map(h);
+
+        vector<phase> dst_aux;
+        this->underlying_detector->detect(src, dst_aux);
+        
+        for ( uint i = 0; i < n; i++ ){
+
+            if ( q.size() > 0 && (int)q.size() >= this->w ){
+                phase next = q.front();
+                h[next]--;
+                q.pop();
+            }
+            
+            q.push(dst_aux[i]);
+            h[dst_aux[i]]++;
+            
+            dst.push_back(get_highest(h));
+        }
+    }
 }

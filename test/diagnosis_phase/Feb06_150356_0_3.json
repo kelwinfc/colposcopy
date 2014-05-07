@@ -1,6 +1,6 @@
 {
-    "sequence_filename": "/home/kelwinfc/Desktop/anonadado/test/0", 
-    "domain": "/home/kelwinfc/Desktop/PhD/colposcopy/test/colposcopy_domain.json", 
+    "sequence_filename": "test/videos/DVD_Feb06_150356_0_3",
+    "domain": "test/colposcopy_domain.json",
     "sequence": [
         [
             {
@@ -146,5 +146,5 @@
         ]
     ], 
     "name": "", 
-    "video_filename": "/home/kelwinfc/Desktop/anonadado/test/0.mpg\n"
+    "video_filename": "test/videos/DVD_Feb06_150356_0_3.mpg"
 }

@@ -37,13 +37,22 @@ void get_sequence(const char* filename,
         
         if ( !a )
             continue;
-
+        
         anonadado::choice_feature* step_feature =
                             (anonadado::choice_feature*)a->get_feature("step");
+
+        if ( diagnosis_phase_detector::string_to_phase(
+                                            step_feature->get_value()) ==
+             diagnosis_phase_detector::diagnosis_transition
+           )
+        {
+            continue;
+        }
+        
         labels.push_back(diagnosis_phase_detector::string_to_phase(
                                                     step_feature->get_value()));
         
-
+        
         anonadado::bbox_feature* roi_feature =
                             (anonadado::bbox_feature*)roi->get_feature("roi");
         BBOX roi_value = roi_feature->get_value();
@@ -74,12 +83,14 @@ int main(int argc, const char* argv[])
     vector<Mat> images, test_images;
     vector<diagnosis_phase_detector::phase> labels, test_labels;
     
-    get_sequence(argv[0], images, labels, 10);
+    get_sequence(argv[0], images, labels, 1);
     histogram_based_dpd hd;
     hd.train(images, labels);
     hd.write("dp.json");
+
+    w_dpd whd(&hd, 1);
     
-    get_sequence(argv[0], test_images, test_labels, 1);
+    get_sequence(argv[1], test_images, test_labels, 1);
 
     map< pair<diagnosis_phase_detector::phase,
               diagnosis_phase_detector::phase>, int> matrix;
@@ -113,5 +124,4 @@ int main(int argc, const char* argv[])
         }
         printf("\n");
     }
-
 }

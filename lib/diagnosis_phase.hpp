@@ -59,6 +59,7 @@ class histogram_based_dpd : public diagnosis_phase_detector {
         vector<float> index_reliability;
         float max_error;
         int bindw;
+        int max_samples;
     
     public:
         histogram_based_dpd();
@@ -98,6 +99,22 @@ class histogram_based_dpd : public diagnosis_phase_detector {
                           float reliability);
         void remove_last();
         
+};
+
+class w_dpd : public diagnosis_phase_detector {
+    private:
+        diagnosis_phase_detector* underlying_detector;
+        int w;
+    
+    public:
+        w_dpd();
+        w_dpd(diagnosis_phase_detector* d, int w);
+        virtual void read(string filename);
+        virtual void write(string filename);
+
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
 };
 
 #endif
