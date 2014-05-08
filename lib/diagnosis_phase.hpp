@@ -171,4 +171,18 @@ class context_dpd : public diagnosis_phase_detector {
         diagnosis_phase_detector::phase is_ok(set<phase>& seen, phase p);
 };
 
+class unknown_removal_dpd : public diagnosis_phase_detector {
+    private:
+        diagnosis_phase_detector* underlying_detector;
+    
+    public:
+        unknown_removal_dpd();
+        unknown_removal_dpd(diagnosis_phase_detector* d);
+        virtual void read(string filename);
+        virtual void write(string filename);
+
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
+};
 #endif

@@ -846,11 +846,6 @@ void w_dpd::detect(vector<Mat>& src, vector<phase>& dst)
  *                          Context Phase Detector                           *
  *****************************************************************************/
 
-/*
-    diagnosis_phase_detector* underlying_detector;
-    vector< pair<phase, phase> > predecessor;
-*/
-
 context_rule::context_rule(diagnosis_phase_detector::phase pre,
                            diagnosis_phase_detector::phase post,
                            diagnosis_phase_detector::phase replace_by)
@@ -883,7 +878,7 @@ bool operator<(context_rule const& a, context_rule const& b)
 
 context_dpd::context_dpd()
 {
-    
+    this->underlying_detector = 0;
 }
 
 context_dpd::context_dpd(diagnosis_phase_detector* d)
@@ -915,23 +910,7 @@ void context_dpd::train(vector<Mat>& src, vector<phase>& labels)
 
 float context_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 {
-    int n = labels.size();
-    uint f = 0;
-
-    if ( n == 0 ){
-        return 0.0;
-    }
-
-    vector<phase> output;
-    this->detect(src, output);
-
-    for ( int i = 0; i < n; i++ ){
-        if ( output[i] != labels[i] ){
-            f++;
-        }
-    }
-    
-    return ((float)f) / labels.size();
+    return diagnosis_phase_detector::eval(src, labels);
 }
 
 diagnosis_phase_detector::phase context_dpd::is_ok(set<phase>& seen, phase p)
@@ -967,6 +946,65 @@ void context_dpd::detect(vector<Mat>& src, vector<phase>& dst)
             
             if ( next == dst_aux[i] ){
                 seen.insert(next);
+            }
+        }
+    }
+}
+
+/*****************************************************************************
+ *                          Unknown Phase Detector                           *
+ *****************************************************************************/
+
+unknown_removal_dpd::unknown_removal_dpd()
+{
+    this->underlying_detector = 0;
+}
+
+unknown_removal_dpd::unknown_removal_dpd(diagnosis_phase_detector* d)
+{
+    this->underlying_detector = d;
+}
+
+void unknown_removal_dpd::read(string filename)
+{
+    //TODO
+}
+
+void unknown_removal_dpd::write(string filename)
+{
+    //TODO
+}
+
+void unknown_removal_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+
+}
+
+float unknown_removal_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    return diagnosis_phase_detector::eval(src, labels);
+}
+
+void unknown_removal_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    if ( this->underlying_detector == 0 ){
+        diagnosis_phase_detector::detect(src, dst);
+    } else {
+        uint n = src.size();
+        dst.clear();
+
+        vector<phase> dst_aux;
+        this->underlying_detector->detect(src, dst_aux);
+
+        phase last = diagnosis_unknown;
+        
+        for ( uint i = 0; i < n; i++ ){
+            phase next = dst_aux[i];
+            if ( next == diagnosis_unknown ){
+                dst.push_back(last);
+            } else {
+                dst.push_back(next);
+                last = next;
             }
         }
     }

@@ -91,23 +91,24 @@ int main(int argc, const char* argv[])
 
     w_dpd whd(&hd, 10);
     context_dpd cwhd(&whd);
+    unknown_removal_dpd ucwhd(&cwhd);
     
     hd.visualize(images, labels, "results/phase_timeline/0_histogram.jpg");
     whd.visualize(images, labels, "results/phase_timeline/1_w.jpg");
     cwhd.visualize(images, labels, "results/phase_timeline/2_context.jpg");
+    ucwhd.visualize(images, labels, "results/phase_timeline/3_unknown.jpg");
     
     get_sequence(argv[1], test_images, test_labels, 1);
     
-    
-    float error = cwhd.print_confussion_matrix(test_images, test_labels);
+    float error = ucwhd.print_confussion_matrix(test_images, test_labels);
     cout << "Test error: " << error << endl;
     
     hd.visualize(test_images, test_labels,
                  "results/phase_timeline/test_0_histogram.jpg");
-
     whd.visualize(test_images, test_labels,
                   "results/phase_timeline/test_1_w.jpg");
     cwhd.visualize(test_images, test_labels,
                    "results/phase_timeline/test_2_context.jpg");
-
+    ucwhd.visualize(test_images, test_labels,
+                   "results/phase_timeline/test_3_unknown.jpg");
 }
