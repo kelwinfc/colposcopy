@@ -664,9 +664,10 @@ void histogram_based_dpd::get_target_frames(vector<Mat>& src,
 
 void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    if ( __COLPOSCOPY_VERBOSE )
+    #if __COLPOSCOPY_VERBOSE
         cout << "Training\n";
-
+    #endif
+    
     vector<Mat> src_train;
     vector<phase> labels_train;
 
@@ -685,23 +686,26 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     
     this->compute_histograms(src_train, hists);
 
-    if ( __COLPOSCOPY_VERBOSE )
+    #if __COLPOSCOPY_VERBOSE
         cout << "Histograms computed\n";
+    #endif
     
     this->compute_thresholds(src_train, labels_train, hists, threshold);
 
-    if ( __COLPOSCOPY_VERBOSE )
+    #if __COLPOSCOPY_VERBOSE
         cout << "Thresholds computed\n";
+    #endif
     
     this->compute_reliability(src_train, labels_train, hists,
                               threshold, reliability);
 
-    if ( __COLPOSCOPY_VERBOSE )
+    #if __COLPOSCOPY_VERBOSE
         cout << "Reliability computed\n";
-    
-    if ( __COLPOSCOPY_VERBOSE && system("rm results/phase_index/*.jpg") ){
-        fprintf(stderr, "Error: unable to rm  results/phase_index/*.jpg\n");
-    }
+        if ( system("rm results/phase_index/*.jpg") ){
+            fprintf(stderr,
+                    "Error: unable to rm  results/phase_index/*.jpg\n");
+        }
+    #endif
     
     while ( current_error > this->max_error &&
             this->index_histogram.size() < src_train.size() && 
@@ -725,7 +729,7 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
         indexed[best.first] = true;
         current_error = best.second;
 
-        if ( __COLPOSCOPY_VERBOSE ){
+        #if __COLPOSCOPY_VERBOSE
             printf("Include (class %d) %s: %0.4f (total: %d)\n",
                    labels_train[best.first],
                    spaced_d(best.first, num_chars(src_train.size())).c_str(),
@@ -739,11 +743,12 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
                << this->index_histogram.size() << ".jpg";
             ss >> filename;
             imwrite(filename, src_train[best.first]);
-        }
+        #endif
     }
 
-    if ( __COLPOSCOPY_VERBOSE )
+    #if __COLPOSCOPY_VERBOSE
         cout << "Done\n";
+    #endif
 }
 
 /*****************************************************************************
