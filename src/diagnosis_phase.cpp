@@ -201,7 +201,7 @@ void diagnosis_phase_detector::visualize(vector<Mat>& src,
                     color_by_phase(output[i]);
 
                 if ( labels[i] != output[i] ){
-                    dst.at<Vec3b>(2 * rows_by_frame + r,
+                    dst.at<Vec3b>(2 * rows_by_frame + rows_by_frame/2 + r/2,
                                   i * cols_by_frame + c) = Vec3b(0, 0, 255);
                 }
             }
@@ -609,7 +609,11 @@ pair<int, float> histogram_based_dpd::best_frame(vector<Mat>& src,
 
     for ( uint i = 0; i < n; i++ ){
 
-        if ( indexed[i] || labels[i] == diagnosis_unknown ){
+        if ( indexed[i] ||
+             (labels[i] == diagnosis_unknown &&
+              labels[i] == diagnosis_transition )
+           )
+        {
             continue;
         }
         
@@ -638,33 +642,59 @@ void histogram_based_dpd::compute_histograms(vector<Mat>& src,
     }
 }
 
+void histogram_based_dpd::get_target_frames(vector<Mat>& src,
+                                            vector<phase>& labels,
+                                            vector<Mat>& src_train,
+                                            vector<phase>& labels_train)
+{
+    src_train.clear();
+    labels_train.clear();
+    uint n = src.size();
+
+    for ( uint i = 0; i < n; i++ ){
+        if ( labels[i] != diagnosis_unknown &&
+             labels[i] != diagnosis_transition
+           )
+        {
+            src_train.push_back(src[i]);
+            labels_train.push_back(labels[i]);
+        }
+    }
+}
+
 void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
     if ( __COLPOSCOPY_VERBOSE )
         cout << "Training\n";
+
+    vector<Mat> src_train;
+    vector<phase> labels_train;
+
+    this->get_target_frames(src, labels, src_train, labels_train);
     
     vector<bool> indexed;
     vector<float> threshold, reliability;
     vector< vector<float> > hists;
     
-    int n = labels.size();
+    int n = labels_train.size();
     float current_error = 1.0;
     float previous_error = -1.0;
     
     indexed.resize(n);
     fill(indexed.begin(), indexed.end(), false);
     
-    this->compute_histograms(src, hists);
+    this->compute_histograms(src_train, hists);
 
     if ( __COLPOSCOPY_VERBOSE )
         cout << "Histograms computed\n";
     
-    this->compute_thresholds(src, labels, hists, threshold);
+    this->compute_thresholds(src_train, labels_train, hists, threshold);
 
     if ( __COLPOSCOPY_VERBOSE )
         cout << "Thresholds computed\n";
     
-    this->compute_reliability(src, labels, hists, threshold, reliability);
+    this->compute_reliability(src_train, labels_train, hists,
+                              threshold, reliability);
 
     if ( __COLPOSCOPY_VERBOSE )
         cout << "Reliability computed\n";
@@ -674,7 +704,7 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     }
     
     while ( current_error > this->max_error &&
-            this->index_histogram.size() < src.size() && 
+            this->index_histogram.size() < src_train.size() && 
             ( previous_error < 0.0 || previous_error > current_error ) &&
             (this->max_samples < 0 || (int)this->index_histogram.size() <
                                            this->max_samples)
@@ -682,18 +712,23 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     {
         previous_error = current_error;
         
-        pair<int, float> best = this->best_frame(src, labels, indexed, hists,
-                                                 threshold, reliability);
+        pair<int, float> best = this->best_frame(src_train, labels_train,
+                                                 indexed, hists, threshold,
+                                                 reliability);
+
+        if ( best.second < 0 ){
+            break;
+        }
         
-        this->add_to_index(hists[best.first], labels[best.first],
+        this->add_to_index(hists[best.first], labels_train[best.first],
                            threshold[best.first], reliability[best.first]);
         indexed[best.first] = true;
         current_error = best.second;
 
         if ( __COLPOSCOPY_VERBOSE ){
             printf("Include (class %d) %s: %0.4f (total: %d)\n",
-                   labels[best.first],
-                   spaced_d(best.first, num_chars(src.size())).c_str(),
+                   labels_train[best.first],
+                   spaced_d(best.first, num_chars(src_train.size())).c_str(),
                    current_error,
                    (int)this->index_histogram.size()
                   );
@@ -703,7 +738,7 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
             ss <<  "results/phase_index/"
                << this->index_histogram.size() << ".jpg";
             ss >> filename;
-            imwrite(filename, src[best.first]);
+            imwrite(filename, src_train[best.first]);
         }
     }
 
@@ -803,6 +838,136 @@ void w_dpd::detect(vector<Mat>& src, vector<phase>& dst)
             h[dst_aux[i]]++;
             
             dst.push_back(get_highest(h));
+        }
+    }
+}
+
+/*****************************************************************************
+ *                          Context Phase Detector                           *
+ *****************************************************************************/
+
+/*
+    diagnosis_phase_detector* underlying_detector;
+    vector< pair<phase, phase> > predecessor;
+*/
+
+context_rule::context_rule(diagnosis_phase_detector::phase pre,
+                           diagnosis_phase_detector::phase post,
+                           diagnosis_phase_detector::phase replace_by)
+{
+    this->pre = pre;
+    this->post = post;
+    this->replace_by = replace_by;
+}
+
+diagnosis_phase_detector::phase context_rule::get_pre() const 
+{
+    return this->pre;
+}
+
+diagnosis_phase_detector::phase context_rule::get_post() const
+{
+    return this->post;
+}
+
+diagnosis_phase_detector::phase context_rule::get_replacement() const
+{
+    return this->replace_by;
+}
+
+bool operator<(context_rule const& a, context_rule const& b)
+{
+    return a.get_pre() < b.get_pre() ||
+           (a.get_pre() == b.get_pre() && a.get_post() < b.get_post() );
+}
+
+context_dpd::context_dpd()
+{
+    
+}
+
+context_dpd::context_dpd(diagnosis_phase_detector* d)
+{
+    this->underlying_detector = d;
+
+    this->rules.insert( context_rule(diagnosis_plain, diagnosis_hinselmann,
+                                     diagnosis_plain) );
+    this->rules.insert( context_rule(diagnosis_green, diagnosis_schiller,
+                                     diagnosis_plain) );
+    this->rules.insert( context_rule(diagnosis_green, diagnosis_hinselmann,
+                                     diagnosis_plain) );
+}
+
+void context_dpd::read(string filename)
+{
+    //TODO
+}
+
+void context_dpd::write(string filename)
+{
+    //TODO
+}
+
+void context_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+    
+}
+
+float context_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    int n = labels.size();
+    uint f = 0;
+
+    if ( n == 0 ){
+        return 0.0;
+    }
+
+    vector<phase> output;
+    this->detect(src, output);
+
+    for ( int i = 0; i < n; i++ ){
+        if ( output[i] != labels[i] ){
+            f++;
+        }
+    }
+    
+    return ((float)f) / labels.size();
+}
+
+diagnosis_phase_detector::phase context_dpd::is_ok(set<phase>& seen, phase p)
+{
+    set<context_rule>::iterator it;
+    for ( it = this->rules.begin(); it != this->rules.end(); ++it ){
+        if ( it->get_post() == p ){
+            if ( seen.find(it->get_pre()) == seen.end() ){
+                return it->get_replacement();
+            }
+        }
+    }
+
+    return p;
+}
+
+void context_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    if ( this->underlying_detector == 0 ){
+        diagnosis_phase_detector::detect(src, dst);
+    } else {
+        uint n = src.size();
+        dst.clear();
+        
+        vector<phase> dst_aux;
+        this->underlying_detector->detect(src, dst_aux);
+
+        set<phase> seen;
+        
+        for ( uint i = 0; i < n; i++ ){
+            phase next = is_ok(seen, dst_aux[i]);
+            dst.push_back(next);
+            
+            if ( next == dst_aux[i] ){
+                seen.insert(next);
+            }
         }
     }
 }

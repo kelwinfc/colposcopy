@@ -14,10 +14,11 @@
 #include "contrib/rapidjson/stringbuffer.h"
 #include "contrib/pugixml.hpp"
 
+#include <fstream>
+#include <algorithm>
 #include <vector>
 #include <queue>
-#include <algorithm>
-#include <fstream>
+#include <set>
 
 #include "utils.hpp"
 
@@ -32,12 +33,12 @@ class diagnosis_phase_detector {
 
     public:
         enum phase {
+            diagnosis_unknown,
+            diagnosis_transition,
             diagnosis_plain,
             diagnosis_green,
             diagnosis_hinselmann,
-            diagnosis_schiller,
-            diagnosis_transition,
-            diagnosis_unknown
+            diagnosis_schiller
         };
         
         diagnosis_phase_detector();
@@ -108,6 +109,10 @@ class histogram_based_dpd : public diagnosis_phase_detector {
                           float reliability);
         void remove_last();
         
+        void get_target_frames(vector<Mat>& src,
+                               vector<phase>& labels,
+                               vector<Mat>& src_train,
+                               vector<phase>& labels_train);
 };
 
 class w_dpd : public diagnosis_phase_detector {
@@ -127,6 +132,43 @@ class w_dpd : public diagnosis_phase_detector {
 
     private:
         void initialize_diagnosis_phase_map(map<phase, int>& h);
+};
+
+class context_rule {
+    private:
+        diagnosis_phase_detector::phase pre;
+        diagnosis_phase_detector::phase post;
+        diagnosis_phase_detector::phase replace_by;
+
+    public:
+        context_rule(diagnosis_phase_detector::phase pre,
+                     diagnosis_phase_detector::phase post,
+                     diagnosis_phase_detector::phase replace_by);
+
+        friend bool operator<(context_rule const& a, context_rule const& b);
+        
+        diagnosis_phase_detector::phase get_pre() const;
+        diagnosis_phase_detector::phase get_post() const;
+        diagnosis_phase_detector::phase get_replacement() const;
+};
+
+class context_dpd : public diagnosis_phase_detector {
+    private:
+        diagnosis_phase_detector* underlying_detector;
+        set<context_rule> rules;
+    
+    public:
+        context_dpd();
+        context_dpd(diagnosis_phase_detector* d);
+        virtual void read(string filename);
+        virtual void write(string filename);
+        
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
+
+    private:
+        diagnosis_phase_detector::phase is_ok(set<phase>& seen, phase p);
 };
 
 #endif
