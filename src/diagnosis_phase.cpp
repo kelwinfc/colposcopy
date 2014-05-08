@@ -678,14 +678,13 @@ float w_dpd::eval(vector<Mat>& src, vector<phase>& labels)
     return diagnosis_phase_detector::eval(src, labels);
 }
 
-void initialize_diagnosis_phase_map(map<diagnosis_phase_detector::phase,
-                                    int>& h)
+void w_dpd::initialize_diagnosis_phase_map(map<phase, int>& h)
 {
-    h[diagnosis_phase_detector::diagnosis_green] = 0;
-    h[diagnosis_phase_detector::diagnosis_hinselmann] = 0;
-    h[diagnosis_phase_detector::diagnosis_plain] = 0;
-    h[diagnosis_phase_detector::diagnosis_schiller] = 0;
-    h[diagnosis_phase_detector::diagnosis_unknown] = 0;
+    h[diagnosis_green]      = 0;
+    h[diagnosis_hinselmann] = 0;
+    h[diagnosis_plain]      = 0;
+    h[diagnosis_schiller]   = 0;
+    h[diagnosis_unknown]    = 0;
 }
 
 diagnosis_phase_detector::phase get_highest(map<diagnosis_phase_detector::phase,

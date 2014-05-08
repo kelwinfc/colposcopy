@@ -120,6 +120,9 @@ class w_dpd : public diagnosis_phase_detector {
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
+
+    private:
+        void initialize_diagnosis_phase_map(map<phase, int>& h);
 };
 
 #endif
