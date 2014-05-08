@@ -111,6 +111,56 @@ float diagnosis_phase_detector::get_confussion_matrix(vector<Mat>& src,
     return ((float)f) / ((float)output.size());
 }
 
+float diagnosis_phase_detector::print_confussion_matrix(vector<Mat>& src,
+                                                        vector<phase>& labels)
+{
+    map< pair<diagnosis_phase_detector::phase,
+              diagnosis_phase_detector::phase>, int> matrix;
+    
+    phase steps[] = {
+         diagnosis_unknown,
+         diagnosis_transition,
+         diagnosis_plain,
+         diagnosis_green,
+         diagnosis_hinselmann,
+         diagnosis_schiller
+    };
+    
+    const char* names[] =
+        {
+            "unknown   ",
+            "transition",
+            "plain     ",
+            "green     ",
+            "hinselmann",
+            "schiller  "
+        };
+
+    int num_steps = 6;
+    
+    float ret = this->get_confussion_matrix(src, labels, matrix);
+
+    int max_v = 0;
+    for ( int i=0; i<num_steps; i++ ){
+        for ( int j=0; j<num_steps; j++ ){
+            max_v = max(max_v, matrix[make_pair(steps[i], steps[j])]);
+        }
+    }
+    int n_chars = num_chars(max_v);
+    
+    for ( int i=0; i<num_steps; i++ ){
+        printf("%s ", names[i]);
+        for ( int j=0; j<num_steps; j++ ){
+            string frame_s = spaced_d(matrix[make_pair(steps[i], steps[j])],
+                                      n_chars);
+            cout << frame_s << " ";
+        }
+        printf("\n");
+    }
+
+    return ret;
+}
+
 Vec3b color_by_phase(diagnosis_phase_detector::phase p)
 {
     if ( p == diagnosis_phase_detector::diagnosis_green ){
@@ -590,7 +640,8 @@ void histogram_based_dpd::compute_histograms(vector<Mat>& src,
 
 void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    cout << "Training\n";
+    if ( __COLPOSCOPY_VERBOSE )
+        cout << "Training\n";
     
     vector<bool> indexed;
     vector<float> threshold, reliability;
@@ -604,11 +655,23 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     fill(indexed.begin(), indexed.end(), false);
     
     this->compute_histograms(src, hists);
-    cout << "Histograms computed\n";
+
+    if ( __COLPOSCOPY_VERBOSE )
+        cout << "Histograms computed\n";
+    
     this->compute_thresholds(src, labels, hists, threshold);
-    cout << "Thresholds computed\n";
+
+    if ( __COLPOSCOPY_VERBOSE )
+        cout << "Thresholds computed\n";
+    
     this->compute_reliability(src, labels, hists, threshold, reliability);
-    cout << "Reliability computed\n";
+
+    if ( __COLPOSCOPY_VERBOSE )
+        cout << "Reliability computed\n";
+    
+    if ( __COLPOSCOPY_VERBOSE && system("rm results/phase_index/*.jpg") ){
+        fprintf(stderr, "Error: unable to rm  results/phase_index/*.jpg\n");
+    }
     
     while ( current_error > this->max_error &&
             this->index_histogram.size() < src.size() && 
@@ -626,20 +689,26 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
                            threshold[best.first], reliability[best.first]);
         indexed[best.first] = true;
         current_error = best.second;
-        cout << "Add (" << labels[best.first] << ") "
-             << best.first << ": " << current_error
-             << " (total: " << this->index_histogram.size() << ")"
-             << endl;
-        
-        stringstream ss;
-        string filename;
-        ss <<  "results/phase_index/"
-           << this->index_histogram.size() << ".jpg";
-        ss >> filename;
-        imwrite(filename, src[best.first]);
+
+        if ( __COLPOSCOPY_VERBOSE ){
+            printf("Include (class %d) %s: %0.4f (total: %d)\n",
+                   labels[best.first],
+                   spaced_d(best.first, num_chars(src.size())).c_str(),
+                   current_error,
+                   (int)this->index_histogram.size()
+                  );
+
+            stringstream ss;
+            string filename;
+            ss <<  "results/phase_index/"
+               << this->index_histogram.size() << ".jpg";
+            ss >> filename;
+            imwrite(filename, src[best.first]);
+        }
     }
-    
-    cout << "Done\n";
+
+    if ( __COLPOSCOPY_VERBOSE )
+        cout << "Done\n";
 }
 
 /*****************************************************************************
@@ -687,8 +756,8 @@ void w_dpd::initialize_diagnosis_phase_map(map<phase, int>& h)
     h[diagnosis_unknown]    = 0;
 }
 
-diagnosis_phase_detector::phase get_highest(map<diagnosis_phase_detector::phase,
-                                            int>& h)
+diagnosis_phase_detector::phase get_highest(
+                                map<diagnosis_phase_detector::phase, int>& h)
 {
     diagnosis_phase_detector::phase ret =
         diagnosis_phase_detector::diagnosis_unknown;

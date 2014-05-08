@@ -50,7 +50,7 @@ void get_sequence(const char* filename,
         }
         
         labels.push_back(diagnosis_phase_detector::string_to_phase(
-                                                    step_feature->get_value()));
+                                                   step_feature->get_value()));
         
         
         anonadado::bbox_feature* roi_feature =
@@ -95,12 +95,10 @@ int main(int argc, const char* argv[])
     whd.visualize(images, labels, "results/phase_timeline/dst_w.jpg");
     
     get_sequence(argv[1], test_images, test_labels, 1);
-
-    map< pair<diagnosis_phase_detector::phase,
-              diagnosis_phase_detector::phase>, int> matrix;
-    cout << "Test error: "
-         << whd.get_confussion_matrix(test_images, test_labels, matrix)
-         << endl;
+    
+    float error = whd.print_confussion_matrix(test_images, test_labels);
+    
+    cout << "Test error: " << error << endl;
 
     hd.visualize(test_images, test_labels,
                  "results/phase_timeline/test_dst_histogram.jpg");
@@ -108,31 +106,4 @@ int main(int argc, const char* argv[])
     whd.visualize(test_images, test_labels,
                   "results/phase_timeline/test_dst_w.jpg");
     
-    diagnosis_phase_detector::phase steps[] =
-        {
-         diagnosis_phase_detector::diagnosis_transition,
-         diagnosis_phase_detector::diagnosis_plain,
-         diagnosis_phase_detector::diagnosis_hinselmann,
-         diagnosis_phase_detector::diagnosis_schiller,
-         diagnosis_phase_detector::diagnosis_green
-        };
-    
-    const char* names[] =
-        {
-            "transition",
-            "plain     ",
-            "hinselmann",
-            "schiller  ",
-            "green     "
-        };
-    
-    int num_steps = 5;
-    
-    for ( int i=0; i<num_steps; i++ ){
-        printf("%s ", names[i]);
-        for ( int j=0; j<num_steps; j++ ){
-            printf("%4d ", matrix[make_pair(steps[i], steps[j])]);
-        }
-        printf("\n");
-    }
 }

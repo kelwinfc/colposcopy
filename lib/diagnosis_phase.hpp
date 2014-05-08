@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <fstream>
 
+#include "utils.hpp"
+
 #define HBDP_HISTOGRAM vector<float>
 #define HBDP_SAMPLE HBDP_HISTOGRAM
 
@@ -48,6 +50,8 @@ class diagnosis_phase_detector {
         
         float get_confussion_matrix(vector<Mat>& src, vector<phase>& labels,
                                     map< pair<phase, phase>, int>& matrix);
+        float print_confussion_matrix(vector<Mat>& src, vector<phase>& labels);
+        
         static phase string_to_phase(string s);
         void visualize(vector<Mat>& src, vector<phase>& labels,
                        Mat& dst, int rows_by_frame=200, int cols_by_frame=2);
