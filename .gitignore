@@ -19,3 +19,11 @@
 *.exe
 *.out
 *.app
+
+# Images and videos
+*.ppm
+*.png
+*.jpg
+*.mpg
+*.mpeg
+

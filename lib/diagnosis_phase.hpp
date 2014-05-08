@@ -45,10 +45,15 @@ class diagnosis_phase_detector {
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
-
+        
         float get_confussion_matrix(vector<Mat>& src, vector<phase>& labels,
                                     map< pair<phase, phase>, int>& matrix);
         static phase string_to_phase(string s);
+        void visualize(vector<Mat>& src, vector<phase>& labels,
+                       Mat& dst, int rows_by_frame=200, int cols_by_frame=2);
+        void visualize(vector<Mat>& src, vector<phase>& labels,
+                       string filename,
+                       int rows_by_frame=200, int cols_by_frame=2);
 };
 
 class histogram_based_dpd : public diagnosis_phase_detector {

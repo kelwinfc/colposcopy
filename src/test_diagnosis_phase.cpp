@@ -84,20 +84,30 @@ int main(int argc, const char* argv[])
     vector<diagnosis_phase_detector::phase> labels, test_labels;
     
     get_sequence(argv[0], images, labels, 1);
+    
     histogram_based_dpd hd;
     hd.train(images, labels);
     hd.write("dp.json");
 
-    w_dpd whd(&hd, 1);
+    w_dpd whd(&hd, 10);
+    
+    hd.visualize(images, labels, "results/phase_timeline/dst_histogram.jpg");
+    whd.visualize(images, labels, "results/phase_timeline/dst_w.jpg");
     
     get_sequence(argv[1], test_images, test_labels, 1);
 
     map< pair<diagnosis_phase_detector::phase,
               diagnosis_phase_detector::phase>, int> matrix;
     cout << "Test error: "
-         << hd.get_confussion_matrix(test_images, test_labels, matrix)
+         << whd.get_confussion_matrix(test_images, test_labels, matrix)
          << endl;
 
+    hd.visualize(test_images, test_labels,
+                 "results/phase_timeline/test_dst_histogram.jpg");
+
+    whd.visualize(test_images, test_labels,
+                  "results/phase_timeline/test_dst_w.jpg");
+    
     diagnosis_phase_detector::phase steps[] =
         {
          diagnosis_phase_detector::diagnosis_transition,
@@ -106,6 +116,7 @@ int main(int argc, const char* argv[])
          diagnosis_phase_detector::diagnosis_schiller,
          diagnosis_phase_detector::diagnosis_green
         };
+    
     const char* names[] =
         {
             "transition",

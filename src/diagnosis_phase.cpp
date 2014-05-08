@@ -1,5 +1,9 @@
 #include "diagnosis_phase.hpp"
 
+/*****************************************************************************
+ *                         Diagnosis Phase Detector                          *
+ *****************************************************************************/
+
 diagnosis_phase_detector::phase diagnosis_phase_detector::string_to_phase(
                                                                     string s)
 {
@@ -106,6 +110,68 @@ float diagnosis_phase_detector::get_confussion_matrix(vector<Mat>& src,
 
     return ((float)f) / ((float)output.size());
 }
+
+Vec3b color_by_phase(diagnosis_phase_detector::phase p)
+{
+    if ( p == diagnosis_phase_detector::diagnosis_green ){
+        return Vec3b(0, 255, 0);
+    } else if ( p == diagnosis_phase_detector::diagnosis_hinselmann ){
+        return Vec3b(255, 255, 255);
+    } else if ( p == diagnosis_phase_detector::diagnosis_plain ){
+        return Vec3b(0, 0, 255);
+    } else if ( p == diagnosis_phase_detector::diagnosis_schiller ){
+        return Vec3b(0, 64, 128);
+    } else if ( p == diagnosis_phase_detector::diagnosis_transition ){
+        return Vec3b(128, 128, 128);
+    } else if ( p == diagnosis_phase_detector::diagnosis_unknown ){
+        return Vec3b(0, 0, 0);
+    }
+    return Vec3b(0, 0, 0);
+}
+
+void diagnosis_phase_detector::visualize(vector<Mat>& src,
+                                         vector<phase>& labels,
+                                         Mat& dst,
+                                         int rows_by_frame, int cols_by_frame
+                                        )
+{
+    vector<phase> output;
+    uint n = src.size();
+    
+    this->detect(src, output);
+    
+    dst = Mat::zeros(rows_by_frame * 3, n * cols_by_frame, CV_8UC3);
+    
+    for ( uint i = 0; i < n; i++ ){
+        for ( int r = 0; r < rows_by_frame; r++ ){
+            for ( int c = 0; c < cols_by_frame; c++ ){
+                dst.at<Vec3b>(r, i * cols_by_frame + c) =
+                    color_by_phase(labels[i]);
+                dst.at<Vec3b>(rows_by_frame + r, i * cols_by_frame + c) =
+                    color_by_phase(output[i]);
+
+                if ( labels[i] != output[i] ){
+                    dst.at<Vec3b>(2 * rows_by_frame + r,
+                                  i * cols_by_frame + c) = Vec3b(0, 0, 255);
+                }
+            }
+        }
+    }
+}
+
+void diagnosis_phase_detector::visualize(vector<Mat>& src,
+                                         vector<phase>& labels,
+                                         string filename,
+                                         int rows_by_frame, int cols_by_frame)
+{
+    Mat dst;
+    this->visualize(src, labels, dst, rows_by_frame, cols_by_frame);
+    imwrite(filename.c_str(), dst);
+}
+
+/*****************************************************************************
+ *                 Histogram-Based Diagnosis Phase Detector                  *
+ *****************************************************************************/
 
 histogram_based_dpd::histogram_based_dpd()
 {
@@ -575,6 +641,10 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
     
     cout << "Done\n";
 }
+
+/*****************************************************************************
+ *                     Windowed Diagnosis Phase Detector                     *
+ *****************************************************************************/
 
 w_dpd::w_dpd()
 {

@@ -29,7 +29,7 @@ bin/specular_reflection.o: $(DEP_specular_reflection:%=src/%.cpp) $(DEP_specular
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
 
 bin/test_specular_reflection.o: $(DEP_test_specular_reflection:%=src/%.cpp) $(DEP_test_specular_reflection:%=lib/%.hpp)
-bin/test_diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
+bin/test_diagnosis_phase.o: $(DEP_test_diagnosis_phase:%=src/%.cpp) $(DEP_test_diagnosis_phase:%=lib/%.hpp)
 
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o
