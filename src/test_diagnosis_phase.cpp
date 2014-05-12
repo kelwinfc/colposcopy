@@ -91,7 +91,7 @@ int main(int argc, const char* argv[])
     histogram_based_dpd hd;
     
     hd.train(images, labels);
-    hd.write("dp.json");
+    //hd.write("dp.json");
     
     w_dpd whd(&hd, 10);
     context_dpd cwhd(&whd);
