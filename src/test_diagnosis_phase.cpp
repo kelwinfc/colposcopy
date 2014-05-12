@@ -74,6 +74,8 @@ void get_sequence(const char* filename,
 
 int main(int argc, const char* argv[])
 {
+    cout << "Hi!\n";
+    
     argc--;
     argv++;
     if ( argc == 0 ){
@@ -85,10 +87,12 @@ int main(int argc, const char* argv[])
     
     get_sequence(argv[0], images, labels, 1);
     
+    //knn_dpd hd;
     histogram_based_dpd hd;
+    
     hd.train(images, labels);
     hd.write("dp.json");
-
+    
     w_dpd whd(&hd, 10);
     context_dpd cwhd(&whd);
     unknown_removal_dpd ucwhd(&cwhd);

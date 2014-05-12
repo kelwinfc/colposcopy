@@ -752,6 +752,100 @@ void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
 }
 
 /*****************************************************************************
+ *                            KNN Phase Detector                             *
+ *****************************************************************************/
+
+knn_dpd::knn_dpd()
+{
+    this->k = 5;
+}
+
+void knn_dpd::read(string filename)
+{
+    //TODO
+}
+
+void knn_dpd::write(string filename)
+{
+    //TODO
+}
+
+void knn_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+    #if __COLPOSCOPY_VERBOSE
+        cout << "Training\n";
+    #endif
+    
+    vector<Mat> src_train;
+    vector<phase> labels_train;
+    
+    this->get_target_frames(src, labels, src_train, labels_train);
+    
+    vector< vector<float> > hists;
+    
+    int n = labels_train.size();
+    
+    this->compute_histograms(src_train, hists);
+
+    for ( int i = 0; i < n; i++ ){
+        this->add_to_index(hists[i], labels_train[i], 0.0, 1.0);
+    }
+    
+    #if __COLPOSCOPY_VERBOSE
+        cout << "Done\n";
+    #endif
+}
+
+float knn_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    return this->histogram_based_dpd::eval(src, labels);
+}
+
+void knn_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    this->histogram_based_dpd::detect(src, dst);
+}
+
+void knn_dpd::detect(vector< vector<float> >& src, vector<phase>& dst)
+{
+    cout << "Hola\n";
+    uint n = src.size();
+    for ( uint i = 0; i < n; i++ ){
+        
+        map<phase, uint> r;
+        priority_queue< pair<float, phase> > q;
+        
+        r[diagnosis_plain] = 0;
+        r[diagnosis_green] = 0;
+        r[diagnosis_hinselmann] = 0;
+        r[diagnosis_schiller] = 0;
+        r[diagnosis_transition] = 0;
+        
+        for ( uint j = 0; j < this->index_histogram.size(); j++ ){
+            float next_distance = distance(this->index_histogram[j], src[i]);
+            q.push( make_pair(-next_distance, this->index_phase[j]) );
+        }
+
+        int kk = this->k;
+        while ( !q.empty() && kk-- > 0 ){
+            r[q.top().second]++;
+            q.pop();
+        }
+
+        uint max_occurrences = 0;
+        dst.push_back(diagnosis_unknown);
+        
+        map<phase, uint>::iterator it;
+        for ( it = r.begin(); it != r.end(); ++it ){
+            if ( it->second >= max_occurrences ){
+                dst.back() = it->first;
+                max_occurrences = it->second;
+            }
+        }
+    }
+}
+
+/*****************************************************************************
  *                     Windowed Diagnosis Phase Detector                     *
  *****************************************************************************/
 
@@ -853,11 +947,14 @@ void w_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 
 context_rule::context_rule(diagnosis_phase_detector::phase pre,
                            diagnosis_phase_detector::phase post,
-                           diagnosis_phase_detector::phase replace_by)
+                           diagnosis_phase_detector::phase replace_by,
+                           bool seen_before
+                          )
 {
     this->pre = pre;
     this->post = post;
     this->replace_by = replace_by;
+    this->seen_before = seen_before;
 }
 
 diagnosis_phase_detector::phase context_rule::get_pre() const 
@@ -873,6 +970,11 @@ diagnosis_phase_detector::phase context_rule::get_post() const
 diagnosis_phase_detector::phase context_rule::get_replacement() const
 {
     return this->replace_by;
+}
+
+bool context_rule::is_before_rule() const
+{
+    return this->seen_before;
 }
 
 bool operator<(context_rule const& a, context_rule const& b)
@@ -891,11 +993,14 @@ context_dpd::context_dpd(diagnosis_phase_detector* d)
     this->underlying_detector = d;
 
     this->rules.insert( context_rule(diagnosis_plain, diagnosis_hinselmann,
-                                     diagnosis_plain) );
+                                     diagnosis_plain, true) );
     this->rules.insert( context_rule(diagnosis_green, diagnosis_schiller,
-                                     diagnosis_plain) );
+                                     diagnosis_plain, true) );
     this->rules.insert( context_rule(diagnosis_green, diagnosis_hinselmann,
-                                     diagnosis_plain) );
+                                     diagnosis_plain, true) );
+    
+    this->rules.insert( context_rule(diagnosis_green, diagnosis_plain,
+                                     diagnosis_hinselmann, false) );
 }
 
 void context_dpd::read(string filename)
@@ -923,7 +1028,13 @@ diagnosis_phase_detector::phase context_dpd::is_ok(set<phase>& seen, phase p)
     set<context_rule>::iterator it;
     for ( it = this->rules.begin(); it != this->rules.end(); ++it ){
         if ( it->get_post() == p ){
-            if ( seen.find(it->get_pre()) == seen.end() ){
+            if ( it->is_before_rule() &&
+                 seen.find(it->get_pre()) == seen.end() )
+            {
+                return it->get_replacement();
+            } else if ( !it->is_before_rule() &&
+                        seen.find(it->get_pre()) != seen.end() )
+            {
                 return it->get_replacement();
             }
         }

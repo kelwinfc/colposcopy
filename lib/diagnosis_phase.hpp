@@ -62,7 +62,7 @@ class diagnosis_phase_detector {
 };
 
 class histogram_based_dpd : public diagnosis_phase_detector {
-    private:
+    protected:
         vector<HBDP_SAMPLE> index_histogram;
         vector<phase> index_phase;
         vector<float> index_threshold;
@@ -80,13 +80,13 @@ class histogram_based_dpd : public diagnosis_phase_detector {
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
     
-    private:
+    protected:
         void get_histogram(Mat& a, vector<float>& h);
         float distance(Mat& a, Mat& b);
         float distance(vector<float>& ha, vector<float>& hb);
 
-        float eval(vector< vector<float> >& src, vector<phase>& labels);
-        void detect(vector< vector<float> >& src, vector<phase>& dst);
+        virtual float eval(vector< vector<float> >& src, vector<phase>& labels);
+        virtual void detect(vector< vector<float> >& src, vector<phase>& dst);
         
         pair<int,float> best_frame(vector<Mat>& src, vector<phase>& labels,
                                    vector<bool>& indexed,
@@ -115,6 +115,23 @@ class histogram_based_dpd : public diagnosis_phase_detector {
                                vector<phase>& labels_train);
 };
 
+class knn_dpd : public histogram_based_dpd {
+    protected:
+        int k;
+
+    public:
+        knn_dpd();
+        virtual void read(string filename);
+        virtual void write(string filename);
+        
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
+
+    protected:
+        virtual void detect(vector< vector<float> >& src, vector<phase>& dst);
+};
+
 class w_dpd : public diagnosis_phase_detector {
     private:
         diagnosis_phase_detector* underlying_detector;
@@ -139,17 +156,21 @@ class context_rule {
         diagnosis_phase_detector::phase pre;
         diagnosis_phase_detector::phase post;
         diagnosis_phase_detector::phase replace_by;
-
+        bool seen_before;
+    
     public:
         context_rule(diagnosis_phase_detector::phase pre,
                      diagnosis_phase_detector::phase post,
-                     diagnosis_phase_detector::phase replace_by);
+                     diagnosis_phase_detector::phase replace_by,
+                     bool barkward
+                    );
 
         friend bool operator<(context_rule const& a, context_rule const& b);
         
         diagnosis_phase_detector::phase get_pre() const;
         diagnosis_phase_detector::phase get_post() const;
         diagnosis_phase_detector::phase get_replacement() const;
+        bool is_before_rule() const;
 };
 
 class context_dpd : public diagnosis_phase_detector {
