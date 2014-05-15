@@ -4,6 +4,8 @@
 #include "/home/kelwinfc/Desktop/anonadado/src/api/cpp/utils.hpp"
 #include "/home/kelwinfc/Desktop/anonadado/src/api/cpp/utils.cpp"
 
+using namespace colposcopy;
+
 int rows = 64;
 int cols = 64;
 

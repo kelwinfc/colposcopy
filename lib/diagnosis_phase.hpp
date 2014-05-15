@@ -28,6 +28,76 @@
 using namespace std;
 using namespace cv;
 
+namespace colposcopy {
+
+class feature_extractor {
+    public:
+        feature_extractor();
+        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
+        
+        virtual void read(string filename);
+        virtual void write(string filename);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class identity_fe : public feature_extractor {
+    public:
+        identity_fe();
+        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class hue_histogram_fe : public feature_extractor {
+    protected:
+        int bindw;
+        bool normalize;
+    
+    public:
+        hue_histogram_fe();
+        hue_histogram_fe(int bindw, bool normalize);
+        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class distance {
+    public:
+        distance();
+        virtual float d(vector<float>& a, vector<float>& b);
+
+        virtual void read(string filename);
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(string filename);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class lk_distance : public distance {
+    protected:
+        int k;
+        float k_inv;
+    
+    public:
+        lk_distance();
+        lk_distance(int k);
+        virtual float d(vector<float>& a, vector<float>& b);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class euclidean_distance : public lk_distance {
+    public:
+        euclidean_distance();
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
 class diagnosis_phase_detector {
     private:
 
@@ -42,8 +112,11 @@ class diagnosis_phase_detector {
         };
         
         diagnosis_phase_detector();
+        
         virtual void read(string filename);
+        virtual void read(const rapidjson::Value& json);
         virtual void write(string filename);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
@@ -73,8 +146,9 @@ class histogram_based_dpd : public diagnosis_phase_detector {
     
     public:
         histogram_based_dpd();
-        virtual void read(string filename);
-        virtual void write(string filename);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
@@ -121,8 +195,9 @@ class knn_dpd : public histogram_based_dpd {
 
     public:
         knn_dpd();
-        virtual void read(string filename);
-        virtual void write(string filename);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
@@ -140,9 +215,10 @@ class w_dpd : public diagnosis_phase_detector {
     public:
         w_dpd();
         w_dpd(diagnosis_phase_detector* d, int w);
-        virtual void read(string filename);
-        virtual void write(string filename);
 
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
@@ -165,7 +241,12 @@ class context_rule {
                      bool barkward
                     );
 
-        friend bool operator<(context_rule const& a, context_rule const& b);
+        friend bool operator<(context_rule const& a, context_rule const& b)
+        {
+            return a.get_pre() < b.get_pre() ||
+                   (a.get_pre() == b.get_pre() &&
+                    a.get_post() < b.get_post() );
+        }
         
         diagnosis_phase_detector::phase get_pre() const;
         diagnosis_phase_detector::phase get_post() const;
@@ -181,8 +262,9 @@ class context_dpd : public diagnosis_phase_detector {
     public:
         context_dpd();
         context_dpd(diagnosis_phase_detector* d);
-        virtual void read(string filename);
-        virtual void write(string filename);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
@@ -199,11 +281,15 @@ class unknown_removal_dpd : public diagnosis_phase_detector {
     public:
         unknown_removal_dpd();
         unknown_removal_dpd(diagnosis_phase_detector* d);
-        virtual void read(string filename);
-        virtual void write(string filename);
-
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
 };
+
+};
+
 #endif

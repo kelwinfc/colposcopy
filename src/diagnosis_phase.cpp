@@ -1,5 +1,215 @@
 #include "diagnosis_phase.hpp"
 
+using namespace colposcopy;
+
+/*****************************************************************************
+ *                      Feature Extractor and Distances                      *
+ *****************************************************************************/
+
+feature_extractor::feature_extractor()
+{
+    // noop
+}
+
+void feature_extractor::extract(vector<Mat>& in, int i, vector<float>& out)
+{
+    out.clear();
+}
+
+void feature_extractor::read(string filename)
+{
+    //noop
+}
+
+void feature_extractor::read(const rapidjson::Value& json)
+{
+    //noop
+}
+
+
+void feature_extractor::write(string filename)
+{
+    //TODO
+}
+
+void feature_extractor::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+identity_fe::identity_fe()
+{
+    // noop
+}
+
+void identity_fe::extract(vector<Mat>& in, int i, vector<float>& out)
+{
+    out.clear();
+
+    int n = in[i].rows;
+    int type = in[i].type();
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+
+    out.clear();
+    out.resize(n);
+    
+    for ( int j = 0; j < n; j++ ){
+        switch ( depth ) {
+            case CV_8U:  out[j] = in[i].at<uchar>(0,j); break;
+            case CV_8S:  out[j] = in[i].at<char>(0,j); break;
+            case CV_16U: out[j] = in[i].at<unsigned short>(0,j); break;
+            case CV_16S: out[j] = in[i].at<short>(0,j); break;
+            case CV_32S: out[j] = in[i].at<int>(0,j); break;
+            case CV_32F: out[j] = in[i].at<float>(0,j); break;
+            case CV_64F: out[j] = in[i].at<double>(0,j); break;
+            default:     out[j] = in[i].at<uchar>(0,j); break;
+        }
+    }
+}
+
+void identity_fe::read(const rapidjson::Value& json)
+{
+    //noop
+}
+
+
+void identity_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+
+hue_histogram_fe::hue_histogram_fe()
+{
+    this->bindw = 1;
+    this->normalize = true;
+}
+
+hue_histogram_fe::hue_histogram_fe(int bindw, bool normalize)
+{
+    this->bindw = bindw;
+    this->normalize = normalize;
+}
+
+void hue_histogram_fe::extract(vector<Mat>& in, int i, vector<float>& out)
+{
+    Mat aux;
+    float max_vh = 0;
+    vector<Mat> hsv_planes;
+    
+    cvtColor(in[i], aux, CV_BGR2HSV);
+    split( aux, hsv_planes );
+
+    out.resize( 256 / this->bindw );
+    fill(out.begin(), out.end(), 0.0);
+    
+    for ( int r = 0; r < in[i].rows; r++ ){
+        for ( int c = 0; c < in[i].cols; c++ ){
+            int bh = hsv_planes[0].at<uchar>(r, c) / this->bindw;
+            out[bh] += 1.0;
+            max_vh = max(max_vh, out[bh]);
+        }
+    }
+
+    if ( this->normalize ){
+        for ( uint i = 0; i < out.size(); i++ ){
+            out[i] /= max_vh;
+        }
+    }
+}
+
+void hue_histogram_fe::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void hue_histogram_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+
+distance::distance()
+{
+    // noop
+}
+
+
+void distance::read(string filename)
+{
+    //TODO
+}
+
+void distance::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void distance::write(string filename)
+{
+    //TODO
+}
+
+void distance::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+float distance::d(vector<float>& a, vector<float>& b)
+{
+    return 0.0;
+}
+
+lk_distance::lk_distance()
+{
+    this->k = 1;
+}
+
+lk_distance::lk_distance(int k)
+{
+    this->k = k;
+    this->k_inv = 1.0 / k;
+}
+
+float lk_distance::d(vector<float>& a, vector<float>& b)
+{
+    float ret = 0;
+    uint n = min(a.size(), b.size());
+    for ( uint i = 0; i < n; i++ ){
+        float diff = abs(a[i] - b[i]);
+        ret += pow(diff, this->k_inv);
+    }
+    return ret;
+}
+
+void lk_distance::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+
+void lk_distance::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+euclidean_distance::euclidean_distance()
+{
+    this->k = 2;
+    this->k_inv = 1.0 / this->k;
+}
+
+void euclidean_distance::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+
+void euclidean_distance::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
 /*****************************************************************************
  *                         Diagnosis Phase Detector                          *
  *****************************************************************************/
@@ -29,12 +239,38 @@ diagnosis_phase_detector::diagnosis_phase_detector()
 
 void diagnosis_phase_detector::read(string filename)
 {
-    
+    FILE * pFile = fopen (filename.c_str(), "r");
+    rapidjson::FileStream is(pFile);
+    rapidjson::Document d;
+    d.ParseStream<0>(is);
+    this->read(d);
+    fclose(pFile);
+}
+
+void diagnosis_phase_detector::read(const rapidjson::Value& json)
+{
+    // noop
 }
 
 void diagnosis_phase_detector::write(string filename)
 {
+    FILE * pFile = fopen(filename.c_str(), "w");
+    rapidjson::Document d;
+    d.SetObject();
+
+    this->write(d, d);
     
+    rapidjson::FileStream f(pFile);
+    rapidjson::Writer<rapidjson::FileStream> writer(f);
+    d.Accept(writer);
+    
+    fclose(pFile);
+}
+
+void diagnosis_phase_detector::write(rapidjson::Value& json,
+                                     rapidjson::Document& d)
+{
+    // noop
 }
 
 void diagnosis_phase_detector::train(vector<Mat>& src, vector<phase>& labels)
@@ -230,22 +466,17 @@ histogram_based_dpd::histogram_based_dpd()
     this->max_samples = 20;
 }
 
-void histogram_based_dpd::read(string filename)
+void histogram_based_dpd::read(const rapidjson::Value& json)
 {
-    FILE * pFile = fopen (filename.c_str(), "r");
-    rapidjson::FileStream is(pFile);
-    rapidjson::Document d;
-    d.ParseStream<0>(is);
-
-    if ( !d.HasMember("type") || !d["type"].IsString() ||
-         strcmp(d["type"].GetString(), "histogram_based") != 0 ||
-         !d.HasMember("config") || !d["config"].IsObject()
+    if ( !json.HasMember("type") || !json["type"].IsString() ||
+         strcmp(json["type"].GetString(), "histogram_based") != 0 ||
+         !json.HasMember("config") || !json["config"].IsObject()
        )
     {
         return;
     }
 
-    const rapidjson::Value& config = d["config"];
+    const rapidjson::Value& config = json["config"];
 
     if ( config.HasMember("max_error") && config["max_error"].IsDouble() ){
         this->max_error = (float)config["max_error"].GetDouble();
@@ -306,17 +537,11 @@ void histogram_based_dpd::read(string filename)
             this->index_threshold.push_back((float)next.GetDouble());
         }
     }
-    
-    fclose(pFile);
 }
 
-void histogram_based_dpd::write(string filename)
+void histogram_based_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
-    FILE * pFile = fopen(filename.c_str(), "w");
-    rapidjson::Document d;
-    d.SetObject();
-
-    d.AddMember("type", "histogram_based", d.GetAllocator());
+    json.AddMember("type", "histogram_based", d.GetAllocator());
 
     rapidjson::Value config(rapidjson::kObjectType);
 
@@ -346,15 +571,9 @@ void histogram_based_dpd::write(string filename)
     config.AddMember("reliability", rel_json, d.GetAllocator());
     config.AddMember("threshold", thrs_json, d.GetAllocator());
     
-    d.AddMember("config", config, d.GetAllocator());
-    
-    rapidjson::FileStream f(pFile);
-    rapidjson::Writer<rapidjson::FileStream> writer(f);
-    d.Accept(writer);
-
-    fclose(pFile);
+    json.AddMember("config", config, d.GetAllocator());
 }
-    
+   
 void histogram_based_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 {
     vector< vector<float> > hists;
@@ -760,12 +979,12 @@ knn_dpd::knn_dpd()
     this->k = 5;
 }
 
-void knn_dpd::read(string filename)
+void knn_dpd::read(const rapidjson::Value& json)
 {
     //TODO
 }
 
-void knn_dpd::write(string filename)
+void knn_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
@@ -861,16 +1080,15 @@ w_dpd::w_dpd(diagnosis_phase_detector* d, int w)
     this->w = w;
 }
 
-void w_dpd::read(string filename)
+void w_dpd::read(const rapidjson::Value& json)
 {
     //TODO
 }
 
-void w_dpd::write(string filename)
+void w_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
-
 void w_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
     //TODO
@@ -977,12 +1195,6 @@ bool context_rule::is_before_rule() const
     return this->seen_before;
 }
 
-bool operator<(context_rule const& a, context_rule const& b)
-{
-    return a.get_pre() < b.get_pre() ||
-           (a.get_pre() == b.get_pre() && a.get_post() < b.get_post() );
-}
-
 context_dpd::context_dpd()
 {
     this->underlying_detector = 0;
@@ -1003,19 +1215,19 @@ context_dpd::context_dpd(diagnosis_phase_detector* d)
                                      diagnosis_hinselmann, false) );
 }
 
-void context_dpd::read(string filename)
+void context_dpd::read(const rapidjson::Value& json)
 {
     //TODO
 }
 
-void context_dpd::write(string filename)
+void context_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
 
 void context_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    
+    // noop
 }
 
 float context_dpd::eval(vector<Mat>& src, vector<phase>& labels)
@@ -1081,12 +1293,12 @@ unknown_removal_dpd::unknown_removal_dpd(diagnosis_phase_detector* d)
     this->underlying_detector = d;
 }
 
-void unknown_removal_dpd::read(string filename)
+void unknown_removal_dpd::read(const rapidjson::Value& json)
 {
     //TODO
 }
 
-void unknown_removal_dpd::write(string filename)
+void unknown_removal_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
