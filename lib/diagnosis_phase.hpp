@@ -65,9 +65,9 @@ class hue_histogram_fe : public feature_extractor {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
 };
 
-class distance {
+class v_distance {
     public:
-        distance();
+        v_distance();
         virtual float d(vector<float>& a, vector<float>& b);
 
         virtual void read(string filename);
@@ -76,7 +76,7 @@ class distance {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
 };
 
-class lk_distance : public distance {
+class lk_distance : public v_distance {
     protected:
         int k;
         float k_inv;
@@ -90,9 +90,26 @@ class lk_distance : public distance {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
 };
 
+class manhattan_distance : public lk_distance {
+    public:
+        manhattan_distance();
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
 class euclidean_distance : public lk_distance {
     public:
         euclidean_distance();
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class hi_distance : public v_distance {
+    public:
+        hi_distance();
+        virtual float d(vector<float>& a, vector<float>& b);
 
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
@@ -143,9 +160,12 @@ class histogram_based_dpd : public diagnosis_phase_detector {
         float max_error;
         int bindw;
         int max_samples;
+        feature_extractor* extractor;
+        v_distance* dist;
     
     public:
         histogram_based_dpd();
+        ~histogram_based_dpd();
         
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
@@ -155,10 +175,8 @@ class histogram_based_dpd : public diagnosis_phase_detector {
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
     
     protected:
-        void get_histogram(Mat& a, vector<float>& h);
         float distance(Mat& a, Mat& b);
-        float distance(vector<float>& ha, vector<float>& hb);
-
+        
         virtual float eval(vector< vector<float> >& src, vector<phase>& labels);
         virtual void detect(vector< vector<float> >& src, vector<phase>& dst);
         

@@ -129,33 +129,33 @@ void hue_histogram_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 }
 
 
-distance::distance()
+v_distance::v_distance()
 {
     // noop
 }
 
 
-void distance::read(string filename)
+void v_distance::read(string filename)
 {
     //TODO
 }
 
-void distance::read(const rapidjson::Value& json)
+void v_distance::read(const rapidjson::Value& json)
 {
     //TODO
 }
 
-void distance::write(string filename)
+void v_distance::write(string filename)
 {
     //TODO
 }
 
-void distance::write(rapidjson::Value& json, rapidjson::Document& d)
+void v_distance::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
 
-float distance::d(vector<float>& a, vector<float>& b)
+float v_distance::d(vector<float>& a, vector<float>& b)
 {
     return 0.0;
 }
@@ -193,6 +193,23 @@ void lk_distance::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+manhattan_distance::manhattan_distance()
+{
+    this->k = 1;
+    this->k_inv = 1.0;
+}
+
+void manhattan_distance::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+
+void manhattan_distance::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
 euclidean_distance::euclidean_distance()
 {
     this->k = 2;
@@ -206,6 +223,34 @@ void euclidean_distance::read(const rapidjson::Value& json)
 
 
 void euclidean_distance::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+hi_distance::hi_distance()
+{
+    // noop
+}
+
+float hi_distance::d(vector<float>& a, vector<float>& b)
+{
+    float ret = 0.0;
+    float total = 0.0;
+
+    for ( uint i = 0; i < a.size(); i++ ){
+        ret += min(a[i], b[i]);
+        total += max(a[i], b[i]);
+    }
+
+    return 1.0 - ret / total;
+}
+
+void hi_distance::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void hi_distance::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
@@ -464,6 +509,19 @@ histogram_based_dpd::histogram_based_dpd()
     this->max_error = 0.01;
     this->bindw = 5;
     this->max_samples = 20;
+    this->extractor = new hue_histogram_fe();
+    this->dist = new hi_distance();
+}
+
+histogram_based_dpd::~histogram_based_dpd()
+{
+    if ( this->extractor != 0 ){
+        delete this->extractor;
+    }
+
+    if ( this->dist != 0 ){
+        delete this->dist;
+    }
 }
 
 void histogram_based_dpd::read(const rapidjson::Value& json)
@@ -588,67 +646,17 @@ float histogram_based_dpd::eval(vector<Mat>& src, vector<phase>& labels)
     return this->eval(hists, labels);
 }
 
-void histogram_based_dpd::get_histogram(Mat& a, vector<float>& h)
-{
-    Mat aux;
-    float max_vh = 0, max_vs;
-    vector<Mat> hsv_planes;
-    vector<float> hue, sat;
-    
-    cvtColor(a, aux, CV_BGR2HSV);
-    split( aux, hsv_planes );
-    
-    hue.resize( 256 / this->bindw );
-    fill(hue.begin(), hue.end(), 0.0);
-
-    sat.resize( 256 / this->bindw );
-    fill(sat.begin(), sat.end(), 0.0);
-    
-    for ( int r = 0; r < a.rows; r++ ){
-        for ( int c = 0; c < a.cols; c++ ){
-            int bh = hsv_planes[0].at<uchar>(r, c) / this->bindw;
-            hue[bh] += 1.0;
-            max_vh = max(max_vh, hue[bh]);
-
-            int bs = hsv_planes[1].at<uchar>(r, c) / this->bindw;
-            sat[bs] += 1.0;
-            max_vs = max(max_vs, sat[bs]);
-        }
-    }
-    
-    for ( uint i = 0; i < hue.size(); i++ ){
-        hue[i] /= max_vh;
-        sat[i] /= max_vs;
-    }
-    
-    h.clear();
-    h.reserve( hue.size() + sat.size() );
-    h.insert( h.end(), hue.begin(), hue.end() );
-    //h.insert( h.end(), sat.begin(), sat.end() );
-}
-
 float histogram_based_dpd::distance(Mat& a, Mat& b)
 {
     vector<float> ha, hb;
-
-    this->get_histogram(a, ha);
-    this->get_histogram(b, hb);
+    vector<Mat> va, vb;
+    va.push_back(a);
+    vb.push_back(b);
     
-    return this->distance(ha, hb);
-}
-
-float histogram_based_dpd::distance(vector<float>& ha,
-                                    vector<float>& hb)
-{
-    float ret = 0.0;
-    float total = 0.0;
+    this->extractor->extract(va, 0, ha);
+    this->extractor->extract(vb, 0, hb);
     
-    for ( uint i = 0; i < ha.size(); i++ ){
-        ret += min(ha[i], hb[i]);
-        total += max(ha[i], hb[i]);
-    }
-
-    return 1.0 - ret / total;
+    return this->dist->d(ha, hb);
 }
 
 float histogram_based_dpd::compute_threshold(vector<Mat>& src,
@@ -667,7 +675,7 @@ float histogram_based_dpd::compute_threshold(vector<Mat>& src,
     }
     
     for ( uint i = 0; i < n; i++ ){
-        q.push_back( make_pair(this->distance(h[index], h[i]), i) );
+        q.push_back( make_pair(this->dist->d(h[index], h[i]), i) );
     }
     sort(q.begin(), q.end());
     
@@ -719,7 +727,7 @@ void histogram_based_dpd::compute_reliability(vector<Mat>& src,
     for ( uint index=0; index<n; index++ ){
         for ( uint i=0; i<n; i++ ){
             phase predicted = diagnosis_unknown;
-            if ( this->distance(h[index], h[i]) <= threshold[index] ){
+            if ( this->dist->d(h[index], h[i]) <= threshold[index] ){
                 predicted = labels[index];
             }
             
@@ -791,7 +799,8 @@ void histogram_based_dpd::detect(vector< vector<float> >& src,
         
         bool has = false;
         for ( uint k = 0; k < this->index_histogram.size(); k++ ){
-            float next_distance = distance(this->index_histogram[k], src[i]);
+            float next_distance = this->dist->d(this->index_histogram[k],
+                                                src[i]);
             if ( next_distance <= this->index_threshold[k] ){
                 r[this->index_phase[k]] += this->index_reliability[k];
                 has = true;
@@ -856,7 +865,7 @@ void histogram_based_dpd::compute_histograms(vector<Mat>& src,
     uint n = src.size();
     for ( uint i = 0; i < n; i++ ){
         vector<float> next_h;
-        this->get_histogram(src[i], next_h);
+        this->extractor->extract(src,i, next_h);
         h.push_back(next_h);
     }
 }
@@ -1041,7 +1050,8 @@ void knn_dpd::detect(vector< vector<float> >& src, vector<phase>& dst)
         r[diagnosis_transition] = 0;
         
         for ( uint j = 0; j < this->index_histogram.size(); j++ ){
-            float next_distance = distance(this->index_histogram[j], src[i]);
+            float next_distance = this->dist->d(this->index_histogram[j],
+                                                src[i]);
             q.push( make_pair(-next_distance, this->index_phase[j]) );
         }
 
