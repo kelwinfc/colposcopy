@@ -21,6 +21,8 @@
 #include <set>
 
 #include "utils.hpp"
+#include "diagnosis_phase_feature_extractor.hpp"
+#include "diagnosis_phase_distance.hpp"
 
 #define HBDP_HISTOGRAM vector<float>
 #define HBDP_SAMPLE HBDP_HISTOGRAM
@@ -29,91 +31,6 @@ using namespace std;
 using namespace cv;
 
 namespace colposcopy {
-
-class feature_extractor {
-    public:
-        feature_extractor();
-        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
-        
-        virtual void read(string filename);
-        virtual void write(string filename);
-        
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class identity_fe : public feature_extractor {
-    public:
-        identity_fe();
-        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
-        
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class hue_histogram_fe : public feature_extractor {
-    protected:
-        int bindw;
-        bool normalize;
-    
-    public:
-        hue_histogram_fe();
-        hue_histogram_fe(int bindw, bool normalize);
-        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
-        
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class v_distance {
-    public:
-        v_distance();
-        virtual float d(vector<float>& a, vector<float>& b);
-
-        virtual void read(string filename);
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(string filename);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class lk_distance : public v_distance {
-    protected:
-        int k;
-        float k_inv;
-    
-    public:
-        lk_distance();
-        lk_distance(int k);
-        virtual float d(vector<float>& a, vector<float>& b);
-
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class manhattan_distance : public lk_distance {
-    public:
-        manhattan_distance();
-        
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class euclidean_distance : public lk_distance {
-    public:
-        euclidean_distance();
-
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
-class hi_distance : public v_distance {
-    public:
-        hi_distance();
-        virtual float d(vector<float>& a, vector<float>& b);
-
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
 
 class diagnosis_phase_detector {
     private:

@@ -3,15 +3,18 @@ LBOOST_FLAGS=-lboost_system -lboost_filesystem
 GCC_FLAGS= `pkg-config opencv --cflags` -Ilib -Icontrib $(LBOOST_FLAGS) -Wall -O3
 MAIN_FLAGS= `pkg-config opencv --cflags --libs` $(LBOOST_FLAGS) -Ilib -Icontrib -Wall -O3
 
-FILES=utils specular_reflection diagnosis_phase
+FILES=utils\
+	specular_reflection\
+	diagnosis_phase diagnosis_phase_feature_extractor diagnosis_phase_distance
 EXECUTABLES=test_specular_reflection test_diagnosis_phase
 
 DEP_utils=
 DEP_specular_reflection=utils
-DEP_diagnosis_phase=utils specular_reflection
+DEP_diagnosis_phase_feature_extractor=utils
+DEP_diagnosis_phase_distance=utils
+DEP_diagnosis_phase=utils diagnosis_phase_feature_extractor specular_reflection
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
-
 all: $(EXECUTABLES)
 
 test_specular_reflection: $(FILES:%=bin/%.o) bin/test_specular_reflection.o
@@ -26,6 +29,8 @@ bin/%.o: src/%.cpp lib/%.hpp
 
 bin/utils.o: $(DEP_utils:%=src/%.cpp) $(DEP_utils:%=lib/%.hpp)
 bin/specular_reflection.o: $(DEP_specular_reflection:%=src/%.cpp) $(DEP_specular_reflection:%=lib/%.hpp)
+bin/diagnosis_phase_feature_extractor.o: $(DEP_diagnosis_phase_feature_extractor:%=src/%.cpp) $(DEP_diagnosis_phase_feature_extractor:%=lib/%.hpp)
+bin/diagnosis_phase_distance.o: $(DEP_diagnosis_phase_distance:%=src/%.cpp) $(DEP_diagnosis_phase_distance:%=lib/%.hpp)
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
 
 bin/test_specular_reflection.o: $(DEP_test_specular_reflection:%=src/%.cpp) $(DEP_test_specular_reflection:%=lib/%.hpp)
