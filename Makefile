@@ -15,13 +15,14 @@ DEP_diagnosis_phase_distance=utils
 DEP_diagnosis_phase=utils diagnosis_phase_feature_extractor specular_reflection
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
+
 all: $(EXECUTABLES)
 
-test_specular_reflection: $(FILES:%=bin/%.o) bin/test_specular_reflection.o
-	$(GCC) $^ -o $@ $(MAIN_FLAGS)
+test_specular_reflection: $(FILES:%=bin/%.o)
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
 
-test_diagnosis_phase: $(FILES:%=bin/%.o) bin/test_diagnosis_phase.o
-	$(GCC) $^ -o $@ $(MAIN_FLAGS)
+test_diagnosis_phase: $(FILES:%=bin/%.o)
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
 
 #General rule for compiling
 bin/%.o: src/%.cpp lib/%.hpp
@@ -33,11 +34,11 @@ bin/diagnosis_phase_feature_extractor.o: $(DEP_diagnosis_phase_feature_extractor
 bin/diagnosis_phase_distance.o: $(DEP_diagnosis_phase_distance:%=src/%.cpp) $(DEP_diagnosis_phase_distance:%=lib/%.hpp)
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
 
-bin/test_specular_reflection.o: $(DEP_test_specular_reflection:%=src/%.cpp) $(DEP_test_specular_reflection:%=lib/%.hpp)
-bin/test_diagnosis_phase.o: $(DEP_test_diagnosis_phase:%=src/%.cpp) $(DEP_test_diagnosis_phase:%=lib/%.hpp)
-
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o
 
 count_lines:
 	wc -l src/*.cpp src/*.py lib/*.hpp other/*.py other/*.cpp | sort -gk 1
+
+update_ignore:
+	(cat -v .gitignore.base; echo $(EXECUTABLES)) > .gitignore;
