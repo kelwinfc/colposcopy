@@ -5,18 +5,21 @@ MAIN_FLAGS= `pkg-config opencv --cflags --libs` $(LBOOST_FLAGS) -Ilib -Icontrib 
 
 FILES=utils\
 	specular_reflection\
-	neighbors\
-	diagnosis_phase feature_extractor distance
-EXECUTABLES=test_specular_reflection test_diagnosis_phase
+	feature_extractor distance classifier\
+	diagnosis_phase
+
+EXECUTABLES=test_specular_reflection test_diagnosis_phase test_neighbors
 
 DEP_utils=
 DEP_specular_reflection=utils
 DEP_feature_extractor=utils
 DEP_distance=utils
-DEP_diagnosis_phase=utils feature_extractor specular_reflection
+DEP_classifier=utils feature_extractor
+DEP_diagnosis_phase=utils feature_extractor distance classifier specular_reflection
+
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
-DEP_neighbors=utils feature_extractor
+DEP_test_neighbors=$(DEP_neighbors)
 
 all: $(EXECUTABLES)
 
@@ -24,6 +27,9 @@ test_specular_reflection: $(FILES:%=bin/%.o)
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
 
 test_diagnosis_phase: $(FILES:%=bin/%.o)
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
+
+test_neighbors: $(FILES:%=bin/%.o)
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
 
 #General rule for compiling
@@ -35,7 +41,7 @@ bin/specular_reflection.o: $(DEP_specular_reflection:%=src/%.cpp) $(DEP_specular
 bin/feature_extractor.o: $(DEP_feature_extractor:%=src/%.cpp) $(DEP_feature_extractor:%=lib/%.hpp)
 bin/distance.o: $(DEP_distance:%=src/%.cpp) $(DEP_distance:%=lib/%.hpp)
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
-bin/neighbors.o: $(DEP_neighbors:%=src/%.cpp) $(DEP_neighbors:%=lib/%.hpp)
+bin/classifier.o: $(DEP_classifier:%=src/%.cpp) $(DEP_classifier:%=lib/%.hpp)
 
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o

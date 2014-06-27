@@ -251,28 +251,19 @@ void diagnosis_phase_detector::visualize(vector<Mat>& src,
  *                 Histogram-Based Diagnosis Phase Detector                  *
  *****************************************************************************/
 
-histogram_based_dpd::histogram_based_dpd()
+classifier_dpd::classifier_dpd()
 {
-    this->max_error = 0.01;
-    this->bindw = 5;
-    this->max_samples = 20;
-    this->extractor = new hue_histogram_fe();
-    this->dist = new hi_distance();
+    
 }
 
-histogram_based_dpd::~histogram_based_dpd()
+classifier_dpd::~classifier_dpd()
 {
-    if ( this->extractor != 0 ){
-        delete this->extractor;
-    }
-
-    if ( this->dist != 0 ){
-        delete this->dist;
-    }
+    
 }
 
-void histogram_based_dpd::read(const rapidjson::Value& json)
+void classifier_dpd::read(const rapidjson::Value& json)
 {
+    /*
     if ( !json.HasMember("type") || !json["type"].IsString() ||
          strcmp(json["type"].GetString(), "histogram_based") != 0 ||
          !json.HasMember("config") || !json["config"].IsObject()
@@ -342,10 +333,12 @@ void histogram_based_dpd::read(const rapidjson::Value& json)
             this->index_threshold.push_back((float)next.GetDouble());
         }
     }
+    */
 }
 
-void histogram_based_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
+void classifier_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
+    /*
     json.AddMember("type", "histogram_based", d.GetAllocator());
 
     rapidjson::Value config(rapidjson::kObjectType);
@@ -377,359 +370,40 @@ void histogram_based_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
     config.AddMember("threshold", thrs_json, d.GetAllocator());
     
     json.AddMember("config", config, d.GetAllocator());
+    */
 }
    
-void histogram_based_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+void classifier_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 {
-    vector< vector<float> > hists;
-    this->compute_histograms(src, hists);
-    this->detect(hists, dst);
-}
+    vector<int> aux;
+    this->c->detect(src, aux);
 
-float histogram_based_dpd::eval(vector<Mat>& src, vector<phase>& labels)
-{
-    vector< vector<float> > hists;
-    this->compute_histograms(src, hists);
-    return this->eval(hists, labels);
-}
-
-float histogram_based_dpd::distance(Mat& a, Mat& b)
-{
-    vector<float> ha, hb;
-    vector<Mat> va, vb;
-    va.push_back(a);
-    vb.push_back(b);
+    dst.resize(aux.size());
     
-    this->extractor->extract(va, 0, ha);
-    this->extractor->extract(vb, 0, hb);
-    
-    return this->dist->d(ha, hb);
-}
-
-float histogram_based_dpd::compute_threshold(vector<Mat>& src,
-                                             vector<phase>& labels,
-                                             vector< vector<float> >& h,
-                                             int index)
-{
-    vector< pair<float, int> > q;
-    uint n = labels.size();
-    uint misclassified = 0;
-    
-    for ( uint i = 0; i < n; i++ ){
-        if ( labels[i] != diagnosis_unknown ){
-            misclassified++;
-        }
-    }
-    
-    for ( uint i = 0; i < n; i++ ){
-        q.push_back( make_pair(this->dist->d(h[index], h[i]), i) );
-    }
-    sort(q.begin(), q.end());
-    
-    int best_threshold = 0;
-    float min_error = (float)misclassified / (float)n;
-    
-    for ( uint i = 0; i < n; i++ ){
-        if ( labels[q[i].second] != labels[index] ){
-            misclassified++;
+    for ( size_t i = 0; i < aux.size(); i++ ){
+        if ( aux[i] == UNKNOWN ){
+            dst[i] = diagnosis_unknown;
         } else {
-            misclassified--;
-        }
-
-        float next_error = (float)misclassified / (float)n;
-        if ( next_error < min_error ){
-            best_threshold = i;
-            min_error = next_error;
-        }
-    }
-    
-    return q[best_threshold].first;
-}
-
-void histogram_based_dpd::compute_thresholds(vector<Mat>& src,
-                                             vector<phase>& labels,
-                                             vector< vector<float> >& h,
-                                             vector<float>& threshold)
-{
-    uint n = labels.size();
-    
-    threshold.resize(n);
-    for ( uint i = 0; i < n; i++ ){
-        threshold[i] = this->compute_threshold(src, labels, h, i);
-    }
-}
-
-void histogram_based_dpd::compute_reliability(vector<Mat>& src,
-                                              vector<phase>& labels,
-                                              vector< vector<float> >& h,
-                                              vector<float>& threshold,
-                                              vector<float>& reliability)
-{
-    int t=0,f=0;
-    uint n = labels.size();
-
-    reliability.resize(n);
-    fill(reliability.begin(), reliability.end(), 0.0);
-    
-    for ( uint index=0; index<n; index++ ){
-        for ( uint i=0; i<n; i++ ){
-            phase predicted = diagnosis_unknown;
-            if ( this->dist->d(h[index], h[i]) <= threshold[index] ){
-                predicted = labels[index];
-            }
-            
-            if ( predicted == labels[i] ){
-                t++;
-            } else {
-                f++;
-            }
-        }
-
-        reliability[index] = ((float)t) / ((float)(t + f));
-    }
-}
-
-void histogram_based_dpd::add_to_index(vector<float>& hist,
-                                       phase label,
-                                       float threshold,
-                                       float reliability)
-{
-    this->index_histogram.push_back(hist);
-    this->index_phase.push_back(label);
-    this->index_threshold.push_back(threshold);
-    this->index_reliability.push_back(reliability);
-}
-
-void histogram_based_dpd::remove_last()
-{
-    this->index_histogram.pop_back();
-    this->index_phase.pop_back();
-    this->index_threshold.pop_back();
-    this->index_reliability.pop_back();
-}
-
-float histogram_based_dpd::eval(vector< vector<float> >& src,
-                                vector<phase>& labels)
-{
-    int n = labels.size();
-    uint f = 0;
-
-    if ( n == 0 ){
-        return 0.0;
-    }
-
-    vector<phase> output;
-    this->detect(src, output);
-
-    for ( int i = 0; i < n; i++ ){
-        if ( output[i] != labels[i] ){
-            f++;
-        }
-    }
-
-    return ((float)f) / labels.size();
-}
-
-void histogram_based_dpd::detect(vector< vector<float> >& src,
-                                 vector<phase>& dst)
-{
-    uint n = src.size();
-    for ( uint i = 0; i < n; i++ ){
-        
-        map<phase, float> r;
-        
-        r[diagnosis_plain] = 0.0;
-        r[diagnosis_green] = 0.0;
-        r[diagnosis_hinselmann] = 0.0;
-        r[diagnosis_schiller] = 0.0;
-        r[diagnosis_transition] = 0.0;
-        
-        bool has = false;
-        for ( uint k = 0; k < this->index_histogram.size(); k++ ){
-            float next_distance = this->dist->d(this->index_histogram[k],
-                                                src[i]);
-            if ( next_distance <= this->index_threshold[k] ){
-                r[this->index_phase[k]] += this->index_reliability[k];
-                has = true;
-            }
-        }
-        
-        if ( has ){
-            phase best_phase = diagnosis_unknown;
-            float best_r = 0.0;
-            map<phase, float>::iterator it;
-            for ( it = r.begin(); it != r.end(); ++it ){
-                if ( it->second > best_r ){
-                    best_phase = it->first;
-                    best_r = it->second;
-                }
-            }
-            dst.push_back(best_phase);
-        } else {
-            dst.push_back(diagnosis_unknown);
+            dst[i] = (phase)aux[i];
         }
     }
 }
 
-pair<int, float> histogram_based_dpd::best_frame(vector<Mat>& src,
-                                                 vector<phase>& labels,
-                                                 vector<bool>& indexed,
-                                                 vector<vector<float> >& hists,
-                                                 vector<float>& threshold,
-                                                 vector<float>& reliability)
+void classifier_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    float min_error = 1.0;
-    int ret = 0;
-    uint n = labels.size();
-
-    for ( uint i = 0; i < n; i++ ){
-
-        if ( indexed[i] ||
-             (labels[i] == diagnosis_unknown &&
-              labels[i] == diagnosis_transition )
-           )
-        {
-            continue;
-        }
-        
-        this->add_to_index(hists[i], labels[i], threshold[i], reliability[i]);
-        float next_error = this->eval(hists, labels);
-        
-        if ( next_error <= min_error ){
-            min_error = next_error;
-            ret = i;
-        }
-
-        this->remove_last();
-    }
-    
-    return make_pair(ret, min_error);
+    //TODO
 }
 
-void histogram_based_dpd::compute_histograms(vector<Mat>& src,
-                                             vector<vector<float> >& h)
+float classifier_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 {
-    uint n = src.size();
-    for ( uint i = 0; i < n; i++ ){
-        vector<float> next_h;
-        this->extractor->extract(src,i, next_h);
-        h.push_back(next_h);
-    }
-}
-
-void histogram_based_dpd::get_target_frames(vector<Mat>& src,
-                                            vector<phase>& labels,
-                                            vector<Mat>& src_train,
-                                            vector<phase>& labels_train)
-{
-    src_train.clear();
-    labels_train.clear();
-    uint n = src.size();
-
-    for ( uint i = 0; i < n; i++ ){
-        if ( labels[i] != diagnosis_unknown &&
-             labels[i] != diagnosis_transition
-           )
-        {
-            src_train.push_back(src[i]);
-            labels_train.push_back(labels[i]);
-        }
-    }
-}
-
-void histogram_based_dpd::train(vector<Mat>& src, vector<phase>& labels)
-{
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Training\n";
-    #endif
-    
-    vector<Mat> src_train;
-    vector<phase> labels_train;
-
-    this->get_target_frames(src, labels, src_train, labels_train);
-    
-    vector<bool> indexed;
-    vector<float> threshold, reliability;
-    vector< vector<float> > hists;
-    
-    int n = labels_train.size();
-    float current_error = 1.0;
-    float previous_error = -1.0;
-    
-    indexed.resize(n);
-    fill(indexed.begin(), indexed.end(), false);
-    
-    this->compute_histograms(src_train, hists);
-
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Histograms computed\n";
-    #endif
-    
-    this->compute_thresholds(src_train, labels_train, hists, threshold);
-
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Thresholds computed\n";
-    #endif
-    
-    this->compute_reliability(src_train, labels_train, hists,
-                              threshold, reliability);
-
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Reliability computed\n";
-        if ( system("rm results/phase_index/*.jpg") ){
-            fprintf(stderr,
-                    "Error: unable to rm  results/phase_index/*.jpg\n");
-        }
-    #endif
-    
-    while ( current_error > this->max_error &&
-            this->index_histogram.size() < src_train.size() && 
-            ( previous_error < 0.0 || previous_error > current_error ) &&
-            (this->max_samples < 0 || (int)this->index_histogram.size() <
-                                           this->max_samples)
-          )
-    {
-        previous_error = current_error;
-        
-        pair<int, float> best = this->best_frame(src_train, labels_train,
-                                                 indexed, hists, threshold,
-                                                 reliability);
-
-        if ( best.second < 0 ){
-            break;
-        }
-        
-        this->add_to_index(hists[best.first], labels_train[best.first],
-                           threshold[best.first], reliability[best.first]);
-        indexed[best.first] = true;
-        current_error = best.second;
-
-        #if __COLPOSCOPY_VERBOSE
-            printf("Include (class %d) %s: %0.4f (total: %d)\n",
-                   labels_train[best.first],
-                   spaced_d(best.first, num_chars(src_train.size())).c_str(),
-                   current_error,
-                   (int)this->index_histogram.size()
-                  );
-
-            stringstream ss;
-            string filename;
-            ss <<  "results/phase_index/"
-               << this->index_histogram.size() << ".jpg";
-            ss >> filename;
-            imwrite(filename, src_train[best.first]);
-        #endif
-    }
-
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Done\n";
-    #endif
+    //TODO
+    return 0.0;
 }
 
 /*****************************************************************************
  *                            KNN Phase Detector                             *
  *****************************************************************************/
-
+/*
 knn_dpd::knn_dpd()
 {
     this->k = 5;
@@ -773,12 +447,12 @@ void knn_dpd::train(vector<Mat>& src, vector<phase>& labels)
 
 float knn_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 {
-    return this->histogram_based_dpd::eval(src, labels);
+    return this->classifier_dpd::eval(src, labels);
 }
 
 void knn_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 {
-    this->histogram_based_dpd::detect(src, dst);
+    this->classifier_dpd::detect(src, dst);
 }
 
 void knn_dpd::detect(vector< vector<float> >& src, vector<phase>& dst)
@@ -819,7 +493,7 @@ void knn_dpd::detect(vector< vector<float> >& src, vector<phase>& dst)
             }
         }
     }
-}
+}*/
 
 /*****************************************************************************
  *                     Windowed Diagnosis Phase Detector                     *

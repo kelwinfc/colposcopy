@@ -1,5 +1,5 @@
-#ifndef __MODELS_NEIGHBORS
-#define __MODELS_NEIGHBORS
+#ifndef __MODELS_CLASSIFIER
+#define __MODELS_CLASSIFIER
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -30,14 +30,32 @@
 typedef int label;
 typedef vector<float> sample;
 
-class neighborhood_based_classifier {
+class classifier {
     protected:
         feature_extractor* extractor;
+
+    public:
+        classifier();
+        ~classifier();
+
+        void set_feature_extractor(feature_extractor* extractor);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        virtual void train(vector<Mat>& src, vector<label>& labels);
+        virtual float eval(vector<Mat>& src, vector<label>& labels);
+        virtual void detect(vector<Mat>& src, vector<label>& dst);
+};
+
+class neighborhood_based_classifier : public classifier {
+    protected:
         v_distance* distance;
 
     public:
         neighborhood_based_classifier();
         ~neighborhood_based_classifier();
+
+        void set_feature_extractor(feature_extractor* extractor);
 
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
@@ -52,7 +70,7 @@ class incremental_nbc : public neighborhood_based_classifier {
         vector<label> index_label;
         vector<float> index_threshold;
         vector<float> index_reliability;
-        
+
         float max_error;
         int bindw;
         int max_samples;

@@ -28,4 +28,4 @@ bin/*.obj
 *.mpeg
 
 *~
-test_specular_reflection test_diagnosis_phase
+test_specular_reflection test_diagnosis_phase test_neighbors

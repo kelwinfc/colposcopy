@@ -20,11 +20,10 @@
 #include <queue>
 #include <set>
 
-#include "neighbors.hpp"
-
 #include "utils.hpp"
 #include "feature_extractor.hpp"
 #include "distance.hpp"
+#include "classifier.hpp"
 
 #define HBDP_HISTOGRAM vector<float>
 #define HBDP_SAMPLE HBDP_HISTOGRAM
@@ -70,21 +69,13 @@ class diagnosis_phase_detector {
                        int rows_by_frame=200, int cols_by_frame=2);
 };
 
-class histogram_based_dpd : public diagnosis_phase_detector {
+class classifier_dpd : public diagnosis_phase_detector {
     protected:
-        vector<HBDP_SAMPLE> index_histogram;
-        vector<phase> index_phase;
-        vector<float> index_threshold;
-        vector<float> index_reliability;
-        float max_error;
-        int bindw;
-        int max_samples;
-        feature_extractor* extractor;
-        v_distance* dist;
+      classifier* c;
     
     public:
-        histogram_based_dpd();
-        ~histogram_based_dpd();
+        classifier_dpd();
+        ~classifier_dpd();
         
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
@@ -92,56 +83,6 @@ class histogram_based_dpd : public diagnosis_phase_detector {
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
-    
-    protected:
-        float distance(Mat& a, Mat& b);
-        
-        virtual float eval(vector< vector<float> >& src, vector<phase>& labels);
-        virtual void detect(vector< vector<float> >& src, vector<phase>& dst);
-        
-        pair<int,float> best_frame(vector<Mat>& src, vector<phase>& labels,
-                                   vector<bool>& indexed,
-                                   vector<vector<float> >& hists,
-                                   vector<float>& threshold,
-                                   vector<float>& reliability);
-        
-        void compute_histograms(vector<Mat>& src, vector< vector<float> >& h);
-        float compute_threshold(vector<Mat>& src, vector<phase>& labels,
-                                vector< vector<float> >& hists, int i);
-        void compute_thresholds(vector<Mat>& src, vector<phase>& labels,
-                                vector<vector<float> >& h,
-                                vector<float>& threshold);
-        void compute_reliability(vector<Mat>& src, vector<phase>& labels,
-                                 vector< vector<float> >& h,
-                                 vector<float>& threshold,
-                                 vector<float>& reliability);
-
-        void add_to_index(vector<float>& hist, phase label, float threshold,
-                          float reliability);
-        void remove_last();
-        
-        void get_target_frames(vector<Mat>& src,
-                               vector<phase>& labels,
-                               vector<Mat>& src_train,
-                               vector<phase>& labels_train);
-};
-
-class knn_dpd : public histogram_based_dpd {
-    protected:
-        int k;
-
-    public:
-        knn_dpd();
-        
-        virtual void read(const rapidjson::Value& json);
-        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-        
-        virtual void train(vector<Mat>& src, vector<phase>& labels);
-        virtual float eval(vector<Mat>& src, vector<phase>& labels);
-        virtual void detect(vector<Mat>& src, vector<phase>& dst);
-
-    protected:
-        virtual void detect(vector< vector<float> >& src, vector<phase>& dst);
 };
 
 class w_dpd : public diagnosis_phase_detector {

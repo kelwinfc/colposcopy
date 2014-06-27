@@ -90,7 +90,7 @@ int main(int argc, const char* argv[])
     get_sequence(argv[0], images, labels, 1);
     
     //knn_dpd hd;
-    histogram_based_dpd hd;
+    classifier_dpd hd;
     
     hd.train(images, labels);
     //hd.write("dp.json");
