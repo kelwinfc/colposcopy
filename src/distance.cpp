@@ -1,6 +1,4 @@
-#include "diagnosis_phase_distance.hpp"
-
-using namespace colposcopy;
+#include "distance.hpp"
 
 v_distance::v_distance()
 {

@@ -1,6 +1,4 @@
-#include "diagnosis_phase_feature_extractor.hpp"
-
-using namespace colposcopy;
+#include "feature_extractor.hpp"
 
 feature_extractor::feature_extractor()
 {
@@ -123,4 +121,3 @@ void hue_histogram_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
-

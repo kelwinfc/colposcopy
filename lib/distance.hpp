@@ -1,5 +1,5 @@
-#ifndef __COLPOSCOPY_DIAGNOSIS_PHASE_DISTANCE
-#define __COLPOSCOPY_DIAGNOSIS_PHASE_DISTANCE
+#ifndef __MODELS_NEIGHBORS_PHASE_DISTANCE
+#define __MODELS_NEIGHBORS_PHASE_DISTANCE
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -24,8 +24,6 @@
 
 using namespace std;
 using namespace cv;
-
-namespace colposcopy {
 
 class v_distance {
     public:
@@ -75,8 +73,6 @@ class hi_distance : public v_distance {
 
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
 };
 
 #endif

@@ -5,16 +5,18 @@ MAIN_FLAGS= `pkg-config opencv --cflags --libs` $(LBOOST_FLAGS) -Ilib -Icontrib 
 
 FILES=utils\
 	specular_reflection\
-	diagnosis_phase diagnosis_phase_feature_extractor diagnosis_phase_distance
+	neighbors\
+	diagnosis_phase feature_extractor distance
 EXECUTABLES=test_specular_reflection test_diagnosis_phase
 
 DEP_utils=
 DEP_specular_reflection=utils
-DEP_diagnosis_phase_feature_extractor=utils
-DEP_diagnosis_phase_distance=utils
-DEP_diagnosis_phase=utils diagnosis_phase_feature_extractor specular_reflection
+DEP_feature_extractor=utils
+DEP_distance=utils
+DEP_diagnosis_phase=utils feature_extractor specular_reflection
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
+DEP_neighbors=utils feature_extractor
 
 all: $(EXECUTABLES)
 
@@ -30,9 +32,10 @@ bin/%.o: src/%.cpp lib/%.hpp
 
 bin/utils.o: $(DEP_utils:%=src/%.cpp) $(DEP_utils:%=lib/%.hpp)
 bin/specular_reflection.o: $(DEP_specular_reflection:%=src/%.cpp) $(DEP_specular_reflection:%=lib/%.hpp)
-bin/diagnosis_phase_feature_extractor.o: $(DEP_diagnosis_phase_feature_extractor:%=src/%.cpp) $(DEP_diagnosis_phase_feature_extractor:%=lib/%.hpp)
-bin/diagnosis_phase_distance.o: $(DEP_diagnosis_phase_distance:%=src/%.cpp) $(DEP_diagnosis_phase_distance:%=lib/%.hpp)
+bin/feature_extractor.o: $(DEP_feature_extractor:%=src/%.cpp) $(DEP_feature_extractor:%=lib/%.hpp)
+bin/distance.o: $(DEP_distance:%=src/%.cpp) $(DEP_distance:%=lib/%.hpp)
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
+bin/neighbors.o: $(DEP_neighbors:%=src/%.cpp) $(DEP_neighbors:%=lib/%.hpp)
 
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o

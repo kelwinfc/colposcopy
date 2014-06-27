@@ -20,9 +20,11 @@
 #include <queue>
 #include <set>
 
+#include "neighbors.hpp"
+
 #include "utils.hpp"
-#include "diagnosis_phase_feature_extractor.hpp"
-#include "diagnosis_phase_distance.hpp"
+#include "feature_extractor.hpp"
+#include "distance.hpp"
 
 #define HBDP_HISTOGRAM vector<float>
 #define HBDP_SAMPLE HBDP_HISTOGRAM

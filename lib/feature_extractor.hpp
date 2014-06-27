@@ -1,5 +1,5 @@
-#ifndef __COLPOSCOPY_DIAGNOSIS_PHASE_FEATURE_EXTRACTOR
-#define __COLPOSCOPY_DIAGNOSIS_PHASE_FEATURE_EXTRACTOR
+#ifndef __MODELS_NEIGHBORS_FEATURE_EXTRACTOR
+#define __MODELS_NEIGHBORS_FEATURE_EXTRACTOR
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -24,8 +24,6 @@
 
 using namespace std;
 using namespace cv;
-
-namespace colposcopy {
 
 class feature_extractor {
     public:
@@ -60,8 +58,6 @@ class hue_histogram_fe : public feature_extractor {
 
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
-};
-
 };
 
 #endif
