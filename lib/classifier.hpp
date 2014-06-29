@@ -79,7 +79,8 @@ class incremental_nbc : public neighborhood_based_classifier {
 
         float max_error;
         int max_samples;
-
+        float min_convergence;
+    
     public:
         incremental_nbc();
         

@@ -582,10 +582,10 @@ void instance::read(std::string filename)
     rapidjson::FileStream is(pFile);
     rapidjson::Document document;
     document.ParseStream<0>(is);
-
+    
     this->sequence_filename =
         rapidjson_get_string(document, "sequence_filename");
-
+    
     this->video_filename =
         rapidjson_get_string(document, "video_filename");
     

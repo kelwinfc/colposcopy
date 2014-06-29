@@ -122,9 +122,10 @@ void neighborhood_based_classifier::set_distance(v_distance* d)
 incremental_nbc::incremental_nbc()
 {
     this->max_error = 0.01;
-    this->max_samples = -1;
+    this->max_samples = 15;
     this->extractor = 0;
     this->distance = 0;
+    this->min_convergence = 0.005;
 }
 
 void incremental_nbc::read(const rapidjson::Value& json)
@@ -139,9 +140,9 @@ void incremental_nbc::write(rapidjson::Value& json, rapidjson::Document& d)
 
 float incremental_nbc::eval(vector<Mat>& src, vector<label>& labels)
 {
-    vector< vector<float> > hists;
-    this->extract_features(src, hists);
-    return this->eval(hists, labels);
+    vector< vector<float> > features;
+    this->extract_features(src, features);
+    return this->eval(features, labels);
 }
 
 void incremental_nbc::detect(vector<Mat>& src, vector<label>& dst)
@@ -247,12 +248,12 @@ void incremental_nbc::compute_reliability(vector<Mat>& src,
     }
 }
 
-void incremental_nbc::add_to_index(vector<float>& hist,
+void incremental_nbc::add_to_index(vector<float>& features,
                                    label label,
                                    float threshold,
                                    float reliability)
 {
-    this->index_features.push_back(hist);
+    this->index_features.push_back(features);
     this->index_label.push_back(label);
     this->index_threshold.push_back(threshold);
     this->index_reliability.push_back(reliability);
@@ -332,7 +333,7 @@ void incremental_nbc::detect(vector< vector<float> >& src,
 pair<int, float> incremental_nbc::best_frame(vector<Mat>& src,
                                              vector<label>& labels,
                                              vector<bool>& indexed,
-                                             vector<vector<float> >& hists,
+                                             vector<vector<float> >& features,
                                              vector<float>& threshold,
                                              vector<float>& reliability)
 {
@@ -347,8 +348,9 @@ pair<int, float> incremental_nbc::best_frame(vector<Mat>& src,
             continue;
         }
 
-        this->add_to_index(hists[i], labels[i], threshold[i], reliability[i]);
-        float next_error = this->eval(hists, labels);
+        this->add_to_index(features[i], labels[i], threshold[i],
+                           reliability[i]);
+        float next_error = this->eval(features, labels);
 
         if ( next_error <= min_error ){
             min_error = next_error;
@@ -390,20 +392,22 @@ void incremental_nbc::get_target_frames(vector<Mat>& src,
     }
 }
 
+static int training_fold = 0;
+
 void incremental_nbc::train(vector<Mat>& src, vector<label>& labels)
 {
     #if __COLPOSCOPY_VERBOSE
         cout << "Training\n";
     #endif
-
+    
     vector<Mat> src_train;
     vector<label> labels_train;
-
+    
     this->get_target_frames(src, labels, src_train, labels_train);
-
+    
     vector<bool> indexed;
     vector<float> threshold, reliability;
-    vector< vector<float> > hists;
+    vector< vector<float> > features;
 
     int n = labels_train.size();
     float current_error = 1.0;
@@ -412,32 +416,32 @@ void incremental_nbc::train(vector<Mat>& src, vector<label>& labels)
     indexed.resize(n);
     fill(indexed.begin(), indexed.end(), false);
 
-    this->extract_features(src_train, hists);
+    this->extract_features(src_train, features);
 
     #if __COLPOSCOPY_VERBOSE
-        cout << "Histograms computed\n";
+        cout << "Features computed\n";
     #endif
 
-    this->compute_thresholds(src_train, labels_train, hists, threshold);
+    this->compute_thresholds(src_train, labels_train, features, threshold);
 
     #if __COLPOSCOPY_VERBOSE
         cout << "Thresholds computed\n";
     #endif
 
-    this->compute_reliability(src_train, labels_train, hists,
+    this->compute_reliability(src_train, labels_train, features,
                               threshold, reliability);
 
     #if __COLPOSCOPY_VERBOSE
         cout << "Reliability computed\n";
-        if ( system("rm results/label_index/*.jpg") ){
-            fprintf(stderr,
-                    "Error: unable to rm  results/label_index/*.jpg\n");
-        }
     #endif
 
     while ( current_error > this->max_error &&
             this->index_features.size() < src_train.size() &&
-            ( previous_error < 0.0 || previous_error > current_error ) &&
+            ( previous_error < 0.0 || 
+                (previous_error > current_error && 
+                 abs(previous_error - current_error) > this->min_convergence
+                )
+            ) &&
             (this->max_samples < 0 || (int)this->index_features.size() <
                                            this->max_samples)
           )
@@ -445,14 +449,14 @@ void incremental_nbc::train(vector<Mat>& src, vector<label>& labels)
         previous_error = current_error;
 
         pair<int, float> best = this->best_frame(src_train, labels_train,
-                                                 indexed, hists, threshold,
+                                                 indexed, features, threshold,
                                                  reliability);
 
         if ( best.second < 0 ){
             break;
         }
 
-        this->add_to_index(hists[best.first], labels_train[best.first],
+        this->add_to_index(features[best.first], labels_train[best.first],
                            threshold[best.first], reliability[best.first]);
         indexed[best.first] = true;
         current_error = best.second;
@@ -467,13 +471,16 @@ void incremental_nbc::train(vector<Mat>& src, vector<label>& labels)
 
             stringstream ss;
             string filename;
-            ss <<  "results/label_index/"
+            ss << "results/label_index/"
+               << training_fold << "_"
                << this->index_features.size() << ".jpg";
             ss >> filename;
             imwrite(filename, src_train[best.first]);
         #endif
     }
-
+    
+    training_fold++;
+    
     #if __COLPOSCOPY_VERBOSE
         cout << "Done\n";
     #endif

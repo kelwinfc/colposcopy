@@ -125,3 +125,75 @@ void hi_distance::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }
+
+earth_movers_distance::earth_movers_distance()
+{
+    
+}
+
+float earth_movers_distance::shifted_d(vector<float>& a, vector<float>& b,
+                                       size_t shift)
+{
+    float prev_emd = 0.0;
+    float current_emd = 0.0;
+    float ret = 0.0;
+    size_t n = a.size();
+    size_t k = shift;
+    
+    for (size_t i = 0; i < n; i++){
+        
+        if ( k == n )
+            k = 0;
+        
+        prev_emd = current_emd;
+        current_emd = a[k] + prev_emd - b[k];
+        
+        ret += abs(current_emd);
+        k++;
+    }
+    
+    return ret;
+}
+
+float earth_movers_distance::d(vector<float>& a, vector<float>& b)
+{
+    return this->shifted_d(a, b, 0);
+}
+
+void earth_movers_distance::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void earth_movers_distance::write(rapidjson::Value& json,
+                                  rapidjson::Document& d)
+{
+    
+}
+
+circular_emd::circular_emd()
+{
+    
+}
+
+float circular_emd::d(vector<float>& a, vector<float>& b)
+{
+    float ret = this->shifted_d(a, b, 0);
+    size_t n = a.size();
+    
+    for ( size_t shift = 1; shift < n; shift++ ){
+        ret = min(ret, this->shifted_d(a, b, shift));
+    }
+    
+    return ret;
+}
+
+void circular_emd::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void circular_emd::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    
+}

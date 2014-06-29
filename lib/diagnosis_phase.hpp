@@ -25,9 +25,6 @@
 #include "distance.hpp"
 #include "classifier.hpp"
 
-#define HBDP_HISTOGRAM vector<float>
-#define HBDP_SAMPLE HBDP_HISTOGRAM
-
 using namespace std;
 using namespace cv;
 

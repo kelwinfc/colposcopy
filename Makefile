@@ -26,8 +26,8 @@ all: $(EXECUTABLES)
 test_specular_reflection: $(FILES:%=bin/%.o)
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
 
-test_diagnosis_phase: $(FILES:%=bin/%.o)
-	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
+test_diagnosis_phase: $(FILES:%=bin/%.o) src/tests/test_diagnosis_phase.cpp lib/tests/test_diagnosis_phase.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 test_classifiers: $(FILES:%=bin/%.o) src/tests/test_classifiers.cpp lib/tests/test_classifiers.hpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"

@@ -75,4 +75,27 @@ class hi_distance : public v_distance {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
 };
 
+class earth_movers_distance : public v_distance {
+    public:
+        earth_movers_distance();
+        
+        virtual float d(vector<float>& a, vector<float>& b);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+    
+    protected:
+        float shifted_d(vector<float>& a, vector<float>& b, size_t shift);
+};
+
+class circular_emd : public earth_movers_distance {
+    public:
+        circular_emd();
+        
+        virtual float d(vector<float>& a, vector<float>& b);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
 #endif

@@ -1,8 +1,4 @@
 #include "test_diagnosis_phase.hpp"
-#include "contrib/anonadado/anonadado.hpp"
-#include "contrib/anonadado/anonadado.cpp"
-#include "contrib/anonadado/utils.hpp"
-#include "contrib/anonadado/utils.cpp"
 
 using namespace colposcopy;
 
@@ -17,7 +13,6 @@ void get_sequence(const char* filename,
 {
     anonadado::instance inst;
     inst.read(filename);
-
     vector<int> step_index;
     vector<int> roi_index;
     
@@ -25,10 +20,10 @@ void get_sequence(const char* filename,
     inst.get_annotations("roi", roi_index);
     
     int num_frames = inst.num_frames();
-
+    
     images.clear();
     labels.clear();
-
+    
     for ( int f = 0; f < num_frames; f++ ){
         if ( f % mod_rate != 0 ){
             continue;
@@ -42,7 +37,7 @@ void get_sequence(const char* filename,
         
         anonadado::choice_feature* step_feature =
                             (anonadado::choice_feature*)a->get_feature("step");
-        /*
+        
         if ( diagnosis_phase_detector::string_to_phase(
                                             step_feature->get_value()) ==
              diagnosis_phase_detector::diagnosis_transition
@@ -50,7 +45,14 @@ void get_sequence(const char* filename,
         {
             continue;
         }
-        */
+        
+        Mat img, aux;
+        inst.get_frame(f, img);
+        
+        if ( !img.data ){
+            continue;
+        }
+        
         labels.push_back(diagnosis_phase_detector::string_to_phase(
                                                    step_feature->get_value()));
         
@@ -58,19 +60,49 @@ void get_sequence(const char* filename,
         anonadado::bbox_feature* roi_feature =
                             (anonadado::bbox_feature*)roi->get_feature("roi");
         BBOX roi_value = roi_feature->get_value();
-
-        Mat img, aux;
-        inst.get_frame(f, img);
+        
+        
         Rect region_of_interest =
             Rect(roi_value.first.first,
                  roi_value.first.second,
                  roi_value.second.first,
                  roi_value.second.second);
-
+        
         img = img(region_of_interest);
         resize(img, aux, Size(rows, cols));
         images.push_back(aux);
+    }
+}
+
+void get_videos(const char* filename, vector<string>& videos)
+{
+    ifstream fin(filename);
+    string f;
+    
+    videos.clear();
+    while ( getline(fin, f) ){
+        videos.push_back(f);
+    }
+}
+
+void all_but_one(vector< vector<Mat> >& images,
+                 vector< vector<diagnosis_phase_detector::phase> >& labels,
+                 vector<Mat>& training_images,
+                 vector<diagnosis_phase_detector::phase>& training_labels,
+                 size_t k)
+{
+    training_images.clear();
+    training_labels.clear();
+    
+    for ( size_t i = 0; i < images.size(); i++ ){
+        if ( i == k ){
+            continue;
+        }
         
+        training_images.insert(training_images.end(),
+                               images[i].begin(), images[i].end());
+        training_labels.insert(training_labels.end(),
+                               labels[i].begin(), labels[i].end());
     }
 }
 
@@ -84,30 +116,71 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    vector<Mat> images, test_images;
-    vector<diagnosis_phase_detector::phase> labels, test_labels;
+    int mod_rate = 1;
     
-    get_sequence(argv[0], images, labels, 1);
+    vector<string> videos;
+    get_videos(argv[0], videos);
     
+    vector< vector<Mat> > images;
+    vector< vector< diagnosis_phase_detector::phase> > labels;
+    
+    cout << "Loading videos... " << endl;
+    for ( size_t i = 0; i < videos.size(); i++ ){
+        vector<Mat> next_images;
+        vector<diagnosis_phase_detector::phase> next_labels;
+        
+        get_sequence(videos[i].c_str(), next_images, next_labels, mod_rate);
+        
+        images.push_back(next_images);
+        labels.push_back(next_labels);
+        
+        cout << i+1 << "/" << videos.size() << endl;
+    }
+    
+    
+    
+    for ( size_t i = 0; i < videos.size(); i++ ){
+        cout << "Testing with video (" << i << ") " << videos[i] << endl;
+        
+        vector<Mat> training_images;
+        vector<diagnosis_phase_detector::phase> training_labels;
+        
+        all_but_one(images, labels, training_images, training_labels, i);
+        
+        //incremental_nbc incr_eucl;
+        knn incr_eucl;
+        hue_histogram_fe f;
+        hi_distance d;
+        incr_eucl.set_feature_extractor(&f);
+        incr_eucl.set_distance(&d);
+        
+        classifier_dpd hd;
+        hd.set_classifier(&incr_eucl);
+        
+        hd.train(training_images, training_labels);
+        cout << "Index size: " << incr_eucl.index_size() << endl;
+        
+        w_dpd whd(&hd, 3);
+        context_dpd cwhd(&whd);
+        unknown_removal_dpd ucwhd(&cwhd);
+        
+        stringstream ss;
+        string name;
+        ss << i;
+        ss >> name;
+        
+        hd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_0_histogram.jpg");
+        whd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_1_w.jpg");
+        cwhd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_2_context.jpg");
+        ucwhd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_3_unknown.jpg");
+        
+        float error = ucwhd.print_confussion_matrix(images[i], labels[i]);
+        cout << "Test error: " << error << endl;
+    }
+    /*
     //knn_dpd hd;
-    classifier_dpd hd;
-    
-    hd.train(images, labels);
-    //hd.write("dp.json");
-    
-    w_dpd whd(&hd, 10);
-    context_dpd cwhd(&whd);
-    unknown_removal_dpd ucwhd(&cwhd);
-    
-    hd.visualize(images, labels, "results/phase_timeline/0_histogram.jpg");
-    whd.visualize(images, labels, "results/phase_timeline/1_w.jpg");
-    cwhd.visualize(images, labels, "results/phase_timeline/2_context.jpg");
-    ucwhd.visualize(images, labels, "results/phase_timeline/3_unknown.jpg");
     
     get_sequence(argv[1], test_images, test_labels, 1);
-    
-    float error = ucwhd.print_confussion_matrix(test_images, test_labels);
-    cout << "Test error: " << error << endl;
     
     hd.visualize(test_images, test_labels,
                  "results/phase_timeline/test_0_histogram.jpg");
@@ -117,4 +190,5 @@ int main(int argc, const char* argv[])
                    "results/phase_timeline/test_2_context.jpg");
     ucwhd.visualize(test_images, test_labels,
                    "results/phase_timeline/test_3_unknown.jpg");
+    */
 }
