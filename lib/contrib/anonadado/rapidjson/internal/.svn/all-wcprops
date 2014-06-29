@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/internal
+END
+strfunc.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/internal/strfunc.h
+END
+stack.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/internal/stack.h
+END
+pow10.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/projects/sara/!svn/ver/30/code/detection_modules/src/processors/rapidjson/internal/pow10.h
+END

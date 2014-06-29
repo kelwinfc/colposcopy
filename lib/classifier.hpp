@@ -43,25 +43,31 @@ class classifier {
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         virtual void train(vector<Mat>& src, vector<label>& labels);
+        virtual void untrain();
+        
         virtual float eval(vector<Mat>& src, vector<label>& labels);
         virtual void detect(vector<Mat>& src, vector<label>& dst);
+        virtual label predict(Mat& src);
 };
 
 class neighborhood_based_classifier : public classifier {
     protected:
         v_distance* distance;
-
+    
     public:
         neighborhood_based_classifier();
         ~neighborhood_based_classifier();
 
-        void set_feature_extractor(feature_extractor* extractor);
+        void set_distance(v_distance* d);
 
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         virtual void train(vector<Mat>& src, vector<label>& labels);
+        virtual void untrain();
+        
         virtual float eval(vector<Mat>& src, vector<label>& labels);
         virtual void detect(vector<Mat>& src, vector<label>& dst);
+        virtual label predict(Mat& src);
 };
 
 class incremental_nbc : public neighborhood_based_classifier {
@@ -72,18 +78,21 @@ class incremental_nbc : public neighborhood_based_classifier {
         vector<float> index_reliability;
 
         float max_error;
-        int bindw;
         int max_samples;
 
     public:
         incremental_nbc();
-
+        
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         virtual void train(vector<Mat>& src, vector<label>& labels);
+        virtual void untrain();
+        
         virtual float eval(vector<Mat>& src, vector<label>& labels);
         virtual void detect(vector<Mat>& src, vector<label>& dst);
-
+        virtual label predict(Mat& src);
+        
+        uint index_size();
     protected:
         float mdistance(Mat& a, Mat& b);
 
@@ -115,6 +124,25 @@ class incremental_nbc : public neighborhood_based_classifier {
                                vector<label>& labels,
                                vector<Mat>& src_train,
                                vector<label>& labels_train);
+};
+
+class knn : public incremental_nbc {
+    protected:
+        int k;
+        map<label, float> weight;
+        
+    public:
+        knn();
+        knn(int k);
+        
+        void set_k(int k);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        virtual void train(vector<Mat>& src, vector<label>& labels);
+        
+    protected:
+        void detect(vector< vector<float> >& src, vector<label>& dst);
 };
 
 #endif

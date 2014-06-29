@@ -8,7 +8,7 @@ FILES=utils\
 	feature_extractor distance classifier\
 	diagnosis_phase
 
-EXECUTABLES=test_specular_reflection test_diagnosis_phase test_neighbors
+EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers
 
 DEP_utils=
 DEP_specular_reflection=utils
@@ -19,7 +19,7 @@ DEP_diagnosis_phase=utils feature_extractor distance classifier specular_reflect
 
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
-DEP_test_neighbors=$(DEP_neighbors)
+DEP_test_classifiers=$(DEP_neighbors)
 
 all: $(EXECUTABLES)
 
@@ -29,8 +29,8 @@ test_specular_reflection: $(FILES:%=bin/%.o)
 test_diagnosis_phase: $(FILES:%=bin/%.o)
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
 
-test_neighbors: $(FILES:%=bin/%.o)
-	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests" src/tests/$@.cpp
+test_classifiers: $(FILES:%=bin/%.o) src/tests/test_classifiers.cpp lib/tests/test_classifiers.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 #General rule for compiling
 bin/%.o: src/%.cpp lib/%.hpp

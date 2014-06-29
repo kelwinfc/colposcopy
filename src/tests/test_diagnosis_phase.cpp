@@ -1,8 +1,8 @@
 #include "test_diagnosis_phase.hpp"
-#include "/home/kelwinfc/Desktop/anonadado/src/api/cpp/anonadado.hpp"
-#include "/home/kelwinfc/Desktop/anonadado/src/api/cpp/anonadado.cpp"
-#include "/home/kelwinfc/Desktop/anonadado/src/api/cpp/utils.hpp"
-#include "/home/kelwinfc/Desktop/anonadado/src/api/cpp/utils.cpp"
+#include "contrib/anonadado/anonadado.hpp"
+#include "contrib/anonadado/anonadado.cpp"
+#include "contrib/anonadado/utils.hpp"
+#include "contrib/anonadado/utils.cpp"
 
 using namespace colposcopy;
 

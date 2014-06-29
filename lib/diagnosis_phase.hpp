@@ -77,12 +77,18 @@ class classifier_dpd : public diagnosis_phase_detector {
         classifier_dpd();
         ~classifier_dpd();
         
+        void set_classifier(classifier* cl);
+        
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
+    
+    protected:
+        void phase_to_label(vector<phase>& in, vector<label>& out);
+        void label_to_phase(vector<label>& in, vector<phase>& out);
 };
 
 class w_dpd : public diagnosis_phase_detector {

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 
-#define __COLPOSCOPY_VERBOSE 1
+#define __COLPOSCOPY_VERBOSE 0
 
 int num_chars(int n);
 

@@ -378,122 +378,53 @@ void classifier_dpd::detect(vector<Mat>& src, vector<phase>& dst)
     vector<int> aux;
     this->c->detect(src, aux);
 
-    dst.resize(aux.size());
-    
-    for ( size_t i = 0; i < aux.size(); i++ ){
-        if ( aux[i] == UNKNOWN ){
-            dst[i] = diagnosis_unknown;
-        } else {
-            dst[i] = (phase)aux[i];
-        }
-    }
+    this->label_to_phase(aux, dst);
 }
 
 void classifier_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    //TODO
+    vector<label> aux;
+    this->phase_to_label(labels, aux);
+    
+    this->c->untrain();
+    this->c->train(src, aux);
 }
 
 float classifier_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 {
-    //TODO
-    return 0.0;
+    return diagnosis_phase_detector::eval(src, labels);
 }
 
-/*****************************************************************************
- *                            KNN Phase Detector                             *
- *****************************************************************************/
-/*
-knn_dpd::knn_dpd()
+void classifier_dpd::set_classifier(classifier* cl)
 {
-    this->k = 5;
+    this->c = cl;
 }
 
-void knn_dpd::read(const rapidjson::Value& json)
+void classifier_dpd::phase_to_label(vector<phase>& in, vector<label>& out)
 {
-    //TODO
-}
-
-void knn_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
-{
-    //TODO
-}
-
-void knn_dpd::train(vector<Mat>& src, vector<phase>& labels)
-{
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Training\n";
-    #endif
-    
-    vector<Mat> src_train;
-    vector<phase> labels_train;
-    
-    this->get_target_frames(src, labels, src_train, labels_train);
-    
-    vector< vector<float> > hists;
-    
-    int n = labels_train.size();
-    
-    this->compute_histograms(src_train, hists);
-
-    for ( int i = 0; i < n; i++ ){
-        this->add_to_index(hists[i], labels_train[i], 0.0, 1.0);
-    }
-    
-    #if __COLPOSCOPY_VERBOSE
-        cout << "Done\n";
-    #endif
-}
-
-float knn_dpd::eval(vector<Mat>& src, vector<phase>& labels)
-{
-    return this->classifier_dpd::eval(src, labels);
-}
-
-void knn_dpd::detect(vector<Mat>& src, vector<phase>& dst)
-{
-    this->classifier_dpd::detect(src, dst);
-}
-
-void knn_dpd::detect(vector< vector<float> >& src, vector<phase>& dst)
-{
-    cout << "Hola\n";
-    uint n = src.size();
-    for ( uint i = 0; i < n; i++ ){
-        
-        map<phase, uint> r;
-        priority_queue< pair<float, phase> > q;
-        
-        r[diagnosis_plain] = 0;
-        r[diagnosis_green] = 0;
-        r[diagnosis_hinselmann] = 0;
-        r[diagnosis_schiller] = 0;
-        r[diagnosis_transition] = 0;
-        
-        for ( uint j = 0; j < this->index_histogram.size(); j++ ){
-            float next_distance = this->dist->d(this->index_histogram[j],
-                                                src[i]);
-            q.push( make_pair(-next_distance, this->index_phase[j]) );
-        }
-
-        int kk = this->k;
-        while ( !q.empty() && kk-- > 0 ){
-            r[q.top().second]++;
-            q.pop();
-        }
-
-        uint max_occurrences = 0;
-        dst.push_back(diagnosis_unknown);
-        
-        map<phase, uint>::iterator it;
-        for ( it = r.begin(); it != r.end(); ++it ){
-            if ( it->second >= max_occurrences ){
-                dst.back() = it->first;
-                max_occurrences = it->second;
-            }
+    out.clear();
+    out.resize(in.size());
+    for ( size_t i = 0; i < in.size(); i++ ){
+        if ( in[i] == diagnosis_unknown ){
+            out[i] = UNKNOWN;
+        } else {
+            out[i] = (label)in[i];
         }
     }
-}*/
+}
+
+void classifier_dpd::label_to_phase(vector<label>& in, vector<phase>& out)
+{
+    out.clear();
+    out.resize(in.size());
+    for ( size_t i = 0; i < in.size(); i++ ){
+        if ( in[i] == UNKNOWN ){
+            out[i] = diagnosis_unknown;
+        } else {
+            out[i] = (phase)in[i];
+        }
+    }
+}
 
 /*****************************************************************************
  *                     Windowed Diagnosis Phase Detector                     *

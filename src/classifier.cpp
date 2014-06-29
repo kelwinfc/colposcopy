@@ -29,6 +29,11 @@ void classifier::train(vector<Mat>& src, vector<label>& labels)
 
 }
 
+void classifier::untrain()
+{
+    
+}
+
 float classifier::eval(vector<Mat>& src, vector<label>& labels)
 {
     return 1.0;
@@ -38,6 +43,16 @@ void classifier::detect(vector<Mat>& src, vector<label>& dst)
 {
     dst.resize(src.size());
     fill(dst.begin(), dst.end(), UNKNOWN);
+}
+
+label classifier::predict(Mat& src)
+{
+    return UNKNOWN;
+}
+
+void classifier::set_feature_extractor(feature_extractor* f)
+{
+    this->extractor = f;
 }
 
 /*****************************************************************************
@@ -72,6 +87,11 @@ void neighborhood_based_classifier::train(vector<Mat>& src,
 
 }
 
+void neighborhood_based_classifier::untrain()
+{
+    
+}
+
 float neighborhood_based_classifier::eval(vector<Mat>& src,
                                           vector<label>& labels)
 {
@@ -85,6 +105,16 @@ void neighborhood_based_classifier::detect(vector<Mat>& src,
     fill(dst.begin(), dst.end(), UNKNOWN);
 }
 
+label neighborhood_based_classifier::predict(Mat& src)
+{
+    return UNKNOWN;
+}
+
+void neighborhood_based_classifier::set_distance(v_distance* d)
+{
+    this->distance = d;
+}
+
 /*****************************************************************************
  *                          Incremental Classifier                           *
  *****************************************************************************/
@@ -92,8 +122,7 @@ void neighborhood_based_classifier::detect(vector<Mat>& src,
 incremental_nbc::incremental_nbc()
 {
     this->max_error = 0.01;
-    this->bindw = 5;
-    this->max_samples = 20;
+    this->max_samples = -1;
     this->extractor = 0;
     this->distance = 0;
 }
@@ -277,7 +306,8 @@ void incremental_nbc::detect(vector< vector<float> >& src,
                     r[this->index_label[k]] = 0.0;
                 }
                 
-                r[this->index_label[k]] += this->index_reliability[k];
+                r[this->index_label[k]] = max(r[this->index_label[k]],
+                                              this->index_reliability[k]);
                 has = true;
             }
         }
@@ -447,4 +477,150 @@ void incremental_nbc::train(vector<Mat>& src, vector<label>& labels)
     #if __COLPOSCOPY_VERBOSE
         cout << "Done\n";
     #endif
+}
+
+void incremental_nbc::untrain()
+{
+    this->index_features.clear();
+    this->index_label.clear();
+    this->index_threshold.clear();
+    this->index_reliability.clear();
+
+}
+
+label incremental_nbc::predict(Mat& src)
+{
+    vector<Mat> labels;
+    vector<label> out;
+    
+    labels.push_back(src);
+    this->detect(labels, out);
+    
+    return out[0];
+}
+
+uint incremental_nbc::index_size()
+{
+    return this->index_features.size();
+}
+
+/*****************************************************************************
+ *                            K-Nearest Neighbors                            *
+ *****************************************************************************/
+
+knn::knn()
+{
+    this->k = 1;
+}
+
+knn::knn(int k)
+{
+    this->k = k;
+}
+
+void knn::set_k(int k)
+{
+    this->k = k;
+}
+
+void knn::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void knn::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+void knn::train(vector<Mat>& src, vector<label>& labels)
+{
+    #if __COLPOSCOPY_VERBOSE
+        cout << "Training\n";
+    #endif
+    
+    vector<Mat> src_train;
+    vector<label> labels_train;
+    
+    this->get_target_frames(src, labels, src_train, labels_train);
+    
+    vector< vector<float> > f;
+    
+    int n = labels_train.size();
+    
+    this->extract_features(src_train, f);
+    
+    for ( int i = 0; i < n; i++ ){
+        this->add_to_index(f[i], labels_train[i], 0.0, 1.0);
+        
+        if ( this->weight.find(labels_train[i]) == this->weight.end() ){
+            this->weight[labels_train[i]] = 0.0;
+        }
+        
+        this->weight[labels_train[i]] += 1.0;
+    }
+    
+    float sum = 0.0;
+    for ( map<label, float>::iterator it = this->weight.begin();
+          it != this->weight.end(); ++it )
+    {
+         this->weight[it->first] = labels_train.size() - it->second;
+         sum += this->weight[it->first];
+    }
+    
+    #if __COLPOSCOPY_VERBOSE
+        cout << "Weights: ";
+    #endif
+    
+    for ( map<label, float>::iterator it = this->weight.begin();
+          it != this->weight.end(); ++it )
+    {
+        this->weight[it->first] /= sum;
+        
+        #if __COLPOSCOPY_VERBOSE
+            cout << "(" << it->first << "," << this->weight[it->first] << ") ";
+        #endif  
+    }
+    
+    #if __COLPOSCOPY_VERBOSE
+        cout << endl;
+        cout << "Done\n";
+    #endif
+}
+
+void knn::detect(vector< vector<float> >& src, vector<label>& dst)
+{
+    uint n = src.size();
+    for ( uint i = 0; i < n; i++ ){
+        map<label, float> r;
+        priority_queue< pair<float, label> > q;
+        
+        for ( uint j = 0; j < this->index_features.size(); j++ ){
+            float next_distance = this->distance->d(this->index_features[j],
+                                                    src[i]);
+            q.push( make_pair(-next_distance, this->index_label[j]) );
+        }
+        
+        int kk = this->k;
+        while ( !q.empty() && kk-- > 0 ){
+            
+            if ( r.find(q.top().second) == r.end() ){
+                r[q.top().second] = 0;
+            }
+            
+            r[q.top().second] += this->weight[q.top().second];
+            q.pop();
+        }
+        
+        float max_occurrences = 0.0;
+        dst.push_back(UNKNOWN);
+        
+        map<label, float>::iterator it;
+        for ( it = r.begin(); it != r.end(); ++it ){
+            if ( it->second > max_occurrences ){
+                dst.back() = it->first;
+                max_occurrences = it->second;
+            }
+        }
+    }
 }

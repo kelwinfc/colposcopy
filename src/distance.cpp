@@ -45,8 +45,8 @@ lk_distance::lk_distance(int k)
 float lk_distance::d(vector<float>& a, vector<float>& b)
 {
     float ret = 0;
-    uint n = min(a.size(), b.size());
-    for ( uint i = 0; i < n; i++ ){
+    size_t n = min(a.size(), b.size());
+    for ( size_t i = 0; i < n; i++ ){
         float diff = abs(a[i] - b[i]);
         ret += pow(diff, this->k_inv);
     }
