@@ -75,7 +75,7 @@ void identity_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 
 hue_histogram_fe::hue_histogram_fe()
 {
-    this->bindw = 1;
+    this->bindw = 10;
     this->normalize = true;
 }
 
@@ -118,6 +118,61 @@ void hue_histogram_fe::read(const rapidjson::Value& json)
 }
 
 void hue_histogram_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+
+motion_fe::motion_fe()
+{
+    this->w      = 5;
+    this->width  = 10;
+    this->height = 10;
+}
+
+motion_fe::motion_fe(int w, int width, int height)
+{
+    this->w      = w;
+    this->width  = width;
+    this->height = height;
+}
+        
+void motion_fe::extract(vector<Mat>& in, int i, vector<float>& out)
+{
+    out.resize(this->width * this->height);
+    fill(out.begin(), out.end(), 0.0);
+    
+    for ( int k = max(1, i - this->w); k < min(i+1, (int)in.size()); k++ ){
+        Mat current_image, prev_image;
+        GaussianBlur(in[k - 1], prev_image, Size(3,3), 0.3);
+        GaussianBlur(in[k], current_image, Size(3,3), 0.3);
+        
+        for ( int r = 0; r < in[k].rows; r++ ){
+            int fr = r / (in[k].rows / this->height);
+            for ( int c = 0; c < in[k].cols; c++ ){
+                int fc = c / (in[k].cols / this->width);
+                
+                Vec3b prev_pixel = prev_image.at<Vec3b>(r, c);
+                Vec3b next_pixel = current_image.at<Vec3b>(r, c);
+                float diff = 0.0;
+                
+                for (uint x = 0; x < 3; x++){
+                    diff += (prev_pixel[x] - next_pixel[x]) *
+                            (prev_pixel[x] - next_pixel[x]);
+                }
+                
+                out[fr * this->width + fc] += sqrt(diff);
+            }
+        }
+    }
+}
+
+void motion_fe::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void motion_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
 }

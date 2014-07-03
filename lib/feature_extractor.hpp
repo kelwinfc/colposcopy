@@ -60,4 +60,20 @@ class hue_histogram_fe : public feature_extractor {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
 };
 
+class motion_fe : public feature_extractor {
+    protected:
+        int w;
+        int width;
+        int height;
+    
+    public:
+        motion_fe();
+        motion_fe(int w, int width, int height);
+        
+        virtual void extract(vector<Mat>& in, int i, vector<float>& out);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
 #endif
