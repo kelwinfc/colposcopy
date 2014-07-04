@@ -55,6 +55,17 @@ void classifier::set_feature_extractor(feature_extractor* f)
     this->extractor = f;
 }
 
+void classifier::extract_features(vector<Mat>& src,
+                                  vector<vector<float> >& h)
+{
+    uint n = src.size();
+    for ( uint i = 0; i < n; i++ ){
+        vector<float> next_h;
+        this->extractor->extract(src,i, next_h);
+        h.push_back(next_h);
+    }
+}
+
 /*****************************************************************************
  *                       Neighborhood-based Classifier                       *
  *****************************************************************************/
@@ -363,17 +374,6 @@ pair<int, float> incremental_nbc::best_frame(vector<Mat>& src,
     return make_pair(ret, min_error);
 }
 
-void incremental_nbc::extract_features(vector<Mat>& src,
-                                       vector<vector<float> >& h)
-{
-    uint n = src.size();
-    for ( uint i = 0; i < n; i++ ){
-        vector<float> next_h;
-        this->extractor->extract(src,i, next_h);
-        h.push_back(next_h);
-    }
-}
-
 void incremental_nbc::get_target_frames(vector<Mat>& src,
                                         vector<label>& labels,
                                         vector<Mat>& src_train,
@@ -630,4 +630,137 @@ void knn::detect(vector< vector<float> >& src, vector<label>& dst)
             }
         }
     }
+}
+
+/*****************************************************************************
+ *                                 Threshold                                 *
+ *****************************************************************************/
+
+threshold_cl::threshold_cl()
+{
+    this->extractor = 0;
+    this->k = 0;
+}
+
+threshold_cl::~threshold_cl()
+{
+    
+}
+
+void threshold_cl::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void threshold_cl::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+void threshold_cl::train(vector<Mat>& src, vector<label>& labels)
+{
+    #if __COLPOSCOPY_VERBOSE
+        cout << "Training threshold\n";
+    #endif
+    
+    if ( src.size() == 0 ){
+        this->k = 0;
+        return;
+    }
+    
+    /*
+     * [-inf..k) -> 0
+     * [k..inf)  -> 1
+     */
+    
+    vector< pair<float, label> > tp;
+    size_t correctly_classified = 0;
+    
+    {
+        vector< vector<float> > features;
+        this->extract_features(src, features);
+        
+        for ( size_t i = 0; i < labels.size(); i++ ){
+            tp.push_back( make_pair(features[i][0], labels[i]) );
+            if ( labels[i] == 1 ){
+                correctly_classified++;
+            }
+        }
+    }
+    
+    sort(tp.begin(), tp.end());
+    
+    this->k = tp[0].first;
+    size_t best_cl = correctly_classified;
+    
+    for ( size_t i = 1; i < labels.size(); i++ ){
+        
+        if ( tp[i - 1].second == 0 ){
+            correctly_classified++;
+        } else {
+            correctly_classified--;
+        }
+        
+        if ( correctly_classified > best_cl ){
+            this->k = tp[i].first;
+            best_cl = correctly_classified;
+        }
+        
+        cout << i << " " << this->k << correctly_classified << endl;
+    }
+    
+    #if __COLPOSCOPY_VERBOSE
+        cout << "Trained: " << this->k << " "
+             << best_cl << "/" << labels.size() << endl;
+    #endif
+}
+
+void threshold_cl::untrain()
+{
+    this->k = 0;
+}
+
+float threshold_cl::eval(vector<Mat>& src, vector<label>& labels)
+{
+    size_t n = labels.size();
+    uint f = 0;
+
+    if ( n == 0 ){
+        return 0.0;
+    }
+    
+    for ( size_t i = 0; i < n; i++ ){
+        label output = this->predict(src[i]);
+        if ( output != labels[i] ){
+            f++;
+        }
+    }
+
+    return ((float)f) / labels.size();
+}
+
+void threshold_cl::detect(vector<Mat>& src, vector<label>& dst)
+{
+    vector< vector<float> > features;
+    this->extract_features(src, features);
+    
+    dst.resize(src.size());
+    
+    for ( size_t i = 0; i < src.size(); i++ ){
+        if ( features[i][0] >= this->k ){
+            dst[i] = 1;
+        } else {
+            dst[i] = 0;
+        }
+    }
+}
+
+label threshold_cl::predict(Mat& src)
+{
+    return 1;
+}
+
+void threshold_cl::set_threshold(int k)
+{
+    this->k = k;
 }

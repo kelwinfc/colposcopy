@@ -48,6 +48,9 @@ class classifier {
         virtual float eval(vector<Mat>& src, vector<label>& labels);
         virtual void detect(vector<Mat>& src, vector<label>& dst);
         virtual label predict(Mat& src);
+    
+    protected:
+        void extract_features(vector<Mat>& src, vector< vector<float> >& h);
 };
 
 class neighborhood_based_classifier : public classifier {
@@ -105,8 +108,7 @@ class incremental_nbc : public neighborhood_based_classifier {
                                    vector<vector<float> >& hists,
                                    vector<float>& threshold,
                                    vector<float>& reliability);
-
-        void extract_features(vector<Mat>& src, vector< vector<float> >& h);
+        
         float compute_threshold(vector<Mat>& src, vector<label>& labels,
                                 vector< vector<float> >& hists, int i);
         void compute_thresholds(vector<Mat>& src, vector<label>& labels,
@@ -144,6 +146,26 @@ class knn : public incremental_nbc {
         
     protected:
         void detect(vector< vector<float> >& src, vector<label>& dst);
+};
+
+class threshold_cl : public classifier {
+    protected:
+        float k;
+    
+    public:
+        threshold_cl();
+        ~threshold_cl();
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        virtual void train(vector<Mat>& src, vector<label>& labels);
+        virtual void untrain();
+        
+        virtual float eval(vector<Mat>& src, vector<label>& labels);
+        virtual void detect(vector<Mat>& src, vector<label>& dst);
+        virtual label predict(Mat& src);
+        
+        void set_threshold(int k);
 };
 
 #endif

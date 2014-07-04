@@ -113,14 +113,50 @@ int main(int argc, const char* argv[])
     
     int nr=8, nc=8;
     motion_fe f(5, nr, nc);
-    
     vector<Mat>::iterator it, end;
+    
+    threshold_cl thrs;
+    
+    motion_fe f_cl(5, 1, 1);
+    thrs.set_feature_extractor(&f_cl);
+    
+    vector<label> cl_labels;
+    for (size_t i = 0; i < labels.size(); i++ ){
+        if ( labels[i] == diagnosis_phase_detector::diagnosis_transition ){
+            cl_labels.push_back(1);
+        } else {
+            cl_labels.push_back(0);
+        }
+    }
+    
+    //thrs.train(images, cl_labels);
+    thrs.set_threshold(500000);
+    cout << "Error: " << thrs.eval(images, cl_labels) << endl;
+    
+    vector<label> predictions;
+    thrs.detect(images, predictions);
     
     for (size_t i = 0; i < images.size(); i++ ){
         vector<float> features;
         f.extract(images, i, features);
         Mat dst;
         show_motion(features, nr, nc, dst, images[i].rows, images[i].cols);
+        
+        vector<Mat> channels;
+        Mat z = Mat::zeros(dst.rows, dst.cols, CV_8U);
+        
+        if ( cl_labels[i] == predictions[i] ){
+            channels.push_back(z);
+            channels.push_back(dst);
+            channels.push_back(z);
+        } else {
+            channels.push_back(z);
+            channels.push_back(z);
+            channels.push_back(dst);
+        }
+        
+        merge(channels, dst);
+        cout << cl_labels[i] << " " << predictions[i] << endl;
         
         imshow("img", images[i]);
         imshow("motion", dst);
