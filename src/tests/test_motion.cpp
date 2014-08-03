@@ -106,6 +106,19 @@ int main(int argc, const char* argv[])
 
     int mod_rate = 2;
     
+    classifier_dpd d;
+    /*
+    rapidjson::Document ww;
+    ww.SetObject();
+    d.write(ww, ww);
+    
+    rapidjson::StringBuffer strbuf;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
+    ww.Accept(writer);
+    cout << strbuf.GetString() << endl;
+
+    exit(0);
+    */
     vector<Mat> images;
     vector<diagnosis_phase_detector::phase> labels;
         
@@ -131,10 +144,11 @@ int main(int argc, const char* argv[])
     
     //thrs.train(images, cl_labels);
     thrs.set_threshold(500000);
-    cout << "Error: " << thrs.eval(images, cl_labels) << endl;
+    cout << "Accuracy: " << thrs.eval(images, cl_labels) << endl;
     
     vector<label> predictions;
     thrs.detect(images, predictions);
+    thrs.print_confusion_matrix(images, cl_labels);
     
     for (size_t i = 0; i < images.size(); i++ ){
         vector<float> features;

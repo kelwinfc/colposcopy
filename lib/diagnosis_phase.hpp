@@ -64,11 +64,15 @@ class diagnosis_phase_detector {
         void visualize(vector<Mat>& src, vector<phase>& labels,
                        string filename,
                        int rows_by_frame=200, int cols_by_frame=2);
+        
+        static diagnosis_phase_detector* from_json(const rapidjson::Value& j);
+        static diagnosis_phase_detector* get(string filename);
 };
 
 class classifier_dpd : public diagnosis_phase_detector {
     protected:
-      classifier* c;
+        classifier* c;
+        bool delete_classifier;
     
     public:
         classifier_dpd();
@@ -92,11 +96,13 @@ class w_dpd : public diagnosis_phase_detector {
     private:
         diagnosis_phase_detector* underlying_detector;
         int w;
+        bool delete_detector;
     
     public:
         w_dpd();
         w_dpd(diagnosis_phase_detector* d, int w);
-
+        ~w_dpd();
+        
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         

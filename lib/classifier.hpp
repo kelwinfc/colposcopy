@@ -48,6 +48,13 @@ class classifier {
         virtual float eval(vector<Mat>& src, vector<label>& labels);
         virtual void detect(vector<Mat>& src, vector<label>& dst);
         virtual label predict(Mat& src);
+        
+        void get_confusion_matrix(vector<Mat>& src, vector<label>& labels,
+                                  map< pair<label, label>, int>& matrix);
+        void print_confusion_matrix(vector<Mat>& src, vector<label>& labels);
+        
+        static classifier* from_json(const rapidjson::Value& j);
+        static classifier* get(string filename);
     
     protected:
         void extract_features(vector<Mat>& src, vector< vector<float> >& h);

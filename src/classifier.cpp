@@ -66,6 +66,64 @@ void classifier::extract_features(vector<Mat>& src,
     }
 }
 
+void classifier::get_confusion_matrix(vector<Mat>& src, vector<label>& labels,
+                                      map< pair<label, label>, int>& matrix)
+{
+    vector<label> predictions;
+    this->detect(src, predictions);
+    
+    set<label> keys;
+    
+    for ( size_t i = 0; i < labels.size(); i++ ){
+        keys.insert(labels[i]);
+    }
+    for ( size_t i = 0; i < predictions.size(); i++ ){
+        keys.insert(predictions[i]);
+    }
+    
+    matrix.clear();
+    
+    for(set<label>::iterator it = keys.begin(); it != keys.end(); ++it){
+        for(set<label>::iterator it2 = keys.begin(); it2 != keys.end(); ++it2){
+            matrix[ make_pair(*it, *it2) ] = 0;
+        }
+    }
+    
+    for ( size_t i = 0; i < labels.size(); i++ ){
+        matrix[make_pair(labels[i], predictions[i])]++;
+    }
+}
+
+void classifier::print_confusion_matrix(vector<Mat>& src, vector<label>& labels)
+{
+    map< pair<label, label>, int> m;
+    this->get_confusion_matrix(src, labels, m);
+    
+    set<label> keys_set;
+    
+    for(map<pair<label, label>, int>::iterator it = m.begin(); it != m.end();
+        ++it)
+    {
+        keys_set.insert(it->first.first);
+    }
+    
+    vector<label> keys;
+    for(set<label>::iterator it = keys_set.begin(); it != keys_set.end(); ++it)
+    {
+        keys.push_back(*it);
+    }
+    
+    sort(keys.begin(), keys.end());
+    
+    for ( size_t i = 0; i < keys.size(); i++ ){
+        printf("%4d:", keys[i]);
+        for ( size_t j = 0; j < keys.size(); j++ ){
+            printf(" %5d", m[make_pair(keys[i], keys[j])]);
+        }
+        cout << endl;
+    }
+}
+
 /*****************************************************************************
  *                       Neighborhood-based Classifier                       *
  *****************************************************************************/
@@ -722,21 +780,33 @@ void threshold_cl::untrain()
 
 float threshold_cl::eval(vector<Mat>& src, vector<label>& labels)
 {
-    size_t n = labels.size();
-    uint f = 0;
-
-    if ( n == 0 ){
-        return 0.0;
+    if ( labels.size() == 0 ){
+        return 1.0;
     }
     
-    for ( size_t i = 0; i < n; i++ ){
-        label output = this->predict(src[i]);
-        if ( output != labels[i] ){
-            f++;
+    map< pair<label, label>, int> matrix;
+    map< pair<label, label>, int>::iterator it, end;
+    
+    get_confusion_matrix(src, labels, matrix);
+    
+    it = matrix.begin();
+    end = matrix.end();
+    
+    int t = 0;
+    int f = 0;
+    
+    for ( ; it != end; ++it ){
+        pair<label, label> next = it->first;
+        int count = it->second;
+        
+        if ( next.first == next.second ){
+            t += count;
+        } else {
+            f += count;
         }
     }
-
-    return ((float)f) / labels.size();
+    
+    return (float)t / (float)(t + f);
 }
 
 void threshold_cl::detect(vector<Mat>& src, vector<label>& dst)
@@ -757,10 +827,42 @@ void threshold_cl::detect(vector<Mat>& src, vector<label>& dst)
 
 label threshold_cl::predict(Mat& src)
 {
-    return 1;
+    vector<Mat> src_seq;
+    src_seq.push_back(src);
+    
+    vector<label> dst_seq;
+    this->detect(src_seq, dst_seq);
+    
+    return dst_seq[0];
 }
 
 void threshold_cl::set_threshold(int k)
 {
     this->k = k;
+}
+
+/*****************************************************************************
+ *                                   Utils                                   *
+ *****************************************************************************/
+
+classifier* classifier::from_json(const rapidjson::Value& j)
+{
+    //TODO
+    classifier * ret = 0;
+    
+    return ret;
+}
+
+classifier* classifier::get(string filename)
+{
+    FILE * pFile = fopen (filename.c_str(), "r");
+    rapidjson::FileStream is(pFile);
+    rapidjson::Document d;
+    d.ParseStream<0>(is);
+    
+    classifier * ret = classifier::from_json(d);
+    
+    fclose(pFile);
+    
+    return ret;
 }

@@ -253,19 +253,21 @@ void diagnosis_phase_detector::visualize(vector<Mat>& src,
 
 classifier_dpd::classifier_dpd()
 {
-    
+    this->c = 0;
+    this->delete_classifier = false;
 }
 
 classifier_dpd::~classifier_dpd()
 {
-    
+    if ( this->c && this->delete_classifier ){
+        delete this->c;
+    }
 }
 
 void classifier_dpd::read(const rapidjson::Value& json)
 {
-    /*
     if ( !json.HasMember("type") || !json["type"].IsString() ||
-         strcmp(json["type"].GetString(), "histogram_based") != 0 ||
+         strcmp(json["type"].GetString(), "classifier") != 0 ||
          !json.HasMember("config") || !json["config"].IsObject()
        )
     {
@@ -273,106 +275,24 @@ void classifier_dpd::read(const rapidjson::Value& json)
     }
 
     const rapidjson::Value& config = json["config"];
-
-    if ( config.HasMember("max_error") && config["max_error"].IsDouble() ){
-        this->max_error = (float)config["max_error"].GetDouble();
-    }
     
-    if ( config.HasMember("bindw") && config["bindw"].IsDouble() ){
-        this->bindw = (float)config["bindw"].GetDouble();
-    }
-
-    if ( config.HasMember("histogram") &&
-         config["histogram"].IsArray() )
-    {
-        const rapidjson::Value& h = config["histogram"];
-
-        for (rapidjson::SizeType i = 0; i < h.Size(); i++){
-            const rapidjson::Value& nh = h[i];
-
-            vector<float> next_h;
-            if ( nh.IsArray() ){
-                for (rapidjson::SizeType j = 0; j < nh.Size(); j++){
-                    const rapidjson::Value& nv = nh[j];
-                    next_h.push_back((float)nv.GetDouble());
-                }
-            }
-            this->index_histogram.push_back(next_h);
-        }
-    }
-    
-    if ( config.HasMember("phase") &&
-         config["phase"].IsArray() )
-    {
-        const rapidjson::Value& ph = config["phase"];
+    if ( config.HasMember("classifier") || config["classifier"].IsObject() ){
+        this->c = classifier::from_json(config["classifier"]);
         
-        for (rapidjson::SizeType i = 0; i < ph.Size(); i++){
-            const rapidjson::Value& next_value = ph[i];
-            this->index_phase.push_back((phase)next_value.GetInt());
+        if ( this->c != 0){
+            this->delete_classifier = true;
         }
     }
-    
-    if ( config.HasMember("reliability") &&
-         config["reliability"].IsArray() )
-    {
-        const rapidjson::Value& r = config["reliability"];
-
-        for (rapidjson::SizeType i = 0; i < r.Size(); i++){
-            const rapidjson::Value& next = r[i];
-            this->index_reliability.push_back((float)next.GetDouble());
-        }
-    }
-
-    if ( config.HasMember("threshold") &&
-         config["threshold"].IsArray() )
-    {
-        const rapidjson::Value& t = config["threshold"];
-
-        for (rapidjson::SizeType i = 0; i < t.Size(); i++){
-            const rapidjson::Value& next = t[i];
-            this->index_threshold.push_back((float)next.GetDouble());
-        }
-    }
-    */
 }
 
 void classifier_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 {
-    /*
-    json.AddMember("type", "histogram_based", d.GetAllocator());
-
-    rapidjson::Value config(rapidjson::kObjectType);
-
-    config.AddMember("max_error", this->max_error, d.GetAllocator());
-    config.AddMember("bindw", this->bindw, d.GetAllocator());
-
-    rapidjson::Value phase_json(rapidjson::kArrayType);
-    rapidjson::Value rel_json(rapidjson::kArrayType);
-    rapidjson::Value thrs_json(rapidjson::kArrayType);
-    rapidjson::Value h_json(rapidjson::kArrayType);
+    json.SetObject();
+    json.AddMember("type", "classifier", d.GetAllocator());
     
-    for ( uint i = 0; i < this->index_histogram.size(); i++ ){
-        rel_json.PushBack(this->index_reliability[i], d.GetAllocator());
-        phase_json.PushBack(this->index_phase[i], d.GetAllocator());
-        thrs_json.PushBack(this->index_threshold[i], d.GetAllocator());
-
-        rapidjson::Value next_hist(rapidjson::kArrayType);
-        for ( uint j = 0; j < this->index_histogram[i].size(); j++ ){
-            next_hist.PushBack(this->index_histogram[i][j], d.GetAllocator());
-        }
-        
-        h_json.PushBack(next_hist, d.GetAllocator());
-    }
-    
-    config.AddMember("histogram", h_json, d.GetAllocator());
-    config.AddMember("phase", phase_json, d.GetAllocator());
-    config.AddMember("reliability", rel_json, d.GetAllocator());
-    config.AddMember("threshold", thrs_json, d.GetAllocator());
-    
-    json.AddMember("config", config, d.GetAllocator());
-    */
+    //TODO: write classifier
 }
-   
+
 void classifier_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 {
     vector<int> aux;
@@ -397,7 +317,12 @@ float classifier_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 
 void classifier_dpd::set_classifier(classifier* cl)
 {
+    if ( this->c != 0 && this->delete_classifier ){
+        delete this->c;
+    }
+    
     this->c = cl;
+    this->delete_classifier = 0;
 }
 
 void classifier_dpd::phase_to_label(vector<phase>& in, vector<label>& out)
@@ -434,17 +359,49 @@ w_dpd::w_dpd()
 {
     this->underlying_detector = 0;
     this->w = 0;
+    this->delete_detector = false;
 }
 
 w_dpd::w_dpd(diagnosis_phase_detector* d, int w)
 {
     this->underlying_detector = d;
     this->w = w;
+    this->delete_detector = false;
 }
+
+w_dpd::~w_dpd()
+{
+    if ( this->delete_detector && this->underlying_detector != 0 ){
+        delete this->underlying_detector;
+    }
+}
+        
 
 void w_dpd::read(const rapidjson::Value& json)
 {
-    //TODO
+    if ( !json.HasMember("type") || !json["type"].IsString() ||
+         strcmp(json["type"].GetString(), "classifier") != 0 ||
+         !json.HasMember("config") || !json["config"].IsObject()
+       )
+    {
+        return;
+    }
+    
+    const rapidjson::Value& config = json["config"];
+    
+    if ( config.HasMember("underlying") || config["underlying"].IsObject() ){
+        this->delete_detector = true;
+        
+        this->underlying_detector = from_json(config["underlying"]);
+        
+        if ( this->underlying_detector != 0){
+            this->delete_detector= true;
+        }
+    }
+    
+    if ( config.HasMember("w") || config["w"].IsInt() ){
+        this->w = config["w"].GetInt();
+    }
 }
 
 void w_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
@@ -698,4 +655,50 @@ void unknown_removal_dpd::detect(vector<Mat>& src, vector<phase>& dst)
             }
         }
     }
+}
+
+/*****************************************************************************
+ *                                   Utils                                   *
+ *****************************************************************************/
+
+diagnosis_phase_detector* diagnosis_phase_detector::from_json(
+                                                    const rapidjson::Value& j)
+{
+    diagnosis_phase_detector* ret = 0;
+    
+    if ( j.IsObject() && j.HasMember("type") && j.HasMember("config") )
+    {
+        const rapidjson::Value& type = j["type"];
+        
+        if ( type.IsString() ){
+            const char* t = type.GetString();
+            if ( strcmp(t, "classifier") == 0 ){
+                ret = new classifier_dpd();
+            } else if ( strcmp(t, "window") == 0 ){
+                ret = new w_dpd();
+            } else if ( strcmp(t, "context") == 0 ){
+                ret = new context_dpd();
+            } else if ( strcmp(t, "unknown") == 0 ){
+                ret = new unknown_removal_dpd();
+            }
+            
+            ret->read(j);
+        }
+    }
+    
+    return ret;
+}
+
+diagnosis_phase_detector* diagnosis_phase_detector::get(string filename)
+{
+    FILE * pFile = fopen (filename.c_str(), "r");
+    rapidjson::FileStream is(pFile);
+    rapidjson::Document d;
+    d.ParseStream<0>(is);
+    
+    diagnosis_phase_detector* ret = diagnosis_phase_detector::from_json(d);
+    
+    fclose(pFile);
+    
+    return ret;
 }
