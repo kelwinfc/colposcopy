@@ -69,6 +69,16 @@
                 "features": [
                     {
                         "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 699, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
                         "value": "transition"
                     }
                 ]
@@ -85,6 +95,26 @@
             }, 
             {
                 "frame": 1472, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1865, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "schiller"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1913, 
                 "name": "diagnosis_step", 
                 "features": [
                     {

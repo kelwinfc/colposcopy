@@ -1,6 +1,6 @@
 {
     "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI5402738 DVD_May07_155509_0", 
-    "domain": "/home/kelwinfc/Escritorio/colposcopy/test/colposcopy_domain.json", 
+    "domain": "../colposcopy/test/colposcopy_domain.json", 
     "sequence": [
         [
             {
@@ -48,7 +48,98 @@
                 "name": "diagnosis_step", 
                 "features": [
                     {
-                        "name": "step"
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 106, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 235, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 323, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 506, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 582, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 799, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1089, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1168, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1528, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
                     }
                 ]
             }, 
@@ -77,7 +168,48 @@
                 "name": "diagnosis_step", 
                 "features": [
                     {
-                        "name": "step"
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2485, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2605, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2696, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2871, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
                     }
                 ]
             }, 

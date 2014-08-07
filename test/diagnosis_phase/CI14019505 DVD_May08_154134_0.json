@@ -212,6 +212,25 @@
                 ]
             }, 
             {
+                "frame": 2476, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2649, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step"
+                    }
+                ]
+            }, 
+            {
                 "frame": 2921, 
                 "name": "diagnosis_step", 
                 "features": [

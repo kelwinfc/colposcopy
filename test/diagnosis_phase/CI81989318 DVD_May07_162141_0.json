@@ -73,6 +73,45 @@
                 ]
             }, 
             {
+                "frame": 279, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 468, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step"
+                    }
+                ]
+            }, 
+            {
+                "frame": 613, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 818, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
                 "frame": 944, 
                 "name": "diagnosis_step", 
                 "features": [
@@ -93,6 +132,26 @@
             }, 
             {
                 "frame": 1601, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "schiller"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1635, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1775, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
