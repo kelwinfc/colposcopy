@@ -48,7 +48,18 @@
                 "name": "diagnosis_step", 
                 "features": [
                     {
-                        "name": "step"
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 294, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
                     }
                 ]
             }, 
@@ -63,11 +74,51 @@
                 ]
             }, 
             {
+                "frame": 821, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 899, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
                 "frame": 1262, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
                         "name": "step"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1323, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1409, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
                     }
                 ]
             }, 
@@ -87,6 +138,26 @@
                 "features": [
                     {
                         "name": "step"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1610, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1979, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
                     }
                 ]
             }, 
