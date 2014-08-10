@@ -1,26 +1,39 @@
-# Compiled Object files
+#
+Compiled
+Object
+files
 bin/*.slo
 bin/*.lo
 bin/*.o
 bin/*.obj
 
-# Compiled Dynamic libraries
+#
+Compiled
+Dynamic
+libraries
 *.so
 *.dylib
 *.dll
 
-# Compiled Static libraries
+#
+Compiled
+Static
+libraries
 *.lai
 *.la
 *.a
 *.lib
 
-# Executables
+#
+Executables
 *.exe
 *.out
 *.app
 
-# Images and videos
+#
+Images
+and
+videos
 *.ppm
 *.png
 *.jpg
@@ -28,4 +41,8 @@ bin/*.obj
 *.mpeg
 
 *~
-test_specular_reflection test_diagnosis_phase test_classifiers test_motion
+test_specular_reflection
+test_diagnosis_phase
+test_classifiers
+test_motion
+generate_pairs_of_images_to_annotate

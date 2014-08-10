@@ -59,4 +59,4 @@ count_lines:
 	wc -l src/*.cpp src/*.py lib/*.hpp other/*.py other/*.cpp | sort -gk 1
 
 update_ignore:
-	(cat -v .gitignore.base; echo $(EXECUTABLES)) > .gitignore;
+	(cat -v .gitignore.base; echo $(EXECUTABLES)) | tr " " "\n" > .gitignore;
