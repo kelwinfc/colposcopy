@@ -44,15 +44,6 @@
         ], 
         [
             {
-                "frame": 0, 
-                "name": "diagnosis_step", 
-                "features": [
-                    {
-                        "name": "step"
-                    }
-                ]
-            }, 
-            {
                 "frame": 4454, 
                 "name": "diagnosis_step", 
                 "features": [
@@ -374,16 +365,6 @@
             }, 
             {
                 "frame": 15134, 
-                "name": "diagnosis_step", 
-                "features": [
-                    {
-                        "name": "step", 
-                        "value": "transition"
-                    }
-                ]
-            }, 
-            {
-                "frame": 16452, 
                 "name": "diagnosis_step", 
                 "features": [
                     {

@@ -658,6 +658,47 @@ void unknown_removal_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 }
 
 /*****************************************************************************
+ *                           Binary Phase Detector                           *
+ *****************************************************************************/
+
+binary_dpd::binary_dpd()
+{
+    this->left = this->right = 0;
+}
+
+binary_dpd::binary_dpd(diagnosis_phase_detector* l,
+                       diagnosis_phase_detector* r)
+{
+    this->left = l;
+    this->right = r;
+}
+
+void binary_dpd::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void binary_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+void binary_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+    //TODO
+}
+
+float binary_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    //TODO
+}
+
+void binary_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    //TODO
+}
+
+/*****************************************************************************
  *                                   Utils                                   *
  *****************************************************************************/
 

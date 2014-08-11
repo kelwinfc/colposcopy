@@ -158,6 +158,7 @@ class knn : public incremental_nbc {
 class threshold_cl : public classifier {
     protected:
         float k;
+        vector< pair<float, label> > log;
     
     public:
         threshold_cl();
@@ -173,6 +174,8 @@ class threshold_cl : public classifier {
         virtual label predict(Mat& src);
         
         void set_threshold(int k);
+        void log_values(vector<Mat>& src, vector<label>& labels);
+        void plot_histogram(Mat& img, int num_bins);
 };
 
 #endif

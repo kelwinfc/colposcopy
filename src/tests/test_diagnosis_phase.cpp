@@ -148,8 +148,8 @@ int main(int argc, const char* argv[])
         //incremental_nbc incr_eucl;
         knn incr_eucl;
         hue_histogram_fe f;
-        //circular_emd d;
-        hi_distance d;
+        circular_emd d;
+        //hi_distance d;
         incr_eucl.set_feature_extractor(&f);
         incr_eucl.set_distance(&d);
         

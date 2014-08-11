@@ -32,8 +32,9 @@ void get_sequence(const char* filename,
         annotation* a = inst.get_active_annotation(step_index[0], f);
         annotation* roi = inst.get_active_annotation(roi_index[0], f);
         
-        if ( !a )
+        if ( !a ){
             continue;
+        }
         
         anonadado::choice_feature* step_feature =
                             (anonadado::choice_feature*)a->get_feature("step");
@@ -45,8 +46,11 @@ void get_sequence(const char* filename,
             continue;
         }
         
-        labels.push_back(diagnosis_phase_detector::string_to_phase(
-                                                   step_feature->get_value()));
+        if ( step_feature->get_value() == "transition" ){
+            labels.push_back(diagnosis_phase_detector::diagnosis_transition);
+        } else {
+            labels.push_back(diagnosis_phase_detector::diagnosis_unknown);
+        }
         
         
         anonadado::bbox_feature* roi_feature =
@@ -94,6 +98,55 @@ void show_motion(vector<float>& m, int mrows, int mcols,
     }
 }
 
+void merge_confusion_matrix(map< pair<label, label>, float >& base_matrix,
+                            map< pair<label, label>, int >& new_matrix,
+                            int test_case)
+{
+    map< pair<label, label>, int >::iterator it, end=new_matrix.end();
+    map< pair<label, label>, float >::iterator it_base,
+                                               end_base=base_matrix.end();
+    
+    int total = 0;
+    for ( it = new_matrix.begin(); it != end; ++it ){
+        total += it->second;
+    }
+    
+    if ( total == 0 ){
+        total = 1;
+    }
+    
+    for ( it_base = base_matrix.begin(); it_base != end_base; ++it_base )
+    {
+        base_matrix[it_base->first] *= test_case;
+    }
+    
+    for ( it = new_matrix.begin() ; it != end; ++it ){
+        if ( base_matrix.find(it->first) == base_matrix.end() ){
+            base_matrix[it->first] = 0.0;
+        }
+        
+        base_matrix[it->first] += (float)it->second / (float)total;
+    }
+    
+    for ( it_base = base_matrix.begin(); it_base != end_base; ++it_base )
+    {
+        base_matrix[it_base->first] /= test_case + 1;
+    }
+}
+
+void print_confusion_matrix(map< pair<label, label>, float>& matrix)
+{
+    int num_steps = 2;
+    
+    for ( int i=0; i<num_steps; i++ ){
+        printf("   %d: ", i);
+        for ( int j=0; j<num_steps; j++ ){
+            printf("%0.4f ", matrix[make_pair(i, j)]);
+        }
+        printf("\n");
+    }
+}
+
 int main(int argc, const char* argv[])
 {
     cout << "Hi!\n";
@@ -106,50 +159,81 @@ int main(int argc, const char* argv[])
 
     int mod_rate = 2;
     
-    classifier_dpd d;
-    /*
-    rapidjson::Document ww;
-    ww.SetObject();
-    d.write(ww, ww);
+    map< pair<label, label>, float> base_matrix;
+    map< pair<label, label>, int> next_matrix;
     
-    rapidjson::StringBuffer strbuf;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(strbuf);
-    ww.Accept(writer);
-    cout << strbuf.GetString() << endl;
-
-    exit(0);
-    */
-    vector<Mat> images;
-    vector<diagnosis_phase_detector::phase> labels;
-        
-    get_sequence(argv[0], images, labels, mod_rate);
-    
-    int nr=8, nc=8;
-    motion_fe f(5, nr, nc);
-    vector<Mat>::iterator it, end;
+    ifstream fin(argv[0]);
+    string line;
+    int test_case = 0;
     
     threshold_cl thrs;
-    
+        
     motion_fe f_cl(5, 1, 1);
     thrs.set_feature_extractor(&f_cl);
+    thrs.set_threshold(500000);
     
-    vector<label> cl_labels;
-    for (size_t i = 0; i < labels.size(); i++ ){
-        if ( labels[i] == diagnosis_phase_detector::diagnosis_transition ){
-            cl_labels.push_back(1);
-        } else {
-            cl_labels.push_back(0);
+    classifier_dpd cl;
+    cl.set_classifier(&thrs);
+        
+    while ( getline(fin, line) )
+    {
+        cout << "Test " << test_case << ": " << line << endl;
+        
+        classifier_dpd d;
+        
+        vector<Mat> images;
+        vector<diagnosis_phase_detector::phase> labels;
+            
+        get_sequence(line.c_str(), images, labels, mod_rate);
+        
+        int nr=8, nc=8;
+        motion_fe f(5, nr, nc);
+        vector<Mat>::iterator it, end;
+        
+        vector<label> cl_labels;
+        for (size_t i = 0; i < labels.size(); i++ ){
+            if ( labels[i] == diagnosis_phase_detector::diagnosis_transition ){
+                cl_labels.push_back(1);
+            } else {
+                cl_labels.push_back(0);
+            }
         }
+        
+        //thrs.train(images, cl_labels);
+        thrs.log_values(images, cl_labels);
+        
+        Mat histogram;
+        thrs.plot_histogram(histogram, 50);
+        imshow("histogram", histogram);
+        
+        stringstream ss;
+        ss << "results/phase_timeline/motion/" << test_case << ".jpg";
+        string filename;
+        ss >> filename;
+        
+        cl.visualize(images, labels, filename.c_str());
+        waitKey(10);
+        
+        cout << "Accuracy: " << thrs.eval(images, cl_labels) << endl;
+        
+        vector<label> predictions;
+        thrs.detect(images, predictions);
+        
+        //thrs.get_confusion_matrix(images, cl_labels, next_matrix);
+        thrs.get_confusion_matrix(images, cl_labels, next_matrix);
+        thrs.print_confusion_matrix(images, cl_labels);
+        
+        merge_confusion_matrix(base_matrix, next_matrix, test_case++);
+        
+        cout << endl;
+        print_confusion_matrix(base_matrix);
+        
+        cout << "=========================" << endl;
     }
     
-    //thrs.train(images, cl_labels);
-    thrs.set_threshold(500000);
-    cout << "Accuracy: " << thrs.eval(images, cl_labels) << endl;
+    waitKey(0);
     
-    vector<label> predictions;
-    thrs.detect(images, predictions);
-    thrs.print_confusion_matrix(images, cl_labels);
-    
+    /*
     for (size_t i = 0; i < images.size(); i++ ){
         vector<float> features;
         f.extract(images, i, features);
@@ -176,4 +260,5 @@ int main(int argc, const char* argv[])
         imshow("motion", dst);
         waitKey(0);
     }
+    */
 }

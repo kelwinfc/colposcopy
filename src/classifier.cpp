@@ -746,6 +746,9 @@ void threshold_cl::train(vector<Mat>& src, vector<label>& labels)
         }
     }
     
+    cout << "initial " << correctly_classified << " total " << labels.size()
+         << endl;
+    
     sort(tp.begin(), tp.end());
     
     this->k = tp[0].first;
@@ -764,7 +767,7 @@ void threshold_cl::train(vector<Mat>& src, vector<label>& labels)
             best_cl = correctly_classified;
         }
         
-        cout << i << " " << this->k << correctly_classified << endl;
+        //cout << i << " " << this->k << " " << correctly_classified << endl;
     }
     
     #if __COLPOSCOPY_VERBOSE
@@ -839,6 +842,80 @@ label threshold_cl::predict(Mat& src)
 void threshold_cl::set_threshold(int k)
 {
     this->k = k;
+}
+
+void threshold_cl::log_values(vector<Mat>& src, vector<label>& labels)
+{
+    vector< vector<float> > features;
+    this->extract_features(src, features);
+    
+    for ( size_t i = 0; i < src.size(); i++ ){
+        this->log.push_back(make_pair(features[i][0], labels[i]));
+    }
+}
+
+void threshold_cl::plot_histogram(Mat& img, int num_bins)
+{
+    if ( this->log.size() == 0 ){
+        return;
+    }
+    
+    float min_value = this->log[0].first;
+    float max_value = this->log[0].first;
+    size_t total = 0;
+    
+    for ( size_t i = 0; i < this->log.size(); i++ ){
+        min_value = min(min_value, this->log[i].first);
+        max_value = max(max_value, this->log[i].first);
+        total += this->log[i].second;
+    }
+    
+    int rows = 200;
+    int cols = 400;
+    img = Mat::zeros(rows + 20, cols + 20, CV_8UC3);
+    
+    for (int r=0; r<img.rows; r++){
+        for (int c=0; c<img.cols; c++){
+            img.at<Vec3b>(r, c) = Vec3b(255, 255, 255);
+        }
+    }
+    
+    vector<float> bins[2];
+    
+    bins[0].resize(num_bins);
+    bins[1].resize(num_bins);
+    fill(bins[0].begin(), bins[0].end(), 0);
+    fill(bins[1].begin(), bins[1].end(), 0);
+    
+    sort(this->log.begin(), this->log.end());
+    
+    float max_height[2] = {0.0, 0.0};
+    for ( size_t i = 0; i < this->log.size(); i++ ){
+        float next_value = this->log[i].first;
+        next_value = (next_value - min_value) / (max_value - min_value);
+        
+        bins[this->log[i].second][next_value * num_bins]++;
+        max_height[0] = max(max_height[0],
+                         bins[this->log[i].second][next_value * num_bins]);
+    }
+    
+    Scalar colors[2] = {Scalar(255, 0, 0), Scalar(0, 0, 255)};
+    
+    Point this_point, prev_point;
+    
+    for ( int l=0; l<2; l++ ){
+        for ( int b=0; b<num_bins; b++ ){
+            prev_point = this_point;
+            this_point = Point(10 + (float)b/(float)num_bins * cols,
+                              rows + 10 - bins[l][b] / max_height[0] * rows);
+            
+            circle(img, this_point, 2, colors[l], -1, 8, 0);
+            
+            if ( b ){
+                line(img, prev_point, this_point, colors[l], 1);
+            }
+        }
+    }
 }
 
 /*****************************************************************************

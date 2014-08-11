@@ -177,6 +177,23 @@ class unknown_removal_dpd : public diagnosis_phase_detector {
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
 };
 
+class binary_dpd : public diagnosis_phase_detector {
+    protected:
+        diagnosis_phase_detector* left;
+        diagnosis_phase_detector* right;
+    
+    public:
+        binary_dpd();
+        binary_dpd(diagnosis_phase_detector* l, diagnosis_phase_detector* r);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
+}
+
 };
 
 #endif
