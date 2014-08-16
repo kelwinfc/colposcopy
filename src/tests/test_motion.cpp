@@ -157,7 +157,7 @@ int main(int argc, const char* argv[])
         return -1;
     }
 
-    int mod_rate = 2;
+    int mod_rate = 1;
     
     map< pair<label, label>, float> base_matrix;
     map< pair<label, label>, int> next_matrix;
@@ -170,11 +170,11 @@ int main(int argc, const char* argv[])
         
     motion_fe f_cl(5, 1, 1);
     thrs.set_feature_extractor(&f_cl);
-    thrs.set_threshold(500000);
+    thrs.set_threshold(1000000);
     
     classifier_dpd cl;
     cl.set_classifier(&thrs);
-        
+    
     while ( getline(fin, line) )
     {
         cout << "Test " << test_case << ": " << line << endl;
@@ -185,6 +185,8 @@ int main(int argc, const char* argv[])
         vector<diagnosis_phase_detector::phase> labels;
             
         get_sequence(line.c_str(), images, labels, mod_rate);
+        
+        cout << "  " << images.size() << " frames " << endl;
         
         int nr=8, nc=8;
         motion_fe f(5, nr, nc);
@@ -216,9 +218,6 @@ int main(int argc, const char* argv[])
         
         cout << "Accuracy: " << thrs.eval(images, cl_labels) << endl;
         
-        vector<label> predictions;
-        thrs.detect(images, predictions);
-        
         //thrs.get_confusion_matrix(images, cl_labels, next_matrix);
         thrs.get_confusion_matrix(images, cl_labels, next_matrix);
         thrs.print_confusion_matrix(images, cl_labels);
@@ -229,36 +228,48 @@ int main(int argc, const char* argv[])
         print_confusion_matrix(base_matrix);
         
         cout << "=========================" << endl;
+        
+        /*
+        {
+            vector<label> predictions;
+            thrs.detect(images, predictions);
+            
+            for (size_t i = 0; i < images.size(); i++ ){
+                vector<float> features;
+                f.extract(images, i, features);
+                
+                vector<float> feature_total;
+                f_cl.extract(images, i, feature_total);
+                cout << feature_total[0] << endl;
+                
+                Mat dst;
+                show_motion(features, nr, nc, dst, images[i].rows,
+                            images[i].cols);
+                
+                vector<Mat> channels;
+                Mat z = Mat::zeros(dst.rows, dst.cols, CV_8U);
+                
+                if ( cl_labels[i] == predictions[i] ){
+                    channels.push_back(z);
+                    channels.push_back(dst);
+                    channels.push_back(z);
+                } else {
+                    channels.push_back(z);
+                    channels.push_back(z);
+                    channels.push_back(dst);
+                }
+                
+                merge(channels, dst);
+                cout << cl_labels[i] << " " << predictions[i] << endl;
+                
+                imshow("img", images[i]);
+                imshow("motion", dst);
+                waitKey(0);
+            }
+        }
+        */
     }
     
     waitKey(0);
     
-    /*
-    for (size_t i = 0; i < images.size(); i++ ){
-        vector<float> features;
-        f.extract(images, i, features);
-        Mat dst;
-        show_motion(features, nr, nc, dst, images[i].rows, images[i].cols);
-        
-        vector<Mat> channels;
-        Mat z = Mat::zeros(dst.rows, dst.cols, CV_8U);
-        
-        if ( cl_labels[i] == predictions[i] ){
-            channels.push_back(z);
-            channels.push_back(dst);
-            channels.push_back(z);
-        } else {
-            channels.push_back(z);
-            channels.push_back(z);
-            channels.push_back(dst);
-        }
-        
-        merge(channels, dst);
-        cout << cl_labels[i] << " " << predictions[i] << endl;
-        
-        imshow("img", images[i]);
-        imshow("motion", dst);
-        waitKey(0);
-    }
-    */
 }

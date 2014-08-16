@@ -115,17 +115,16 @@ class w_dpd : public diagnosis_phase_detector {
 };
 
 class context_rule {
-    private:
+    protected:
         diagnosis_phase_detector::phase pre;
         diagnosis_phase_detector::phase post;
         diagnosis_phase_detector::phase replace_by;
-        bool seen_before;
     
     public:
+        context_rule();
         context_rule(diagnosis_phase_detector::phase pre,
                      diagnosis_phase_detector::phase post,
-                     diagnosis_phase_detector::phase replace_by,
-                     bool barkward
+                     diagnosis_phase_detector::phase replace_by
                     );
 
         friend bool operator<(context_rule const& a, context_rule const& b)
@@ -138,18 +137,59 @@ class context_rule {
         diagnosis_phase_detector::phase get_pre() const;
         diagnosis_phase_detector::phase get_post() const;
         diagnosis_phase_detector::phase get_replacement() const;
-        bool is_before_rule() const;
+        
+        virtual diagnosis_phase_detector::phase is_ok(
+                        set<diagnosis_phase_detector::phase>& seen,
+                        diagnosis_phase_detector::phase p);
+        
+};
+
+class at_least_once_before_cr : public context_rule {
+    public:
+        at_least_once_before_cr(diagnosis_phase_detector::phase pre,
+                                diagnosis_phase_detector::phase post,
+                                diagnosis_phase_detector::phase replace_by
+                               );
+        
+        virtual diagnosis_phase_detector::phase is_ok(
+                        set<diagnosis_phase_detector::phase>& seen,
+                        diagnosis_phase_detector::phase p);
+};
+
+class never_before_cr : public context_rule {
+    public:
+        never_before_cr(diagnosis_phase_detector::phase pre,
+                        diagnosis_phase_detector::phase post,
+                        diagnosis_phase_detector::phase replace_by
+                       );
+        
+        virtual diagnosis_phase_detector::phase is_ok(
+                        set<diagnosis_phase_detector::phase>& seen,
+                        diagnosis_phase_detector::phase p);
+};
+
+class never_after_cr : public context_rule {
+    public:
+        never_after_cr(diagnosis_phase_detector::phase pre,
+                       diagnosis_phase_detector::phase post,
+                       diagnosis_phase_detector::phase replace_by
+                      );
+        
+        virtual diagnosis_phase_detector::phase is_ok(
+                        set<diagnosis_phase_detector::phase>& seen,
+                        diagnosis_phase_detector::phase p);
 };
 
 class context_dpd : public diagnosis_phase_detector {
     private:
         diagnosis_phase_detector* underlying_detector;
-        set<context_rule> rules;
+        set<context_rule*> rules;
     
     public:
         context_dpd();
         context_dpd(diagnosis_phase_detector* d);
-
+        ~context_dpd();
+        
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
@@ -192,7 +232,41 @@ class binary_dpd : public diagnosis_phase_detector {
         virtual void train(vector<Mat>& src, vector<phase>& labels);
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
-}
+};
+
+class final_dpd : public diagnosis_phase_detector {
+    protected:
+        diagnosis_phase_detector* dpd_transition;
+        diagnosis_phase_detector* dpd_phase;
+        uint mod_rate;
+    
+    public:
+        final_dpd();
+        final_dpd(diagnosis_phase_detector* tr, diagnosis_phase_detector* ph,
+                  uint mod_rate=1);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
+    
+    private:
+        void get_transition_labels(vector<Mat>& images,
+                                   vector<phase>& labels,
+                                   vector<Mat>& tr_images,
+                                   vector<phase>& tr_labels);
+        
+        void get_phase_labels(vector<Mat>& images,
+                              vector<phase>& labels,
+                              vector<Mat>& ph_images,
+                              vector<phase>& ph_labels);
+        
+        void extract_non_transition(vector<Mat>& src, vector<Mat>& dst,
+                                    vector<phase>& transitions,
+                                    vector<int>& mapping);
+};
 
 };
 

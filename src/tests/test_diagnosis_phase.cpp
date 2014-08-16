@@ -37,7 +37,7 @@ void get_sequence(const char* filename,
         
         anonadado::choice_feature* step_feature =
                             (anonadado::choice_feature*)a->get_feature("step");
-        
+        /*
         if ( diagnosis_phase_detector::string_to_phase(
                                             step_feature->get_value()) ==
              diagnosis_phase_detector::diagnosis_transition
@@ -45,7 +45,7 @@ void get_sequence(const char* filename,
         {
             continue;
         }
-        
+        */
         Mat img, aux;
         inst.get_frame(f, img);
         
@@ -149,6 +149,7 @@ int main(int argc, const char* argv[])
         knn incr_eucl;
         hue_histogram_fe f;
         circular_emd d;
+        //euclidean_distance d;
         //hi_distance d;
         incr_eucl.set_feature_extractor(&f);
         incr_eucl.set_distance(&d);
@@ -156,24 +157,35 @@ int main(int argc, const char* argv[])
         classifier_dpd hd;
         hd.set_classifier(&incr_eucl);
         
-        hd.train(training_images, training_labels);
-        cout << "Index size: " << incr_eucl.index_size() << endl;
+        //hd.train(training_images, training_labels);
         
         w_dpd whd(&hd, 3);
         context_dpd cwhd(&whd);
-        unknown_removal_dpd ucwhd(&cwhd);
+        
+        threshold_cl thrs;
+        motion_fe f_cl(5, 1, 1);
+        thrs.set_feature_extractor(&f_cl);
+        thrs.set_threshold(500000);
+        classifier_dpd motion_cl;
+        motion_cl.set_classifier(&thrs);
+        
+        final_dpd dpd(&motion_cl, &cwhd, 3);
+        dpd.train(training_images, training_labels);
         
         stringstream ss;
         string name;
         ss << i;
         ss >> name;
         
+        cout << "Training done\n";
+        /*
         hd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_0_histogram.jpg");
         whd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_1_w.jpg");
         cwhd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_2_context.jpg");
-        ucwhd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_3_unknown.jpg");
+        */
+        dpd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_final.jpg");
         
-        float error = ucwhd.print_confussion_matrix(images[i], labels[i]);
+        float error = dpd.print_confussion_matrix(images[i], labels[i]);
         cout << "Test error: " << error << endl;
     }
     /*

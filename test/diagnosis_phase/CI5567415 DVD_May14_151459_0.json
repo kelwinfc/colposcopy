@@ -54,7 +54,7 @@
                 ]
             }, 
             {
-                "frame": 121, 
+                "frame": 117, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -65,6 +65,36 @@
             }, 
             {
                 "frame": 161, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 179, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "green"
+                    }
+                ]
+            }, 
+            {
+                "frame": 245, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 259, 
                 "name": "diagnosis_step", 
                 "features": [
                     {

@@ -94,7 +94,7 @@ void hue_histogram_fe::extract(vector<Mat>& in, int i, vector<float>& out)
     cvtColor(in[i], aux, CV_BGR2HSV);
     split( aux, hsv_planes );
 
-    out.resize( 256 / this->bindw );
+    out.resize( 180 / this->bindw );
     fill(out.begin(), out.end(), 0.0);
 
     for ( int r = 0; r < in[i].rows; r++ ){
@@ -142,17 +142,25 @@ void motion_fe::extract(vector<Mat>& in, int i, vector<float>& out)
     out.resize(this->width * this->height);
     fill(out.begin(), out.end(), 0.0);
     
-    for ( int k = max(1, i - this->w); k < min(i+1, (int)in.size()); k++ ){
-        Mat current_image, prev_image;
-        GaussianBlur(in[k - 1], prev_image, Size(3,3), 0.3);
-        GaussianBlur(in[k], current_image, Size(3,3), 0.3);
+    Mat current_image;
+    GaussianBlur(in[i], current_image, Size(3,3), 0.3);
+    
+    for ( int k = max(0, i - this->w - 1);
+          k < min(i + this->w + 1, (int)in.size());
+          k++ )
+    {
+        if ( k == i )
+            continue;
+        
+        Mat next_image;
+        GaussianBlur(in[k], next_image, Size(3,3), 0.3);
         
         for ( int r = 0; r < in[k].rows; r++ ){
             int fr = r / (in[k].rows / this->height);
             for ( int c = 0; c < in[k].cols; c++ ){
                 int fc = c / (in[k].cols / this->width);
                 
-                Vec3b prev_pixel = prev_image.at<Vec3b>(r, c);
+                Vec3b prev_pixel = next_image.at<Vec3b>(r, c);
                 Vec3b next_pixel = current_image.at<Vec3b>(r, c);
                 float diff = 0.0;
                 

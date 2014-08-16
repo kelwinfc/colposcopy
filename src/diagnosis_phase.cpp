@@ -305,7 +305,6 @@ void classifier_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
     vector<label> aux;
     this->phase_to_label(labels, aux);
-    
     this->c->untrain();
     this->c->train(src, aux);
 }
@@ -330,11 +329,7 @@ void classifier_dpd::phase_to_label(vector<phase>& in, vector<label>& out)
     out.clear();
     out.resize(in.size());
     for ( size_t i = 0; i < in.size(); i++ ){
-        if ( in[i] == diagnosis_unknown ){
-            out[i] = UNKNOWN;
-        } else {
-            out[i] = (label)in[i];
-        }
+        out[i] = (label)in[i];
     }
 }
 
@@ -410,7 +405,7 @@ void w_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 }
 void w_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    //TODO
+    this->underlying_detector->train(src, labels);
 }
 
 float w_dpd::eval(vector<Mat>& src, vector<phase>& labels)
@@ -482,16 +477,91 @@ void w_dpd::detect(vector<Mat>& src, vector<phase>& dst)
  *                          Context Phase Detector                           *
  *****************************************************************************/
 
+context_rule::context_rule()
+{
+    
+}
+
 context_rule::context_rule(diagnosis_phase_detector::phase pre,
                            diagnosis_phase_detector::phase post,
-                           diagnosis_phase_detector::phase replace_by,
-                           bool seen_before
+                           diagnosis_phase_detector::phase replace_by
                           )
 {
-    this->pre = pre;
-    this->post = post;
+    this->pre        = pre;
+    this->post       = post;
     this->replace_by = replace_by;
-    this->seen_before = seen_before;
+}
+
+diagnosis_phase_detector::phase context_rule::is_ok(
+                                    set<diagnosis_phase_detector::phase>& seen,
+                                    diagnosis_phase_detector::phase p)
+{
+    return p;
+}
+
+at_least_once_before_cr::at_least_once_before_cr(
+                                diagnosis_phase_detector::phase pre,
+                                diagnosis_phase_detector::phase post,
+                                diagnosis_phase_detector::phase replace_by
+                               )
+{
+    this->pre        = pre;
+    this->post       = post;
+    this->replace_by = replace_by;
+}
+
+diagnosis_phase_detector::phase at_least_once_before_cr::is_ok(
+                                    set<diagnosis_phase_detector::phase>& seen,
+                                    diagnosis_phase_detector::phase p)
+{
+    if ( seen.find(this->pre) == seen.end() )
+    {
+        return this->replace_by;
+    }
+    
+    return p;
+}
+
+never_before_cr::never_before_cr(diagnosis_phase_detector::phase pre,
+                                 diagnosis_phase_detector::phase post,
+                                 diagnosis_phase_detector::phase replace_by)
+{
+    this->pre        = pre;
+    this->post       = post;
+    this->replace_by = replace_by;
+}
+        
+diagnosis_phase_detector::phase never_before_cr::is_ok(
+                                    set<diagnosis_phase_detector::phase>& seen,
+                                    diagnosis_phase_detector::phase p)
+{
+    if ( seen.find(this->pre) != seen.end() )
+    {
+        return this->replace_by;
+    }
+    
+    return p;
+}
+
+never_after_cr::never_after_cr(diagnosis_phase_detector::phase pre,
+                               diagnosis_phase_detector::phase post,
+                               diagnosis_phase_detector::phase replace_by)
+{
+    this->pre        = pre;
+    this->post       = post;
+    this->replace_by = replace_by;
+}
+        
+diagnosis_phase_detector::phase never_after_cr::is_ok(
+                                    set<diagnosis_phase_detector::phase>& seen,
+                                    diagnosis_phase_detector::phase p)
+{
+    if ( seen.find(this->pre) != seen.end() )
+    {
+        return this->replace_by;
+    }
+    
+    return p;
 }
 
 diagnosis_phase_detector::phase context_rule::get_pre() const 
@@ -509,11 +579,6 @@ diagnosis_phase_detector::phase context_rule::get_replacement() const
     return this->replace_by;
 }
 
-bool context_rule::is_before_rule() const
-{
-    return this->seen_before;
-}
-
 context_dpd::context_dpd()
 {
     this->underlying_detector = 0;
@@ -523,15 +588,33 @@ context_dpd::context_dpd(diagnosis_phase_detector* d)
 {
     this->underlying_detector = d;
 
-    this->rules.insert( context_rule(diagnosis_plain, diagnosis_hinselmann,
-                                     diagnosis_plain, true) );
-    this->rules.insert( context_rule(diagnosis_green, diagnosis_schiller,
-                                     diagnosis_plain, true) );
-    this->rules.insert( context_rule(diagnosis_green, diagnosis_hinselmann,
-                                     diagnosis_plain, true) );
+    this->rules.insert(new at_least_once_before_cr(diagnosis_green,
+                                                   diagnosis_hinselmann,
+                                                   diagnosis_plain) );
+    this->rules.insert(new at_least_once_before_cr(diagnosis_green,
+                                                   diagnosis_schiller,
+                                                   diagnosis_plain) );
+    this->rules.insert(new at_least_once_before_cr(diagnosis_green,
+                                                   diagnosis_hinselmann,
+                                                   diagnosis_plain) );
+    this->rules.insert(new never_after_cr(diagnosis_green,
+                                          diagnosis_plain,
+                                          diagnosis_hinselmann) );
+    
+    /*
     
     this->rules.insert( context_rule(diagnosis_green, diagnosis_plain,
-                                     diagnosis_hinselmann, false) );
+                                     diagnosis_hinselmann, false) );*/
+}
+
+context_dpd::~context_dpd()
+{
+    set<context_rule*>::iterator it=this->rules.begin(), end=this->rules.end();
+    
+    for ( ; it != end; ++it ){
+        context_rule* next = *it;
+        delete next;
+    }
 }
 
 void context_dpd::read(const rapidjson::Value& json)
@@ -546,7 +629,7 @@ void context_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 
 void context_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    // noop
+    this->underlying_detector->train(src, labels);
 }
 
 float context_dpd::eval(vector<Mat>& src, vector<phase>& labels)
@@ -556,21 +639,14 @@ float context_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 
 diagnosis_phase_detector::phase context_dpd::is_ok(set<phase>& seen, phase p)
 {
-    set<context_rule>::iterator it;
+    set<context_rule*>::iterator it;
     for ( it = this->rules.begin(); it != this->rules.end(); ++it ){
-        if ( it->get_post() == p ){
-            if ( it->is_before_rule() &&
-                 seen.find(it->get_pre()) == seen.end() )
-            {
-                return it->get_replacement();
-            } else if ( !it->is_before_rule() &&
-                        seen.find(it->get_pre()) != seen.end() )
-            {
-                return it->get_replacement();
-            }
+        context_rule* next = *it;
+        if ( next->get_post() == p && next->is_ok(seen, p) != p ){
+            return next->get_replacement();
         }
     }
-
+    
     return p;
 }
 
@@ -584,7 +660,7 @@ void context_dpd::detect(vector<Mat>& src, vector<phase>& dst)
         
         vector<phase> dst_aux;
         this->underlying_detector->detect(src, dst_aux);
-
+        
         set<phase> seen;
         
         for ( uint i = 0; i < n; i++ ){
@@ -624,7 +700,7 @@ void unknown_removal_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 
 void unknown_removal_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-
+    this->underlying_detector->train(src, labels);
 }
 
 float unknown_removal_dpd::eval(vector<Mat>& src, vector<phase>& labels)
@@ -685,17 +761,182 @@ void binary_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
 
 void binary_dpd::train(vector<Mat>& src, vector<phase>& labels)
 {
-    //TODO
+    if ( this->left != 0 ){
+        this->left->train(src, labels);
+    }
+    
+    if ( this->right != 0 ){
+        this->right->train(src, labels);
+    }
 }
 
 float binary_dpd::eval(vector<Mat>& src, vector<phase>& labels)
 {
-    //TODO
+    return diagnosis_phase_detector::eval(src, labels);
 }
 
 void binary_dpd::detect(vector<Mat>& src, vector<phase>& dst)
 {
+    vector<phase> dst_left, dst_right;
+    
+    if ( this->left != 0 ){
+        this->left->detect(src, dst_left);
+    } else {
+        this->diagnosis_phase_detector::detect(src, dst_left);
+    }
+    
+    if ( this->right != 0 ){
+        this->right->detect(src, dst_right);
+    } else {
+        this->diagnosis_phase_detector::detect(src, dst_right);
+    }
+    
+    dst.resize(src.size());
+    for ( size_t i = 0; i < src.size(); i++ ){
+        if ( dst_left[i] == diagnosis_unknown ){
+            dst[i] = dst_right[i];
+        } else {
+            dst[i] = dst_left[i];
+        }
+    }
+}
+
+/*****************************************************************************
+ *                           Final Phase Detector                            *
+ *****************************************************************************/
+
+final_dpd::final_dpd()
+{
+    this->dpd_transition = 0;
+    this->dpd_phase      = 0;
+    this->mod_rate       = 1;
+}
+
+final_dpd::final_dpd(diagnosis_phase_detector* tr, diagnosis_phase_detector* ph,
+                     uint mod_rate)
+{
+    this->dpd_transition = tr;
+    this->dpd_phase      = ph;
+    this->mod_rate       = mod_rate;
+}
+        
+void final_dpd::read(const rapidjson::Value& json)
+{
     //TODO
+}
+
+void final_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+void final_dpd::get_transition_labels(vector<Mat>& images,
+                                      vector<phase>& labels,
+                                      vector<Mat>& tr_images,
+                                      vector<phase>& tr_labels)
+{
+    tr_images.clear();
+    tr_labels.clear();
+    
+    for ( size_t i = 0; i < images.size(); i++ ){
+        tr_images.push_back(images[i]);
+        if ( labels[i] == diagnosis_transition ){
+            tr_labels.push_back(diagnosis_transition);
+        } else {
+            tr_labels.push_back(diagnosis_unknown);
+        }
+    }
+}
+
+void final_dpd::get_phase_labels(vector<Mat>& images,
+                                 vector<phase>& labels,
+                                 vector<Mat>& ph_images,
+                                 vector<phase>& ph_labels)
+{
+    ph_images.clear();
+    ph_labels.clear();
+    
+    for ( size_t i = 0; i < images.size(); i++ ){
+        if ( labels[i] != diagnosis_transition && 
+             labels[i] != diagnosis_unknown && (i % (size_t)mod_rate == 0) )
+        {
+            ph_images.push_back(images[i]);
+            ph_labels.push_back(labels[i]);
+        }
+    }
+}
+
+void final_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+    vector<Mat> src_transition, src_phase;
+    vector<phase> labels_transition, labels_phase;
+    
+    this->get_transition_labels(src, labels, src_transition, labels_transition);
+    this->get_phase_labels(src, labels, src_phase, labels_phase);
+    
+    this->dpd_transition->train(src_transition, labels_transition);
+    this->dpd_phase->train(src_phase, labels_phase);
+}
+
+float final_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    int n = labels.size();
+    uint f = 0;
+
+    if ( n == 0 ){
+        return 0.0;
+    }
+
+    vector<phase> output;
+    this->detect(src, output);
+
+    for ( int i = 0; i < n; i++ ){
+        if ( output[i] != labels[i] ){
+            f++;
+        }
+    }
+    
+    return ((float)f) / labels.size();
+}
+
+void final_dpd::extract_non_transition(vector<Mat>& src, vector<Mat>& dst,
+                                       vector<phase>& transitions,
+                                       vector<int>& mapping)
+{
+    mapping.resize(src.size());
+    fill(mapping.begin(), mapping.end(), -1);
+    
+    for ( size_t i = 0; i < src.size(); i++ ){
+        if ( transitions[i] != diagnosis_transition ){
+            mapping[i] = (int)dst.size();
+            dst.push_back(src[i]);
+        }
+    }
+}
+
+void final_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    vector<phase> transition_out;
+    vector<phase> phase_out;
+    vector<Mat> src_phase;
+    vector<int> mapping;
+    
+    this->dpd_transition->detect(src, transition_out);
+    
+    extract_non_transition(src, src_phase, transition_out, mapping);
+    
+    this->dpd_phase->detect(src_phase, phase_out);
+    
+    dst.resize(src.size());
+    fill(dst.begin(), dst.end(), diagnosis_unknown);
+    
+    for ( size_t i = 0; i < src.size(); i++ ){
+        if ( transition_out[i] == diagnosis_transition ){
+            dst[i] = diagnosis_transition;
+        } else {
+            dst[i] = phase_out[mapping[i]];
+        }
+    }
 }
 
 /*****************************************************************************

@@ -79,6 +79,16 @@
                 "features": [
                     {
                         "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 3464, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
                         "value": "green"
                     }
                 ]

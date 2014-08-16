@@ -746,10 +746,11 @@ void threshold_cl::train(vector<Mat>& src, vector<label>& labels)
         }
     }
     
-    cout << "initial " << correctly_classified << " total " << labels.size()
-         << endl;
-    
     sort(tp.begin(), tp.end());
+    
+    if ( tp.size() == 0 ){
+        return;
+    }
     
     this->k = tp[0].first;
     size_t best_cl = correctly_classified;
