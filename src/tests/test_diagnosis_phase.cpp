@@ -21,9 +21,6 @@ void get_sequence(const char* filename,
     
     int num_frames = inst.num_frames();
     
-    images.clear();
-    labels.clear();
-    
     for ( int f = 0; f < num_frames; f++ ){
         if ( f % mod_rate != 0 ){
             continue;
@@ -32,7 +29,7 @@ void get_sequence(const char* filename,
         annotation* a = inst.get_active_annotation(step_index[0], f);
         annotation* roi = inst.get_active_annotation(roi_index[0], f);
         
-        if ( !a )
+        if ( !a || !roi )
             continue;
         
         anonadado::choice_feature* step_feature =
@@ -60,7 +57,6 @@ void get_sequence(const char* filename,
         anonadado::bbox_feature* roi_feature =
                             (anonadado::bbox_feature*)roi->get_feature("roi");
         BBOX roi_value = roi_feature->get_value();
-        
         
         Rect region_of_interest =
             Rect(roi_value.first.first,
@@ -117,6 +113,9 @@ int main(int argc, const char* argv[])
     }
 
     int mod_rate = 1;
+    int num_neighbors = 1;
+    int bin_width = 5;
+    int ph_mod_rate = 10;
     
     vector<string> videos;
     get_videos(argv[0], videos);
@@ -126,15 +125,19 @@ int main(int argc, const char* argv[])
     
     cout << "Loading videos... " << endl;
     for ( size_t i = 0; i < videos.size(); i++ ){
+        int64 start_t = GetTimeMs64();
+        
         vector<Mat> next_images;
         vector<diagnosis_phase_detector::phase> next_labels;
-        
-        get_sequence(videos[i].c_str(), next_images, next_labels, mod_rate);
-        
         images.push_back(next_images);
         labels.push_back(next_labels);
         
-        cout << i+1 << "/" << videos.size() << endl;
+        get_sequence(videos[i].c_str(), images.back(), labels.back(), mod_rate);
+        int64 end_t = GetTimeMs64();
+        
+        cout << i+1 << "/" << videos.size() << " "
+             << (end_t - start_t) / 1000 << " sec"
+             << endl;
     }
     
     for ( size_t i = 0; i < videos.size(); i++ ){
@@ -142,35 +145,85 @@ int main(int argc, const char* argv[])
         
         vector<Mat> training_images;
         vector<diagnosis_phase_detector::phase> training_labels;
+        /*
+        vector<Mat> empty_images;
+        vector<diagnosis_phase_detector::phase> empty_labels;
+        images.push_back(empty_images);
+        labels.push_back(empty_labels);
+        all_but_one(images, labels, training_images, training_labels, images.size()-1);
+        */
         
         all_but_one(images, labels, training_images, training_labels, i);
         
-        //incremental_nbc incr_eucl;
-        knn incr_eucl;
-        hue_histogram_fe f;
-        circular_emd d;
-        //euclidean_distance d;
-        //hi_distance d;
-        incr_eucl.set_feature_extractor(&f);
-        incr_eucl.set_distance(&d);
+        /* K-NN Classifiers */
+        knn knn_euclidean(num_neighbors);
+        knn knn_hi(num_neighbors);
+        knn knn_emd(num_neighbors);
+        knn knn_cemd(num_neighbors);
         
-        classifier_dpd hd;
-        hd.set_classifier(&incr_eucl);
+        /* Feature extractor and distances */
+        hue_histogram_fe f(bin_width, true);
         
-        //hd.train(training_images, training_labels);
+        euclidean_distance euclidean;
+        hi_distance hi;
+        earth_movers_distance emd;
+        circular_emd cemd;
         
-        w_dpd whd(&hd, 3);
-        context_dpd cwhd(&whd);
+        knn_euclidean.set_feature_extractor(&f);
+        knn_hi.set_feature_extractor(&f);
+        knn_emd.set_feature_extractor(&f);
+        knn_cemd.set_feature_extractor(&f);
         
+        knn_euclidean.set_distance(&euclidean);
+        knn_hi.set_distance(&hi);
+        knn_emd.set_distance(&emd);
+        knn_cemd.set_distance(&cemd);
+        
+        classifier_dpd hd_euclidean, hd_hi, hd_emd, hd_cemd;
+        hd_euclidean.set_classifier(&knn_euclidean);
+        hd_hi.set_classifier(&knn_hi);
+        hd_emd.set_classifier(&knn_emd);
+        hd_cemd.set_classifier(&knn_cemd);
+        
+        /* Windowed Classifier */
+        w_dpd whd_euclidean(&hd_euclidean, 3);
+        w_dpd whd_hi(&hd_hi, 3);
+        w_dpd whd_emd(&hd_emd, 3);
+        w_dpd whd_cemd(&hd_cemd, 3);
+        
+        /* Context Classifier */
+        
+        context_dpd cwhd_euclidean(&whd_euclidean);
+        context_dpd cwhd_hi(&whd_hi);
+        context_dpd cwhd_emd(&whd_emd);
+        context_dpd cwhd_cemd(&whd_cemd);
+        
+        /* Motion classifier */
         threshold_cl thrs;
         motion_fe f_cl(5, 1, 1);
         thrs.set_feature_extractor(&f_cl);
-        thrs.set_threshold(500000);
+        thrs.set_threshold(1000000);
         classifier_dpd motion_cl;
         motion_cl.set_classifier(&thrs);
         
-        final_dpd dpd(&motion_cl, &cwhd, 3);
-        dpd.train(training_images, training_labels);
+        /* Final classifier */
+        final_dpd dpd_euclidean(&motion_cl, &cwhd_euclidean, ph_mod_rate);
+        final_dpd dpd_hi(&motion_cl, &cwhd_hi, ph_mod_rate);
+        final_dpd dpd_emd(&motion_cl, &cwhd_emd, ph_mod_rate);
+        final_dpd dpd_cemd(&motion_cl, &cwhd_cemd, ph_mod_rate);
+        
+        dpd_euclidean.train(training_images, training_labels);
+        dpd_hi.train(training_images, training_labels);
+        dpd_emd.train(training_images, training_labels);
+        dpd_cemd.train(training_images, training_labels);
+        
+        map<label, Scalar> colors;
+        colors[2] = Scalar(0, 0, 255);
+        colors[3] = Scalar(0, 255, 0);
+        colors[4] = Scalar(255, 0, 0);
+        colors[5] = Scalar(0, 64, 128);
+        
+        knn_cemd.plot_histograms(colors);
         
         stringstream ss;
         string name;
@@ -179,15 +232,40 @@ int main(int argc, const char* argv[])
         
         cout << "Training done\n";
         /*
-        hd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_0_histogram.jpg");
-        whd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_1_w.jpg");
-        cwhd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_2_context.jpg");
+        dpd_euclidean.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_euclidean.jpg");
+        dpd_hi.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_hi.jpg");
+        dpd_emd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_emd.jpg");
+        dpd_cemd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_cemd.jpg");
         */
-        dpd.visualize(images[i], labels[i], "results/phase_timeline/" + name + "_final.jpg");
+        float error;
         
-        float error = dpd.print_confussion_matrix(images[i], labels[i]);
-        cout << "Test error: " << error << endl;
+        int64 start_t, end_t;
+        
+        start_t = GetTimeMs64();
+        error = dpd_euclidean.print_confussion_matrix(images[i], labels[i]);
+        end_t = GetTimeMs64();
+        cout << (end_t - start_t) / 1000 << " sec" << endl;
+        cout << "Euclidean: " << error << endl;
+        
+        start_t = GetTimeMs64();
+        error = dpd_hi.print_confussion_matrix(images[i], labels[i]);
+        end_t = GetTimeMs64();
+        cout << (end_t - start_t) / 1000 << " sec" << endl;
+        cout << "HI: " << error << endl;
+        
+        start_t = GetTimeMs64();
+        error = dpd_emd.print_confussion_matrix(images[i], labels[i]);
+        end_t = GetTimeMs64();
+        cout << (end_t - start_t) / 1000 << " sec" << endl;
+        cout << "EMD: " << error << endl;
+        
+        start_t = GetTimeMs64();
+        error = dpd_cemd.print_confussion_matrix(images[i], labels[i]);
+        end_t = GetTimeMs64();
+        cout << (end_t - start_t) / 1000 << " sec" << endl;
+        cout << "CEMD: " << error << endl;
     }
+    
     /*
     //knn_dpd hd;
     

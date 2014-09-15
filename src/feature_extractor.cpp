@@ -88,26 +88,30 @@ hue_histogram_fe::hue_histogram_fe(int bindw, bool normalize)
 void hue_histogram_fe::extract(vector<Mat>& in, int i, vector<float>& out)
 {
     Mat aux;
-    float max_vh = 0;
     vector<Mat> hsv_planes;
 
     cvtColor(in[i], aux, CV_BGR2HSV);
     split( aux, hsv_planes );
 
-    out.resize( 180 / this->bindw );
+    out.resize( 180 / this->bindw + (256 % this->bindw != 0 ? 1 : 0) );
     fill(out.begin(), out.end(), 0.0);
 
     for ( int r = 0; r < in[i].rows; r++ ){
         for ( int c = 0; c < in[i].cols; c++ ){
             int bh = hsv_planes[0].at<uchar>(r, c) / this->bindw;
             out[bh] += 1.0;
-            max_vh = max(max_vh, out[bh]);
         }
     }
-
+    
     if ( this->normalize ){
+        
+        float total = 0.0;
         for ( uint i = 0; i < out.size(); i++ ){
-            out[i] /= max_vh;
+            total += out[i];
+        }
+        
+        for ( uint i = 0; i < out.size(); i++ ){
+            out[i] /= total;
         }
     }
 }

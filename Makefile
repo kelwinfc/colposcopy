@@ -6,10 +6,11 @@ MAIN_FLAGS= `pkg-config opencv --cflags --libs` $(LBOOST_FLAGS) -Ilib -Icontrib 
 FILES=utils\
 	specular_reflection\
 	feature_extractor distance classifier\
-	diagnosis_phase
+	diagnosis_phase\
+	ranking
 
 EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers\
-	test_motion generate_pairs_of_images_to_annotate
+	test_motion generate_pairs_of_images_to_annotate test_ranking_abc
 
 DEP_utils=
 DEP_specular_reflection=utils
@@ -17,12 +18,14 @@ DEP_feature_extractor=utils
 DEP_distance=utils
 DEP_classifier=utils feature_extractor
 DEP_diagnosis_phase=utils feature_extractor distance classifier specular_reflection
+DEP_ranking=utils
 
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
 DEP_test_classifiers=$(DEP_neighbors)
 DEP_test_motion=$(DEP_diagnosis_phase)
 DEP_generate_pairs_of_images_to_annotate=$(DEP_diagnosis_phase)
+DEP_test_ranking_abc=$(DEP_ranking)
 
 all: $(EXECUTABLES)
 
@@ -38,6 +41,9 @@ test_classifiers: $(FILES:%=bin/%.o) src/tests/test_classifiers.cpp lib/tests/te
 test_motion: $(FILES:%=bin/%.o) src/tests/test_motion.cpp lib/tests/test_motion.hpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
+test_ranking_abc: $(FILES:%=bin/%.o) src/tests/test_ranking_abc.cpp lib/tests/test_ranking_abc.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
+
 generate_pairs_of_images_to_annotate: $(FILES:%=bin/%.o) src/generate_pairs_of_images_to_annotate.cpp lib/generate_pairs_of_images_to_annotate.hpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
@@ -51,6 +57,7 @@ bin/feature_extractor.o: $(DEP_feature_extractor:%=src/%.cpp) $(DEP_feature_extr
 bin/distance.o: $(DEP_distance:%=src/%.cpp) $(DEP_distance:%=lib/%.hpp)
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
 bin/classifier.o: $(DEP_classifier:%=src/%.cpp) $(DEP_classifier:%=lib/%.hpp)
+bin/ranking.o: $(DEP_ranking:%=src/%.cpp) $(DEP_ranking:%=lib/%.hpp)
 
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o

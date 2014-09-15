@@ -46,11 +46,13 @@ float lk_distance::d(vector<float>& a, vector<float>& b)
 {
     float ret = 0;
     size_t n = min(a.size(), b.size());
+    
     for ( size_t i = 0; i < n; i++ ){
         float diff = abs(a[i] - b[i]);
-        ret += pow(diff, this->k_inv);
+        ret += pow(diff, this->k);
     }
-    return ret;
+    
+    return pow(ret, this->k_inv);
 }
 
 void lk_distance::read(const rapidjson::Value& json)
@@ -106,14 +108,12 @@ hi_distance::hi_distance()
 float hi_distance::d(vector<float>& a, vector<float>& b)
 {
     float ret = 0.0;
-    float total = 0.0;
-
+    
     for ( uint i = 0; i < a.size(); i++ ){
-        ret += min(a[i], b[i]);
-        total += max(a[i], b[i]);
+        ret += min(a[i], b[i]) / (a[i] + b[i] + 1e-6);
     }
 
-    return 1.0 - ret / total;
+    return (float)a.size() - ret;
 }
 
 void hi_distance::read(const rapidjson::Value& json)
@@ -134,24 +134,41 @@ earth_movers_distance::earth_movers_distance()
 float earth_movers_distance::shifted_d(vector<float>& a, vector<float>& b,
                                        size_t shift)
 {
+    /*
     float prev_emd = 0.0;
     float current_emd = 0.0;
+    */
     float ret = 0.0;
     size_t n = a.size();
     size_t k = shift;
     
+    float prev_A = 0.0;
+    float prev_B = 0.0;
+    
+    for (size_t i = 0; i < n; i++){
+        if ( k == n )
+            k = 0;
+        
+        ret += abs((prev_A + a[k]) - (prev_B + b[k]));
+        prev_A += a[k];
+        prev_B += b[k];
+        
+        k++;
+    }
+    
+    /*
     for (size_t i = 0; i < n; i++){
         
         if ( k == n )
             k = 0;
         
         prev_emd = current_emd;
-        current_emd = a[k] + prev_emd - b[k];
-        
         ret += abs(current_emd);
+        
+        current_emd = a[k] + prev_emd - b[k];
         k++;
     }
-    
+    */
     return ret;
 }
 

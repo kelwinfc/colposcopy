@@ -46,3 +46,4 @@ test_diagnosis_phase
 test_classifiers
 test_motion
 generate_pairs_of_images_to_annotate
+test_ranking_abc

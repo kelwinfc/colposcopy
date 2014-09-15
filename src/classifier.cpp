@@ -603,7 +603,6 @@ void knn::train(vector<Mat>& src, vector<label>& labels)
     #if __COLPOSCOPY_VERBOSE
         cout << "Training\n";
     #endif
-    
     vector<Mat> src_train;
     vector<label> labels_train;
     
@@ -688,6 +687,64 @@ void knn::detect(vector< vector<float> >& src, vector<label>& dst)
             }
         }
     }
+}
+
+void knn::plot_histograms(map<label, Scalar>& colors)
+{
+    map<label, vector<float> > histogram;
+    map<label, size_t> count;
+    map<label,float> max_value;
+    
+    for ( size_t i = 0; i < this->index_features.size(); i++ ){
+        if ( histogram.find(this->index_label[i]) == histogram.end() ){
+            
+            vector<float> next_h;
+            next_h.resize(this->index_features[i].size());
+            fill(next_h.begin(), next_h.end(), 0.0);
+            
+            histogram[this->index_label[i]] = next_h;
+            count[this->index_label[i]] = 0;
+        }
+        
+        for ( size_t j = 0; j < this->index_features[i].size(); j++ ){
+            histogram[this->index_label[i]][j] += this->index_features[i][j];
+        }
+        count[this->index_label[i]]++;
+    }
+    
+    map<label, vector<float> >::iterator it;
+    for ( it = histogram.begin(); it != histogram.end(); ++it ){
+        vector<float> hist = it->second;
+        max_value[it->first] = 0;
+        for ( size_t i = 0; i < hist.size(); i++ ){
+            max_value[it->first] = max((float)max_value[it->first], hist[i]);
+        }
+    }
+    
+    Mat drawing = Mat::zeros(200, 400, CV_8UC3);
+    drawing = Scalar(255, 255, 255) - drawing;
+    
+    for ( it = histogram.begin(); it != histogram.end(); ++it ){
+        
+        if ( colors.find(it->first) == colors.end() ){
+            continue;
+        }
+        
+        vector<float> hist = it->second;
+        
+        for ( size_t i = 1; i < hist.size(); i++ ){
+            Scalar color = colors[it->first];
+            line(drawing,
+                 Point((i-1) * 400 / hist.size(),
+                       200 - hist[i-1] * 200 / max_value[it->first]),
+                 Point(i * 400 / hist.size(),
+                       200 - hist[i] * 200 / max_value[it->first]),
+                 color, 2);
+        }
+    }
+    
+    imshow("drawing", drawing);
+    waitKey(0);
 }
 
 /*****************************************************************************

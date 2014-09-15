@@ -871,10 +871,12 @@ void final_dpd::train(vector<Mat>& src, vector<phase>& labels)
     vector<Mat> src_transition, src_phase;
     vector<phase> labels_transition, labels_phase;
     
-    this->get_transition_labels(src, labels, src_transition, labels_transition);
-    this->get_phase_labels(src, labels, src_phase, labels_phase);
+//     this->get_transition_labels(src, labels,
+//                                 src_transition, labels_transition);
+    this->get_phase_labels(src, labels,
+                           src_phase, labels_phase);
     
-    this->dpd_transition->train(src_transition, labels_transition);
+    //this->dpd_transition->train(src_transition, labels_transition);
     this->dpd_phase->train(src_phase, labels_phase);
 }
 

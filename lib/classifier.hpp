@@ -140,7 +140,7 @@ class knn : public incremental_nbc {
     protected:
         int k;
         map<label, float> weight;
-        
+    
     public:
         knn();
         knn(int k);
@@ -151,6 +151,7 @@ class knn : public incremental_nbc {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         virtual void train(vector<Mat>& src, vector<label>& labels);
         
+        void plot_histograms(map<label, Scalar>& colors);
     protected:
         void detect(vector< vector<float> >& src, vector<label>& dst);
 };
