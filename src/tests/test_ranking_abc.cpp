@@ -107,7 +107,7 @@ int main(int argc, const char* argv[])
     
     words_to_features(words, samples);
     
-    ranking r(0.8, 1000);
+    ranking r(0.3, 1000);
     
     r.train(samples, feedback);
     r.rank(samples);
