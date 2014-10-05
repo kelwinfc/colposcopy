@@ -28,7 +28,7 @@ namespace anonadado {
         public:
             feature();
             feature(feature& a);
-            
+
             virtual void read(const rapidjson::Value& v,
                               bool just_value=false);
             void read(std::string filename, bool just_value);

@@ -1,97 +1,79 @@
 #include "generate_pairs_of_images_to_annotate.hpp"
 
+class layer_generator {
+    
+    public:
+        queue< pair<int, int> > boundaries;
+        vector<int> last_layer;
+        int last_level;
+        
+        layer_generator()
+        {
+            this->last_level = -1;
+        }
+        
+        layer_generator(int a, int b)
+        {
+            this->last_level = -1;
+            if ( a < b ){
+                this->boundaries.push( make_pair(a, b) );
+            }
+        }
+        
+        void get_next(vector<int>& next_layer, int level)
+        {
+            if ( level == this->last_level ){
+                next_layer = this->last_layer;
+                return;
+            }
+            
+            this->last_layer.clear();
+            next_layer.clear();
+            
+            int n = this->boundaries.size();;
+            
+            while ( n-- ){
+                // Retrieve the next region to process
+                pair<int, int> next = this->boundaries.front();
+                int next_value = (next.first + next.second) / 2;
+                this->boundaries.pop();
+                
+                // Include the central element of the next region
+                next_layer.push_back(next_value);
+                
+                // Split the region and include its sub-regions in the backlog
+                if ( next.first < next_value ){
+                    this->boundaries.push(make_pair(next.first,
+                                                    next_value));
+                }
+                if ( next_value + 1 < next.second ){
+                    this->boundaries.push(make_pair(next_value + 1,
+                                                    next.second));
+                }
+            }
+            
+            this->last_layer = next_layer;
+            this->last_level = level;
+        }
+};
+
 int rows = 64;
 int cols = 64;
 int num_frames = 0;
-int best = 1;
+int better = -1;
 
-class pair_generator {
-    
-    public:
-        vector< pair<int, int> > boundaries;
-        vector< pair<int, int> > next_boundaries;
-        
-        pair_generator()
-        {
-            this->boundaries.push_back( make_pair(0, 0) );
-        }
-        
-        pair_generator(int a, int b)
-        {
-            this->boundaries.push_back( make_pair(a, b) );
-        }
-        
-        bool has_available(int i)
-        {
-            return this->boundaries[i].first < this->boundaries[i].second;
-        }
-        
-        pair<int, int> get_next()
-        {
-            // Split
-            if ( this->next_boundaries.size() == 0 ){
-                vector< pair<int, int> > new_b;
-                for ( size_t i = 0; i < this->boundaries.size(); i++ ){
-                    if ( this->boundaries[i].second - 
-                         this->boundaries[i].first > 1 )
-                    {
-                        int mid = (this->boundaries[i].first +
-                                   this->boundaries[i].second) / 2;
-                        
-                        new_b.push_back(make_pair(this->boundaries[i].first,
-                                                  mid)
-                                       );
-                        new_b.push_back(make_pair(mid,
-                                                  this->boundaries[i].second)
-                                       );
-                    }
-                }
-                
-                this->boundaries = new_b;
-                
-                for ( size_t i = 0; i < this->boundaries.size(); i++ ){
-                    for ( size_t j = 0; j < i; j++ ){
-                        this->next_boundaries.push_back( make_pair(i, j) );
-                    }
-                }
-                
-                random_shuffle(this->next_boundaries.begin(),
-                               this->next_boundaries.end());
-                
-                return this->get_next();
-            }
-            
-            int a = this->next_boundaries.back().first;
-            int b = this->next_boundaries.back().second;
-            
-            int va = this->boundaries[a].first + this->boundaries[a].second;
-            int vb = this->boundaries[b].first + this->boundaries[b].second;
-            
-            this->next_boundaries.pop_back();
-            
-            return make_pair(va / 2, vb / 2);
-        }
-        
-        bool has_next()
-        {
-            if ( this->next_boundaries.size() > 0 ){
-                return true;
-            }
-            
-            for ( size_t i = 0; i < boundaries.size(); i++ ){
-                if ( has_available(i) )
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        size_t num_intervals()
-        {
-            return this->boundaries.size();
-        }
-};
+/* Each position in the vector is a different video.
+ * Each video is represented by:
+ *   - The filename
+ *   - The sequence of frames of each colposcopy stage
+ *   - The generator of frames
+ *   - The annotated instance
+ */
+vector<string> filenames;
+vector<int>    v_index;
+vector<map<diagnosis_phase_detector::phase, vector<int> > > frames;
+vector<map<diagnosis_phase_detector::phase, layer_generator> > generators;
+vector<anonadado::instance* > instances;
 
 void get_sequence(const char* filename,
                   map<diagnosis_phase_detector::phase, vector<int> >& frames)
@@ -105,7 +87,6 @@ void get_sequence(const char* filename,
     inst.get_annotations("roi", roi_index);
     
     num_frames = inst.num_frames();
-    cout << num_frames << " frames.\n";
     
     frames.clear();
     
@@ -146,6 +127,19 @@ void get_sequence(const char* filename,
     }
 }
 
+void get_generator(map<diagnosis_phase_detector::phase, vector<int> >& frames,
+                   map<diagnosis_phase_detector::phase, layer_generator >& g)
+{
+    map<diagnosis_phase_detector::phase, vector<int> >::iterator it, end;
+    it = frames.begin();
+    end = frames.end();
+    
+    for ( ; it != end; ++it ){
+        layer_generator lg(0, it->second.size());
+        g[it->first] = lg;
+    }
+}
+
 void draw_ui(Mat& a, Mat& b, Mat& dst)
 {
     Mat ra, rb;
@@ -160,10 +154,10 @@ void draw_ui(Mat& a, Mat& b, Mat& dst)
     Mat dst_roi_b = dst(Rect(ra.cols, 0, ra.cols, ra.rows));
     rb.copyTo(dst_roi_b);
     
-    if ( best != 1 ){
+    if ( better != -1 ){
         for ( int r = 0; r < 20; r++ ){
             for ( int c = 0; c < 4 * cols; c++ ){
-                dst.at<Vec3b>(ra.rows + r, 4 * cols * ( best / 2) + c) =
+                dst.at<Vec3b>(ra.rows + r, 4 * cols * (1 - better) + c) =
                     Vec3b(255, 0, 0);
             }
         }
@@ -176,27 +170,19 @@ int main(int argc, const char* argv[])
     argv++;
     srand (time(NULL));
     
-    map<diagnosis_phase_detector::phase, vector<int> > frames;
-    map<diagnosis_phase_detector::phase, pair_generator> generators;
+    db_ranking db;
     
-    get_sequence(argv[0], frames);
-    size_t change_rate = 10;
-    
-    {
-        map<diagnosis_phase_detector::phase, vector<int> >::iterator it, end;
-        it = frames.begin();
-        end = frames.end();
-        
-        for ( ; it != end; ++it ){
-            pair_generator pg(0, it->second.size());
-            generators[it->first] = pg;
-        }
+    int change_rate = 10;
+    if ( argc > 1 ){
+        sscanf(argv[1], "%d", &change_rate);
     }
     
-    bool has = true;
-    
-    anonadado::instance inst;
-    inst.read(argv[0]);
+    diagnosis_phase_detector::phase phases[4] = {
+        diagnosis_phase_detector::diagnosis_plain,
+        diagnosis_phase_detector::diagnosis_green,
+        diagnosis_phase_detector::diagnosis_hinselmann,
+        diagnosis_phase_detector::diagnosis_schiller
+    };
     
     map<diagnosis_phase_detector::phase, string> names;
     names[diagnosis_phase_detector::diagnosis_plain] = "plain";
@@ -204,61 +190,168 @@ int main(int argc, const char* argv[])
     names[diagnosis_phase_detector::diagnosis_hinselmann] = "hinselmann";
     names[diagnosis_phase_detector::diagnosis_schiller] = "schiller";
     
-    while ( has ){
+    int current_phase_index = 0;
+    diagnosis_phase_detector::phase cphase = phases[current_phase_index];
+    
+    // Parse the videos specified in the input file
+    ifstream fin(argv[0]);
+    string next_seq;
+    int counter = 5;
+    int vindex = 0;
+    
+    while ( getline(fin, next_seq) != 0 && counter-- > 0 ){
+        // Filaname
+        filenames.push_back(next_seq);
         
-        has = false;
+        // Index
+        v_index.push_back(db.get_video_index(next_seq));
         
-        /* Label instances equally distributed from every phase */
-        map<diagnosis_phase_detector::phase, pair_generator>::iterator it, end;
-        it = generators.begin();
-        end = generators.end();
+        // Sequence of frames
+        map<diagnosis_phase_detector::phase, vector<int> > next_frames;
+        get_sequence(next_seq.c_str(), next_frames); 
+        frames.push_back(next_frames);
         
-        for ( ; it != end; ++it ){
-            int num_pairs = change_rate;
+        // Frame generator
+        map<diagnosis_phase_detector::phase, layer_generator> next_generator;
+        get_generator(next_frames, next_generator);
+        generators.push_back(next_generator);
+        
+        // Annotated instance
+        anonadado::instance* next_instance = new anonadado::instance();
+        next_instance->read(next_seq.c_str());
+        instances.push_back(next_instance);
+        cout << "Video " << vindex++ << " done." << endl;
+    }
+    
+    fin.close();
+    
+    bool has = true;
+    bool exit = false;
+    bool go_to_next_phase = false;
+    
+    while ( !exit && has ){
+        int remaining = change_rate;
+        go_to_next_phase = false;
+        cout << "\n\n\n NEEEEXT!\n\n\n";
+        cout << current_phase_index << " " << cphase << endl;
+        cout << endl << endl;
+        
+        for ( int level = 0; has && !exit && !go_to_next_phase; level++ )
+        {
+            cout << "LEVEL " << level << endl;
+            //boost::this_thread::sleep( boost::posix_time::seconds(1) );
             
-            if ( frames[it->first].size() < 2 )
-            {
-                continue;
+            vector< pair< pair<int, int>,
+                          pair<int, int>
+                        > > pairs;
+            
+            // Generate pairs <(video, frame), (video, frame)> for this level
+            for ( size_t va = 0; va < instances.size(); va++ ){
+                vector<int> framesl_a;
+                generators[va][cphase].get_next(framesl_a, level);
+                
+                for ( size_t fa = 0; fa < framesl_a.size(); fa++){
+                    for ( size_t vb = 0; vb < va; vb++ ){
+                        vector<int> framesl_b;
+                        generators[vb][cphase].get_next(framesl_b, level);
+                        
+                        for ( size_t fb = 0; fb < framesl_b.size(); fb++ ){
+                            if ( va == vb && framesl_a[fa] == framesl_b[fb] ){
+                                continue;
+                            }
+
+                            pairs.push_back(
+                                make_pair(make_pair(va, framesl_a[fa]),
+                                          make_pair(vb, framesl_b[fb])
+                                         )
+                            );
+                        }
+                    }
+                }
             }
             
-            Mat img = Mat::zeros(200, frames[it->first].size(), CV_8UC3);
+            if ( pairs.size() == 0 ){
+                has = false;
+                break;
+            } else {
+                has = true;
+            }
             
-            while ( num_pairs-- > 0 && it->second.has_next() )
-            {
-                pair<int, int> next = it->second.get_next();
+            // Randomly sort these pairs
+            random_shuffle(pairs.begin(), pairs.end());
+            
+            // Eval these pairs
+            for ( size_t i = 0; i < pairs.size() && !go_to_next_phase; i++ ){
                 
-                for ( int i=0; i<200; i++){
-                    img.at<Vec3b>(i, next.first) = Vec3b(0, 0, 255);
-                    img.at<Vec3b>(i, next.second) = Vec3b(0, 0, 255);
+                int va = pairs[i].first.first;
+                int fa = pairs[i].first.second;
+                
+                int vb = pairs[i].second.first;
+                int fb = pairs[i].second.second;
+                
+                cout << "(" << va << ":" << fa << ") "
+                     << "(" << vb << ":" << fb << ") " << endl;
+                
+                if ( db.exists(cphase,
+                               v_index[va], frames[va][cphase][fa],
+                               v_index[vb], frames[vb][cphase][fb])
+                   )
+                {
+                    continue;
                 }
                 
-                has = true;
+                better = -1;
                 
                 while ( true ){
                     Mat a, b, dst;
-                    inst.get_frame(frames[it->first][next.first], a);
-                    inst.get_frame(frames[it->first][next.second], b);
+                    instances[va]->get_frame(frames[va][cphase][fa], a);
+                    instances[vb]->get_frame(frames[vb][cphase][fb], b);
                     draw_ui(a, b, dst);
                     
-                    imshow(names[it->first], dst);
+                    imshow(names[cphase], dst);
+                    
                     int key = waitKey(0) % 0x100;
                     if ( key == 81 ){
-                        best = 0;
+                        better = 1;
                     } else if ( key == 83 ){
-                        best = 2;
+                        better = 0;
                     } else if ( key == 32 ){
                         break;
+                    } else if ( key == 27 ){
+                        exit = true;
+                        has = false;
+                        break;
                     } else {
-                        best = 1;
+                        better = -1;
                     }
                 }
                 
-                best = 1;
+                if ( exit ){
+                    break;
+                }
+                
+                // Save the annotation
+                db.insert_annotation(cphase,
+                                     v_index[va], frames[va][cphase][fa],
+                                     v_index[vb], frames[vb][cphase][fb],
+                                     better);
+                
+                cout << "remaining " << remaining << endl;
+                
+                remaining--;
+                if ( remaining <= 0 ){
+                    go_to_next_phase = true;
+                    break;
+                }
             }
-            
-            destroyWindow(names[it->first]);
         }
+        cout << "go to next\n";
+        cvDestroyWindow(names[cphase].c_str());
+        current_phase_index = (current_phase_index + 1) % 4;
+        cphase = phases[current_phase_index];
+        
     }
     
+    cout << "Bye!\n";
     return 0;
 }

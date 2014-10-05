@@ -1,13 +1,13 @@
 GCC=g++
-LBOOST_FLAGS=-lboost_system -lboost_filesystem
-GCC_FLAGS= `pkg-config opencv --cflags` -Ilib -Icontrib $(LBOOST_FLAGS) -Wall -O3
-MAIN_FLAGS= `pkg-config opencv --cflags --libs` $(LBOOST_FLAGS) -Ilib -Icontrib -Wall -O3
+LBOOST_FLAGS= -lmongoclient -lpthread -lboost_system -lboost_filesystem -lboost_thread -lssl -lcrypto
+GCC_FLAGS= `pkg-config opencv --cflags` -Ilib -Icontrib $(LBOOST_FLAGS) -O3
+MAIN_FLAGS= `pkg-config opencv --cflags --libs` $(LBOOST_FLAGS) -Ilib -Icontrib -O3
 
 FILES=utils\
 	specular_reflection\
 	feature_extractor distance classifier\
 	diagnosis_phase\
-	ranking
+	db_ranking ranking
 
 EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers\
 	test_motion generate_pairs_of_images_to_annotate test_ranking_abc
@@ -18,7 +18,8 @@ DEP_feature_extractor=utils
 DEP_distance=utils
 DEP_classifier=utils feature_extractor
 DEP_diagnosis_phase=utils feature_extractor distance classifier specular_reflection
-DEP_ranking=utils
+DEP_db_ranking=utils diagnosis_phase
+DEP_ranking=utils db_ranking diagnosis_phase
 
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
@@ -58,6 +59,7 @@ bin/distance.o: $(DEP_distance:%=src/%.cpp) $(DEP_distance:%=lib/%.hpp)
 bin/diagnosis_phase.o: $(DEP_diagnosis_phase:%=src/%.cpp) $(DEP_diagnosis_phase:%=lib/%.hpp)
 bin/classifier.o: $(DEP_classifier:%=src/%.cpp) $(DEP_classifier:%=lib/%.hpp)
 bin/ranking.o: $(DEP_ranking:%=src/%.cpp) $(DEP_ranking:%=lib/%.hpp)
+bin/db_ranking.o: $(DEP_db_ranking:%=src/%.cpp) $(DEP_db_ranking:%=lib/%.hpp)
 
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o
