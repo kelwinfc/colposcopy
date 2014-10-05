@@ -1,6 +1,6 @@
 {
     "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI12615466 DVD_May14_141422_0", 
-    "domain": "../colposcopy/test/colposcopy_domain.json", 
+    "domain": "/home/kelwinfc/Escritorio/colposcopy/test/colposcopy_domain.json", 
     "sequence": [
         [
             {

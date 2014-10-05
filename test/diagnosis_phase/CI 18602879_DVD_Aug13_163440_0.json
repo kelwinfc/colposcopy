@@ -1,6 +1,6 @@
 {
-    "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI11590808 DVD_May14_145555_0", 
-    "domain": "/home/kelwinfc/Escritorio/colposcopy/test/colposcopy_domain.json", 
+    "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI 18602879_DVD_Aug13_163440_0", 
+    "domain": "../colposcopy/test/colposcopy_domain.json", 
     "sequence": [
         [
             {
@@ -12,7 +12,7 @@
                         "value": [
                             [
                                 5, 
-                                3
+                                5
                             ], 
                             [
                                 595, 
@@ -23,7 +23,7 @@
                 ]
             }, 
             {
-                "frame": 1478, 
+                "frame": 2575, 
                 "name": "roi", 
                 "features": [
                     {
@@ -31,7 +31,7 @@
                         "value": [
                             [
                                 5, 
-                                3
+                                5
                             ], 
                             [
                                 595, 
@@ -48,22 +48,13 @@
                 "name": "diagnosis_step", 
                 "features": [
                     {
-                        "name": "step"
-                    }
-                ]
-            }, 
-            {
-                "frame": 2, 
-                "name": "diagnosis_step", 
-                "features": [
-                    {
                         "name": "step", 
                         "value": "plain"
                     }
                 ]
             }, 
             {
-                "frame": 143, 
+                "frame": 204, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -73,7 +64,7 @@
                 ]
             }, 
             {
-                "frame": 237, 
+                "frame": 362, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -83,7 +74,7 @@
                 ]
             }, 
             {
-                "frame": 259, 
+                "frame": 372, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -93,7 +84,7 @@
                 ]
             }, 
             {
-                "frame": 421, 
+                "frame": 556, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -103,7 +94,7 @@
                 ]
             }, 
             {
-                "frame": 716, 
+                "frame": 988, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -113,7 +104,7 @@
                 ]
             }, 
             {
-                "frame": 924, 
+                "frame": 1498, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -123,7 +114,7 @@
                 ]
             }, 
             {
-                "frame": 1371, 
+                "frame": 2342, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -133,17 +124,47 @@
                 ]
             }, 
             {
-                "frame": 1478, 
+                "frame": 2462, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2476, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
                         "name": "step", 
                         "value": "schiller"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2540, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 2575, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
                     }
                 ]
             }
         ]
     ], 
     "name": "", 
-    "video_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI11590808 DVD_May14_145555_0.mpg\n"
+    "video_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI 18602879_DVD_Aug13_163440_0.mpg\n"
 }

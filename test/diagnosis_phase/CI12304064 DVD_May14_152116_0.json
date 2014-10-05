@@ -1,6 +1,6 @@
 {
     "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI12304064 DVD_May14_152116_0", 
-    "domain": "../colposcopy/test/colposcopy_domain.json", 
+    "domain": "/home/kelwinfc/Escritorio/colposcopy/test/colposcopy_domain.json", 
     "sequence": [
         [
             {
@@ -66,5 +66,5 @@
         ]
     ], 
     "name": "", 
-    "video_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI12304064 DVD_May14_152116_0.mpg\n"
+    "video_filename": "/home/kelwinfc/Escritorio/Zvideos/CI12304064 DVD_May14_152116_0.mpg\n"
 }

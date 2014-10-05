@@ -1,6 +1,6 @@
 {
-    "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI11590808 DVD_May14_145555_0", 
-    "domain": "/home/kelwinfc/Escritorio/colposcopy/test/colposcopy_domain.json", 
+    "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI 14991891_DVD_Aug13_160958_0", 
+    "domain": "../colposcopy/test/colposcopy_domain.json", 
     "sequence": [
         [
             {
@@ -12,7 +12,7 @@
                         "value": [
                             [
                                 5, 
-                                3
+                                5
                             ], 
                             [
                                 595, 
@@ -23,7 +23,7 @@
                 ]
             }, 
             {
-                "frame": 1478, 
+                "frame": 2070, 
                 "name": "roi", 
                 "features": [
                     {
@@ -31,7 +31,7 @@
                         "value": [
                             [
                                 5, 
-                                3
+                                5
                             ], 
                             [
                                 595, 
@@ -48,22 +48,13 @@
                 "name": "diagnosis_step", 
                 "features": [
                     {
-                        "name": "step"
-                    }
-                ]
-            }, 
-            {
-                "frame": 2, 
-                "name": "diagnosis_step", 
-                "features": [
-                    {
                         "name": "step", 
                         "value": "plain"
                     }
                 ]
             }, 
             {
-                "frame": 143, 
+                "frame": 230, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -73,7 +64,7 @@
                 ]
             }, 
             {
-                "frame": 237, 
+                "frame": 408, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -83,7 +74,7 @@
                 ]
             }, 
             {
-                "frame": 259, 
+                "frame": 424, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -93,7 +84,7 @@
                 ]
             }, 
             {
-                "frame": 421, 
+                "frame": 644, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -103,7 +94,7 @@
                 ]
             }, 
             {
-                "frame": 716, 
+                "frame": 1018, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -113,7 +104,7 @@
                 ]
             }, 
             {
-                "frame": 924, 
+                "frame": 1396, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -123,7 +114,7 @@
                 ]
             }, 
             {
-                "frame": 1371, 
+                "frame": 1910, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -133,7 +124,7 @@
                 ]
             }, 
             {
-                "frame": 1478, 
+                "frame": 2070, 
                 "name": "diagnosis_step", 
                 "features": [
                     {
@@ -145,5 +136,5 @@
         ]
     ], 
     "name": "", 
-    "video_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI11590808 DVD_May14_145555_0.mpg\n"
+    "video_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI 14991891_DVD_Aug13_160958_0.mpg\n"
 }
