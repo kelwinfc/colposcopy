@@ -196,10 +196,11 @@ int main(int argc, const char* argv[])
     // Parse the videos specified in the input file
     ifstream fin(argv[0]);
     string next_seq;
-    int counter = 5;
+    //int counter = 5;
     int vindex = 0;
     
-    while ( getline(fin, next_seq) != 0 && counter-- > 0 ){
+    while ( getline(fin, next_seq) != 0 /*&& counter-- > 0*/ ){
+        cout << next_seq << endl;
         // Filaname
         filenames.push_back(next_seq);
         

@@ -1,15 +1,11 @@
-test/diagnosis_phase/CI11590808 DVD_May14_145555_0.json
-test/diagnosis_phase/CI12304064 DVD_May14_152116_0.json
-test/diagnosis_phase/CI12615466 DVD_May14_141422_0.json
-test/diagnosis_phase/CI14019505 DVD_May08_154134_0.json
-test/diagnosis_phase/CI14019505 DVD_May14_144939_0.json
-test/diagnosis_phase/CI14991891 DVD_May07_174319_0.json
-test/diagnosis_phase/CI17630063 DVD_May07_165622_0.json
-test/diagnosis_phase/CI18750840 DVD_May14_142500_0.json
-test/diagnosis_phase/CI19398284 DVD_May14_152537_0.json
-test/diagnosis_phase/CI5402738 DVD_May07_155509_0.json
-test/diagnosis_phase/CI5567415 DVD_May14_151459_0.json
+test/diagnosis_phase/DVD_Aug22_150634_0.json
+test/diagnosis_phase/CI 57170067_MPEG1_Aug29_153213_0.json
+test/diagnosis_phase/CI 16263506_DVD_Aug29_145838_0.json
+test/diagnosis_phase/CI 57170067_MPEG1_Aug20_155015_0.json
+test/diagnosis_phase/CI 6170978_DVD_Aug20_160703_0.json
 test/diagnosis_phase/CI6427509 DVD_May14_135957_0.json
+test/diagnosis_phase/CI 6898152_Aug08.json
+test/diagnosis_phase/CI 7382262_DVD_Aug20_162457_0.json
 test/diagnosis_phase/CI81989318 DVD_May07_162141_0.json
 test/diagnosis_phase/CI9324788 DVD_May07_171503_0.json
 test/diagnosis_phase/CI9979757 DVD_May08_153213_0.json
@@ -23,3 +19,24 @@ test/diagnosis_phase/DVD_Jun10_145111_0.json
 test/diagnosis_phase/DVD_Jun10_151101_0.json
 test/diagnosis_phase/DVD_Jun10_152537_0.json
 test/diagnosis_phase/DVD_Jun10_160941_0.json
+test/diagnosis_phase/CI 10829488 AGOSTO 8.json
+test/diagnosis_phase/CI11590808 DVD_May14_145555_0.json
+test/diagnosis_phase/CI12304064 DVD_May14_152116_0.json
+test/diagnosis_phase/CI 12502781_DVD_Aug20_164323_0.json
+test/diagnosis_phase/CI12615466 DVD_May14_141422_0.json
+test/diagnosis_phase/CI 13049663_DVD_Aug20_173712_0.json
+test/diagnosis_phase/CI 13160938_DVD_Aug20_171649_0.json
+test/diagnosis_phase/CI14019505 DVD_May08_154134_0.json
+test/diagnosis_phase/CI14019505 DVD_May14_144939_0.json
+test/diagnosis_phase/CI 14991891_DVD_Aug13_160958_0.json
+test/diagnosis_phase/CI14991891 DVD_May07_174319_0.json
+test/diagnosis_phase/CI 16202005_DVD_Aug13_153615_0.json
+test/diagnosis_phase/CI 16263506_DVD_Aug20_170432_0.json
+test/diagnosis_phase/CI17630063 DVD_May07_165622_0.json
+test/diagnosis_phase/CI 18445776_DVD_Aug22_145325_0.json
+test/diagnosis_phase/CI 18602879_DVD_Aug13_163440_0.json
+test/diagnosis_phase/CI18750840 DVD_May14_142500_0.json
+test/diagnosis_phase/CI19398284 DVD_May14_152537_0.json
+test/diagnosis_phase/CI 5402738_DVD_Aug13_152057_0.json
+test/diagnosis_phase/CI5402738 DVD_May07_155509_0.json
+test/diagnosis_phase/CI5567415 DVD_May14_151459_0.json

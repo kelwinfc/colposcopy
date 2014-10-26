@@ -28,7 +28,6 @@ void get_sequence(const char* filename,
         if ( f % mod_rate != 0 ){
             continue;
         }
-        
         annotation* a = inst.get_active_annotation(step_index[0], f);
         annotation* roi = inst.get_active_annotation(roi_index[0], f);
         
@@ -41,28 +40,24 @@ void get_sequence(const char* filename,
         
         Mat img, aux;
         inst.get_frame(f, img);
-        
         if ( !img.data ){
             continue;
         }
-        
         if ( step_feature->get_value() == "transition" ){
             labels.push_back(diagnosis_phase_detector::diagnosis_transition);
         } else {
             labels.push_back(diagnosis_phase_detector::diagnosis_unknown);
         }
         
-        
         anonadado::bbox_feature* roi_feature =
                             (anonadado::bbox_feature*)roi->get_feature("roi");
         BBOX roi_value = roi_feature->get_value();
         
-        
         Rect region_of_interest =
-            Rect(roi_value.first.first,
-                 roi_value.first.second,
-                 roi_value.second.first,
-                 roi_value.second.second);
+            Rect((int)(img.cols / 400. * roi_value.first.first),
+                 (int)(img.cols / 400. * roi_value.first.second),
+                 (int)(img.rows / 600. * roi_value.second.first),
+                 (int)(img.rows / 600. * roi_value.second.second));
         
         img = img(region_of_interest);
         resize(img, aux, Size(rows, cols));
@@ -183,10 +178,8 @@ int main(int argc, const char* argv[])
         
         vector<Mat> images;
         vector<diagnosis_phase_detector::phase> labels;
-            
+
         get_sequence(line.c_str(), images, labels, mod_rate);
-        
-        cout << "  " << images.size() << " frames " << endl;
         
         int nr=8, nc=8;
         motion_fe f(5, nr, nc);
