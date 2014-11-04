@@ -1,5 +1,7 @@
 #include "test_ranking_abc.hpp"
 
+using namespace rank_learning;
+
 int blank_char = 0;
 
 void get_words(const char* filename, vector<string>& words ){

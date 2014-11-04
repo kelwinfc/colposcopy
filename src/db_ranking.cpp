@@ -1,5 +1,11 @@
 #include "db_ranking.hpp"
 
+#include "contrib/anonadado/anonadado.hpp"
+#include "contrib/anonadado/anonadado.cpp"
+#include "contrib/anonadado/utils.hpp"
+#include "contrib/anonadado/utils.cpp"
+
+
 db_ranking::db_ranking()
 {
     string errmsg;
@@ -101,4 +107,85 @@ int db_ranking::get_video_index(string filename)
     this->db.insert("colposcopy.video", r);
     
     return max_value;
+}
+
+void db_ranking::get_videos(map<int, string>& videos)
+{
+    mongo::auto_ptr<mongo::DBClientCursor> cursor = 
+        this->db.query("colposcopy.video", mongo::BSONObj());
+
+    videos.clear();
+    while (cursor->more()){
+        mongo::BSONObj p = cursor->next();
+        videos[p.getIntField("index")] = p.getStringField("_id");
+    }
+}
+
+string db_ranking::get_frame_key(int video, int frame)
+{
+    stringstream ss;
+    string ret;
+    
+    ss << video << "_" << frame;
+    ss >> ret;
+    
+    return ret;
+}
+
+void db_ranking::get_annotated_frames(vector<db_frame>& frames,
+                                      map<int, string>& videos,
+                                      map<string, int>& index)
+{
+    mongo::auto_ptr<mongo::DBClientCursor> cursor = 
+        this->db.query("colposcopy.ranking", mongo::BSONObj());
+
+    frames.clear();
+    index.clear();
+
+    while (cursor->more()){
+        mongo::BSONObj p = cursor->next();
+
+        db_frame next_frame;
+        next_frame.video_index = p.getIntField("best_video");
+        next_frame.frame = p.getIntField("best_frame");
+        
+        string key = this->get_frame_key(next_frame.video_index,
+                                         next_frame.frame);
+        
+        if ( index.find(key) == index.end() ){
+            next_frame.video_filename = videos[next_frame.video_index];
+
+            anonadado::instance inst;
+            inst.read(next_frame.video_filename);
+            inst.get_frame(next_frame.frame, next_frame.img);
+
+            index[key] = frames.size();
+            frames.push_back(next_frame);
+        }
+    }
+}
+
+void db_ranking::get_feedback(map<string, int>& index,
+                              vector< pair<int, int> >& feedback)
+{
+    feedback.clear();
+    
+    mongo::auto_ptr<mongo::DBClientCursor> cursor = 
+        this->db.query("colposcopy.ranking", mongo::BSONObj());
+
+    while (cursor->more()){
+        mongo::BSONObj p = cursor->next();
+
+        int best_video = p.getIntField("best_video");
+        int best_frame = p.getIntField("best_frame");
+        string best_key = this->get_frame_key(best_video, best_frame);
+
+        int worst_video = p.getIntField("worst_video");
+        int worst_frame = p.getIntField("worst_frame");
+        string worst_key = this->get_frame_key(worst_video, worst_frame);
+        
+        if ( p.getIntField("rank") == 1 ){
+            feedback.push_back(make_pair(index[best_key], index[worst_key]));
+        }
+    }
 }

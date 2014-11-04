@@ -1,5 +1,7 @@
 #include "ranking.hpp"
 
+using namespace rank_learning;
+
 ranking::ranking()
 {
     this->beta = 0.5;

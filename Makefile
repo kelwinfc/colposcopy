@@ -10,7 +10,8 @@ FILES=utils\
 	db_ranking ranking
 
 EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers\
-	test_motion generate_pairs_of_images_to_annotate test_ranking_abc
+	test_motion generate_pairs_of_images_to_annotate test_ranking_abc\
+	test_ranking_abc
 
 DEP_utils=
 DEP_specular_reflection=utils
@@ -26,6 +27,7 @@ DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase
 DEP_test_classifiers=$(DEP_neighbors)
 DEP_test_motion=$(DEP_diagnosis_phase)
 DEP_generate_pairs_of_images_to_annotate=$(DEP_diagnosis_phase)
+DEP_test_ranking_abc=$(DEP_ranking) $(DEP_db_ranking)
 DEP_test_ranking_abc=$(DEP_ranking)
 
 all: $(EXECUTABLES)
@@ -43,6 +45,9 @@ test_motion: $(FILES:%=bin/%.o) src/tests/test_motion.cpp lib/tests/test_motion.
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 test_ranking_abc: $(FILES:%=bin/%.o) src/tests/test_ranking_abc.cpp lib/tests/test_ranking_abc.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
+
+test_ranking: $(FILES:%=bin/%.o) src/tests/test_ranking.cpp lib/tests/test_ranking.hpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 generate_pairs_of_images_to_annotate: $(FILES:%=bin/%.o) src/generate_pairs_of_images_to_annotate.cpp lib/generate_pairs_of_images_to_annotate.hpp
