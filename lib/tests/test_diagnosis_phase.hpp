@@ -1,11 +1,10 @@
 #ifndef __COLPOSCOPY_TEST_DIAGNOSIS_PHASE
 #define __COLPOSCOPY_TEST_DIAGNOSIS_PHASE
 
+#include "anonadado.hpp"
+#include "anonadado_utils.hpp"
+
 #include "diagnosis_phase.hpp"
-#include "contrib/anonadado/anonadado.hpp"
-#include "contrib/anonadado/anonadado.cpp"
-#include "contrib/anonadado/utils.hpp"
-#include "contrib/anonadado/utils.cpp"
 
 using namespace std;
 using namespace cv;

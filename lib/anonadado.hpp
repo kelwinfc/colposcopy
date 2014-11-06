@@ -17,7 +17,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
-#include "utils.hpp"
+#include "anonadado_utils.hpp"
 
 namespace anonadado {
 

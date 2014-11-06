@@ -1,11 +1,5 @@
 #include "db_ranking.hpp"
 
-#include "contrib/anonadado/anonadado.hpp"
-#include "contrib/anonadado/anonadado.cpp"
-#include "contrib/anonadado/utils.hpp"
-#include "contrib/anonadado/utils.cpp"
-
-
 db_ranking::db_ranking()
 {
     string errmsg;

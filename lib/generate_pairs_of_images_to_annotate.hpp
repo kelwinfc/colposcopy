@@ -1,10 +1,8 @@
 #ifndef __COLPOSCOPY_GENERATE_PAIRS_OF_IMAGES_TO_ANNOTATE
 #define __COLPOSCOPY_GENERATE_PAIRS_OF_IMAGES_TO_ANNOTATE
 
-#include "contrib/anonadado/anonadado.hpp"
-#include "contrib/anonadado/anonadado.cpp"
-#include "contrib/anonadado/utils.hpp"
-#include "contrib/anonadado/utils.cpp"
+#include "anonadado.hpp"
+#include "anonadado_utils.hpp"
 
 #include "diagnosis_phase.hpp"
 #include "db_ranking.hpp"

@@ -92,7 +92,8 @@ void get_sequence(const char* filename,
     
     for ( int f = 0; f < num_frames; f++ ){
         
-        annotation* a = inst.get_active_annotation(step_index[0], f);
+        anonadado::annotation* a = inst.get_active_annotation(step_index[0],
+                                                              f);
         
         if ( !a )
             continue;

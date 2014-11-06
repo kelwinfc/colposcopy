@@ -26,8 +26,10 @@ void get_sequence(const char* filename,
             continue;
         }
         
-        annotation* a = inst.get_active_annotation(step_index[0], f);
-        annotation* roi = inst.get_active_annotation(roi_index[0], f);
+        anonadado::annotation* a = 
+            inst.get_active_annotation(step_index[0], f);
+        anonadado::annotation* roi = 
+            inst.get_active_annotation(roi_index[0], f);
         
         if ( !a || !roi )
             continue;

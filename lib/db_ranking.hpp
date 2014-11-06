@@ -11,6 +11,9 @@
 #include <boost/thread/thread.hpp>
 #include "mongo/client/dbclient.h"
 
+#include "anonadado.hpp"
+#include "anonadado_utils.hpp"
+
 #include "diagnosis_phase.hpp"
 
 using namespace colposcopy;

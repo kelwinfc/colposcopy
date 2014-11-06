@@ -4,10 +4,8 @@
 #include "diagnosis_phase.hpp"
 #include "feature_extractor.hpp"
 
-#include "contrib/anonadado/anonadado.hpp"
-#include "contrib/anonadado/anonadado.cpp"
-#include "contrib/anonadado/utils.hpp"
-#include "contrib/anonadado/utils.cpp"
+#include "anonadado.hpp"
+#include "anonadado_utils.hpp"
 
 using namespace std;
 using namespace cv;
