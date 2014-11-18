@@ -43,11 +43,15 @@ namespace rank_learning {
             
             ~ranking();
 
-            void train(std::vector<sample>& samples,
-                       std::vector< pair<int, int> >& feedback);
-            float predict(sample& a, sample& b);
-            void rank(std::vector<sample>& samples);
-        
+            virtual void train(std::vector<sample>& samples,
+                               std::vector< pair<int, int> >& feedback);
+            virtual float predict(sample& a, sample& b);
+            virtual void rank(std::vector<sample>& samples);
+            virtual void rank(std::vector<sample>& samples,
+                              std::vector<int>& positions);
+            
+            virtual float accuracy(std::vector<sample>& samples,
+                                   std::vector< pair<int, int> >& feedback);
         protected:
             float R(sample& a, sample& b, int i);
             float Z();

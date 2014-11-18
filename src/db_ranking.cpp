@@ -160,7 +160,9 @@ void db_ranking::get_annotated_frames(vector<db_frame>& frames,
 }
 
 void db_ranking::get_feedback(map<string, int>& index,
-                              vector< pair<int, int> >& feedback)
+                              vector< pair<int, int> >& feedback,
+                              diagnosis_phase_detector::phase ph
+                             )
 {
     feedback.clear();
     
@@ -178,8 +180,33 @@ void db_ranking::get_feedback(map<string, int>& index,
         int worst_frame = p.getIntField("worst_frame");
         string worst_key = this->get_frame_key(worst_video, worst_frame);
         
+        if ( ph != diagnosis_phase_detector::diagnosis_unknown && 
+             diagnosis_phase_detector::string_to_phase(
+                                             p.getStringField("phase")) != ph
+           )
+        {
+           continue;
+        }
+
         if ( p.getIntField("rank") == 1 ){
             feedback.push_back(make_pair(index[best_key], index[worst_key]));
         }
     }
+}
+
+int db_ranking::num_annotated_frames(int video_index)
+{
+    int ret = 0;
+    
+    mongo::auto_ptr<mongo::DBClientCursor> cursor = 
+        this->db.query("colposcopy.ranking",
+                       QUERY("best_video" << video_index <<
+                             "rank" << mongo::GT << -1));
+
+    while (cursor->more()){
+        mongo::BSONObj p = cursor->next();
+        ret++;
+    }
+    
+    return ret;
 }

@@ -47,7 +47,12 @@ class db_ranking {
                                   map<int, string>& videos,
                                   map<string, int>& index);
         void get_feedback(map<string, int>& index,
-                          vector< pair<int, int> >& feedback);
+                          vector< pair<int, int> >& feedback,
+                          diagnosis_phase_detector::phase ph = 
+                              diagnosis_phase_detector::diagnosis_unknown
+                         );
+        int num_annotated_frames(int video);
+
     protected:
         string get_key(diagnosis_phase_detector::phase phase,
                        int va, int fa, int vb, int fb);

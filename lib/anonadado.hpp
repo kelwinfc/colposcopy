@@ -200,6 +200,7 @@ namespace anonadado {
         
         public:
             domain();
+            ~domain();
 
             void read(std::string filename);
             

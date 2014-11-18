@@ -9,8 +9,20 @@ feature_extractor::feature_extractor()
     // noop
 }
 
+void feature_extractor::extract_by_inst(anonadado::instance& inst, int i,
+                                        vector<float>& out)
+{
+    vector<Mat> seq;
+    Mat frame;
+    
+    inst.get_frame(i, frame);
+    seq.push_back(frame);
+    
+    this->extract(seq, 0, out, &inst);
+}
+
 void feature_extractor::extract(vector<Mat>& in, int i, vector<float>& out,
-                             anonadado::instance* instance)
+                                anonadado::instance* instance)
 {
     out.clear();
 }
@@ -36,6 +48,11 @@ void feature_extractor::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void feature_extractor::get_names(vector<string>& names)
+{
+    names.clear();
+}
+
 /*****************************************************************************
  *                        Identity Feature Extractor                         *
  *****************************************************************************/
@@ -43,6 +60,12 @@ void feature_extractor::write(rapidjson::Value& json, rapidjson::Document& d)
 identity_fe::identity_fe()
 {
     // noop
+}
+
+void identity_fe::extract_by_inst(anonadado::instance& inst, int i,
+                                  vector<float>& out)
+{
+    out.clear();
 }
 
 void identity_fe::extract(vector<Mat>& in, int i, vector<float>& out,
@@ -80,6 +103,167 @@ void identity_fe::read(const rapidjson::Value& json)
 void identity_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
+}
+
+void identity_fe::get_names(vector<string>& names)
+{
+    names.clear();
+}
+
+/*****************************************************************************
+ *                       Add Inverse Feature Extractor                       *
+ *****************************************************************************/
+
+add_inverse_fe::add_inverse_fe(feature_extractor* u)
+{
+    this->underlying_fe = u;
+}
+
+void add_inverse_fe::extract_by_inst(anonadado::instance& inst, int i,
+                                     vector<float>& out)
+{
+    this->underlying_fe->extract_by_inst(inst, i, out);
+    this->add_inverse(out);
+}
+
+void add_inverse_fe::extract(vector<Mat>& in, int i, vector<float>& out,
+                             anonadado::instance* instance)
+{
+    this->underlying_fe->extract(in, i, out, instance);
+    this->add_inverse(out);
+}
+
+void add_inverse_fe::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void add_inverse_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+void add_inverse_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    this->underlying_fe->get_names(names);
+    
+    size_t n = names.size();
+    for (size_t i = 0; i < n; i++ ){
+        names.push_back("-" + names[i]);
+    }
+}
+
+void add_inverse_fe::add_inverse(vector<float>& out)
+{
+    size_t n = out.size();
+    for (size_t i = 0; i < n; i++ ){
+        out.push_back(-out[i]);
+    }
+}
+
+/*****************************************************************************
+ *                          Merge Feature Extractor                          *
+ *****************************************************************************/
+
+merge_fe::merge_fe(vector<feature_extractor*>& fe_seq)
+{
+    this->fe_seq = fe_seq;
+}
+
+void merge_fe::extract_by_inst(anonadado::instance& inst, int i,
+                               vector<float>& out)
+{
+    out.clear();
+    for (uint k = 0; k < this->fe_seq.size(); k++){
+        vector<float> next_features;
+        this->fe_seq[k]->extract_by_inst(inst, i, next_features);
+        out.insert(out.end(), next_features.begin(), next_features.end());
+    }
+}
+
+void merge_fe::extract(vector<Mat>& in, int i, vector<float>& out,
+                       anonadado::instance* instance)
+{
+    out.clear();
+    for (uint k = 0; k < this->fe_seq.size(); k++){
+        vector<float> next_features;
+        this->fe_seq[k]->extract(in, i, next_features, instance);
+        out.insert(out.end(), next_features.begin(), next_features.end());
+    }
+}
+
+void merge_fe::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void merge_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    //TODO
+}
+
+void merge_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    for (uint k = 0; k < this->fe_seq.size(); k++){
+        vector<string> next_names;
+        this->fe_seq[k]->get_names(next_names);
+        names.insert(names.end(), next_names.begin(), next_names.end());
+    }
+}
+
+/*****************************************************************************
+ *                   Merge Single-Frame Feature Extractor                    *
+ *****************************************************************************/
+
+merge_single_frame_fe::merge_single_frame_fe
+                                        (vector<feature_extractor*>& fe_seq)
+{
+    this->fe_seq = fe_seq;
+}
+
+void merge_single_frame_fe::extract_by_inst(anonadado::instance& inst, int i,
+                                            vector<float>& out)
+{
+    vector<Mat> seq;
+    Mat frame;
+
+    inst.get_frame(i, frame);
+    seq.push_back(frame);
+    this->extract(seq, 0, out, &inst);
+}
+
+void merge_single_frame_fe::extract(vector<Mat>& in, int i, vector<float>& out,
+                                    anonadado::instance* instance)
+{
+    out.clear();
+    for (uint k = 0; k < this->fe_seq.size(); k++){
+        vector<float> next_features;
+        this->fe_seq[k]->extract(in, i, next_features, instance);
+        out.insert(out.end(), next_features.begin(), next_features.end());
+    }
+}
+
+void merge_single_frame_fe::read(const rapidjson::Value& json)
+{
+    //TODO
+}
+
+void merge_single_frame_fe::write(rapidjson::Value& json,
+                                  rapidjson::Document& d)
+{
+    //TODO
+}
+
+void merge_single_frame_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    for (uint k = 0; k < this->fe_seq.size(); k++){
+        vector<string> next_names;
+        this->fe_seq[k]->get_names(next_names);
+        names.insert(names.end(), next_names.begin(), next_names.end());
+    }
 }
 
 /*****************************************************************************
@@ -140,6 +324,20 @@ void hue_histogram_fe::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void hue_histogram_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.resize( 180 / this->bindw + (256 % this->bindw != 0 ? 1 : 0) );
+    
+    for (uint k = 0; k < names.size(); k++){
+        stringstream ss;
+        string n;
+        ss << "hue_" << k;
+        ss >> n;
+        names.push_back(n);
+    }
+}
+
 /*****************************************************************************
  *                         Motion Feature Extractor                          *
  *****************************************************************************/
@@ -157,13 +355,54 @@ motion_fe::motion_fe(int w, int width, int height)
     this->width  = width;
     this->height = height;
 }
+
+void motion_fe::extract_by_inst(anonadado::instance& inst, int i,
+                                vector<float>& out)
+{
+    out.resize(this->width * this->height);
+    fill(out.begin(), out.end(), 0.0);
+    
+    Mat current_image;
+    inst.get_frame(i, current_image);
+    GaussianBlur(current_image, current_image, Size(3,3), 0.3);
+    
+    for ( int k = max(0, i - this->w - 1);
+          k < min(i + this->w + 1, (int)inst.num_frames());
+          k++ )
+    {
+        if ( k == i )
+            continue;
         
+        Mat next_image;
+        inst.get_frame(k, next_image);
+        GaussianBlur(next_image, next_image, Size(3,3), 0.3);
+        
+        for ( int r = 0; r < next_image.rows; r++ ){
+            int fr = r / (next_image.rows / this->height);
+            for ( int c = 0; c < next_image.cols; c++ ){
+                int fc = c / (next_image.cols / this->width);
+                
+                Vec3b prev_pixel = next_image.at<Vec3b>(r, c);
+                Vec3b next_pixel = current_image.at<Vec3b>(r, c);
+                float diff = 0.0;
+                
+                for (uint x = 0; x < 3; x++){
+                    diff += (prev_pixel[x] - next_pixel[x]) *
+                            (prev_pixel[x] - next_pixel[x]);
+                }
+                
+                out[fr * this->width + fc] += sqrt(diff);
+            }
+        }
+    }
+}
+
 void motion_fe::extract(vector<Mat>& in, int i, vector<float>& out,
                         anonadado::instance* instance)
 {
     out.resize(this->width * this->height);
     fill(out.begin(), out.end(), 0.0);
-    
+
     Mat current_image;
     GaussianBlur(in[i], current_image, Size(3,3), 0.3);
     
@@ -207,6 +446,20 @@ void motion_fe::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void motion_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.resize(this->width * this->height);
+    
+    for (uint k = 0; k < names.size(); k++){
+        stringstream ss;
+        string n;
+        ss << "motion_" << k;
+        ss >> n;
+        names.push_back(n);
+    }
+}
+
 /*****************************************************************************
  *                          Focus Feature Extractor                          *
  *****************************************************************************/
@@ -215,7 +468,13 @@ focus_fe::focus_fe()
 {
     //TODO
 }
-        
+
+void focus_fe::extract_by_inst(anonadado::instance& inst, int i,
+                               vector<float>& out)
+{
+    //TODO
+}
+
 void focus_fe::extract(vector<Mat>& in, int i, vector<float>& out,
                        anonadado::instance* instance)
 {
@@ -232,13 +491,18 @@ void focus_fe::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void focus_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    //TODO
+}
+
 /*****************************************************************************
  *                   Specular Reflection Feature Extractor                   *
  *****************************************************************************/
 
 specular_reflection_fe::specular_reflection_fe()
 {
-    this->detection = new threshold_srd();
 }
 
 specular_reflection_fe::specular_reflection_fe(
@@ -253,6 +517,12 @@ int specular_reflection_fe::flood_fill(Mat& img, int r, int c)
     queue< pair<int, int> > q;
     q.push(make_pair(r, c));
     
+    if ( img.at<uchar>(r, c) == 0 ){
+        return ret;
+    }
+
+    img.at<uchar>(r, c) = 0;
+
     while( !q.empty() ){
         pair<int, int> next = q.front();
         q.pop();
@@ -260,11 +530,6 @@ int specular_reflection_fe::flood_fill(Mat& img, int r, int c)
         int r = next.first;
         int c = next.second;
         
-        if ( img.at<uchar>(r, c) == 0 ){
-            continue;
-        }
-        
-        img.at<uchar>(r, c) = 0;
         ret++;
         
         for (int dr=-1; dr<2; dr++){
@@ -275,6 +540,7 @@ int specular_reflection_fe::flood_fill(Mat& img, int r, int c)
                 if ( 0 <= nr && nr < img.rows && 0 <= nc && nc < img.cols &&
                      img.at<uchar>(nr, nc) != 0 )
                 {
+                    img.at<uchar>(nr, nc) = 0;
                     q.push(make_pair(nr, nc));
                 }
             }
@@ -292,8 +558,12 @@ void specular_reflection_fe::extract(vector<Mat>& in, int i,
     int sum = 0;
     int largest = 0;
     int num_blobs = 0;
-
-    this->detection->detect(in[i], sr);
+    
+    if ( this->detection ){
+        this->detection->detect(in[i], sr);
+    } else {
+        sr = Mat::zeros(in[i].rows, in[i].cols, CV_8U);
+    }
 
     for (int r = 0; r < sr.rows; r++){
         for (int c = 0; c < sr.cols; c++){
@@ -323,6 +593,14 @@ void specular_reflection_fe::write(rapidjson::Value& json,
     //TODO
 }
 
+void specular_reflection_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.push_back("sr::num_blobs");
+    names.push_back("sr::ratio");
+    names.push_back("sr::largest");
+}
+
 /*****************************************************************************
  *                      Color Cascade Feature Extractor                      *
  *****************************************************************************/
@@ -346,7 +624,7 @@ color_cascade_fe::color_cascade_fe(int levels, bool hard,
     this->sr_detection = sr_detection;
     this->inpainting = inpainting;
     this->nfeatures = this->num_features();
-    this->features_width = 180 / this->nfeatures;
+    this->features_width = 180 / this->nfeatures + 1;
 }
 
 int color_cascade_fe::num_features()
@@ -413,6 +691,20 @@ void color_cascade_fe::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void color_cascade_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.resize(this->nfeatures);
+    
+    for (uint k = 0; k < names.size(); k++){
+        stringstream ss;
+        string n;
+        ss << "color_cascade_" << k;
+        ss >> n;
+        names[k] = n;
+    }
+}
+
 /*****************************************************************************
  *                           HSV Feature Extractor                           *
  *****************************************************************************/
@@ -454,6 +746,17 @@ void hsv_fe::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void hsv_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.push_back("hsv::h_mean");
+    names.push_back("hsv::h_stddev");
+    names.push_back("hsv::s_mean");
+    names.push_back("hsv::s_stddev");
+    names.push_back("hsv::v_mean");
+    names.push_back("hsv::v_stddev");
+}
+
 /*****************************************************************************
  *                   Closest Transition Feature Extractor                    *
  *****************************************************************************/
@@ -461,26 +764,33 @@ void hsv_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 closest_transition_fe::closest_transition_fe()
 {
 }
-        
-void closest_transition_fe::extract(vector<Mat>& in, int i, vector<float>& out,
-                                    anonadado::instance* instance)
+
+void closest_transition_fe::extract_by_inst(anonadado::instance& inst, int i,
+                                            vector<float>& out)
 {
     vector<int> step_index;
-    int num_frames = instance->num_frames();
+    int num_frames = inst.num_frames();
     int closest_left = 0;
     int closest_right = num_frames;
     
-    instance->get_annotations("diagnosis_step", step_index);
+    inst.get_annotations("diagnosis_step", step_index);
+    anonadado::annotation* a = inst.get_active_annotation(step_index[0], i);
     
-    anonadado::annotation* a = 
-            instance->get_active_annotation(step_index[0], i);
+    if ( !a ){
+        out.clear();
+        out.push_back(1.0);
+        out.push_back(1.0);
+        out.push_back(1.0);
+        return;
+    }
+    
     anonadado::choice_feature* current_step =
                             (anonadado::choice_feature*)a->get_feature("step");
     
     // Left side
     for ( int f = i - 1; f >= 0; f-- ){
         anonadado::annotation* a = 
-            instance->get_active_annotation(step_index[0], f);
+            inst.get_active_annotation(step_index[0], f);
         
         if ( !a ){
             continue;
@@ -497,8 +807,8 @@ void closest_transition_fe::extract(vector<Mat>& in, int i, vector<float>& out,
     
     // Right side
     for ( int f = i + 1; f < num_frames; f++ ){
-        anonadado::annotation* a = 
-            instance->get_active_annotation(step_index[0], f);
+        anonadado::annotation* a = inst.get_active_annotation(step_index[0], 
+                                                              f);
         
         if ( !a ){
             continue;
@@ -513,7 +823,6 @@ void closest_transition_fe::extract(vector<Mat>& in, int i, vector<float>& out,
         }
     }
     
-    
     float range = abs(closest_right - closest_left) + 1;
     float d_left = abs(i - closest_left);
     float d_right = abs(i - closest_right);
@@ -522,6 +831,12 @@ void closest_transition_fe::extract(vector<Mat>& in, int i, vector<float>& out,
     out.push_back(d_left / range);
     out.push_back(d_right / range);
     out.push_back((float)min(d_left, d_right) / range);
+}
+
+void closest_transition_fe::extract(vector<Mat>& in, int i, vector<float>& out,
+                                    anonadado::instance* instance)
+{
+    this->extract_by_inst(*instance, i, out);
 }
 
 void closest_transition_fe::read(const rapidjson::Value& json)
@@ -535,19 +850,48 @@ void closest_transition_fe::write(rapidjson::Value& json,
     //TODO
 }
 
+void closest_transition_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.push_back("transition::left");
+    names.push_back("transition::right");
+    names.push_back("transition::closest");
+}
+
 /*****************************************************************************
  *                    Edges Summations Feature Extractor                     *
  *****************************************************************************/
 
-edges_summations_fe::edges_summations_fe()
+edges_summations_fe::edges_summations_fe(
+                                specular_reflection_detection* sr_detection,
+                                img_inpaint* inpainting)
 {
-    //TODO
+    this->sr_detection = sr_detection;
+    this->inpainting = inpainting;
 }
         
 void edges_summations_fe::extract(vector<Mat>& in, int i, vector<float>& out,
                                   anonadado::instance* instance)
 {
-    //TODO
+    Mat aux, gray, edges;
+
+    if ( this->sr_detection != 0 && this->inpainting != 0 )
+    {
+        Mat sr;
+        this->sr_detection->detect(in[i], sr);
+        this->inpainting->fill(in[i], sr, aux);
+    } else {
+        in[i].copyTo(aux);
+    }
+
+    Mat aux_roi = aux(Rect(10, 10, aux.cols - 20, aux.rows - 20));
+
+    cvtColor(aux_roi, gray, CV_BGR2GRAY);
+    GaussianBlur(gray, gray, Size(5, 5), 3.0);
+    Canny(gray, edges, 50, 100, 3);
+
+    out.clear();
+    out.push_back(sum(edges)[0]);
 }
 
 void edges_summations_fe::read(const rapidjson::Value& json)
@@ -558,4 +902,10 @@ void edges_summations_fe::read(const rapidjson::Value& json)
 void edges_summations_fe::write(rapidjson::Value& json, rapidjson::Document& d)
 {
     //TODO
+}
+
+void edges_summations_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.push_back("edges");
 }

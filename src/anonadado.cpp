@@ -394,8 +394,12 @@ annotation::annotation(annotation& a)
     this->is_unique = a.is_unique;
     this->is_global = a.is_global;
     
+    this->clear_features();
+    
     std::map<std::string, feature*>::iterator it;
     for ( it = a.features.begin(); it != a.features.end(); ++it ){
+        if ( this->features.find(it->first) != this->features.end() )
+            delete this->features[it->first];
         this->features[it->first] = get_feature_instance(it->second);
     }
 }
@@ -416,7 +420,7 @@ void annotation::read(const rapidjson::Value& v, bool just_value)
     }
     
     this->frame = rapidjson_get_int(v, "frame", -1);
-    
+
     if ( v.HasMember("features") && v["features"].IsArray() )
     {
         const rapidjson::Value& f = v["features"];
@@ -432,6 +436,12 @@ void annotation::read(const rapidjson::Value& v, bool just_value)
                 f->read(f_json, true);
             } else {
                 f = get_feature_instance(f_json);
+                
+                if (this->features.find(f->get_name()) != this->features.end())
+                {
+                    delete this->features[f->get_name()];
+                }
+                
                 this->features[f->get_name()] = f;
             }
             
@@ -503,28 +513,29 @@ domain::domain()
     this->name = "";
 }
 
+domain::~domain()
+{
+    this->clear_labels();
+}
+
 void domain::read(std::string filename)
 {
     FILE * pFile = fopen (filename.c_str() , "r");
     rapidjson::FileStream is(pFile);
     rapidjson::Document document;
     document.ParseStream<0>(is);
-    
     this->clear_labels();
 
     this->name = rapidjson_get_string(document, "name", "");
-
     if ( document.HasMember("labels") && document["labels"].IsArray() ){
         const rapidjson::Value& labels = document["labels"];
         for (rapidjson::SizeType i = 0; i < labels.Size(); i++){
             const rapidjson::Value& a_json = labels[i];
             annotation* a = new annotation();
             a->read(a_json);
-            
             this->labels[a->get_name()] = a;
         }
     }
-    
     fclose(pFile);
 }
 
@@ -556,6 +567,7 @@ void domain::clear_labels()
     for ( it = this->labels.begin(); it != this->labels.end(); ++it ){
         delete it->second;
     }
+    this->labels.clear();
 }
 
 /*****************************************************************************
@@ -602,6 +614,7 @@ void instance::read(std::string filename)
     this->d->read(this->domain_filename);
 
     this->clear_annotations();
+    
     if ( document.HasMember("sequence") && document["sequence"].IsArray() )
     {
         const rapidjson::Value& sequence = document["sequence"];
@@ -620,11 +633,12 @@ void instance::read(std::string filename)
                     {
                         std::string label = nn_annotation["name"].GetString();
                         annotation* prev =  this->d->get_instance(label);
-                        
+
                         if ( prev != 0 ){
                             annotation* n = new annotation(*prev);
                             n->read(nn_annotation, true);
                             next.push_back(n);
+                            delete prev;
                         }
                     }
                 }

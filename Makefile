@@ -12,7 +12,7 @@ FILES=utils\
 
 EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers\
 	test_motion generate_pairs_of_images_to_annotate test_ranking_abc\
-	test_ranking
+	test_ranking extract_features_ranking
 
 ANONADADO_FILES=anonadado anonadado_utils
 
@@ -29,10 +29,10 @@ DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase  $(ANONADADO_FILES)
 DEP_test_classifiers=$(DEP_neighbors)
 DEP_test_motion=$(DEP_diagnosis_phase) $(ANONADADO_FILES)
-
-DEP_generate_pairs_of_images_to_annotate=$(DEP_diagnosis_phase)  $(ANONADADO_FILES)
+DEP_generate_pairs_of_images_to_annotate=$(DEP_diagnosis_phase) $(ANONADADO_FILES)
+DEP_extract_features_ranking=$(DEP_ranking) $(DEP_db_ranking) $(ANONADADO_FILES)
 DEP_test_ranking_abc=$(DEP_ranking) $(DEP_db_ranking)
-DEP_test_ranking_abc=$(DEP_ranking)
+DEP_test_ranking=$(DEP_ranking) $(DEP_db_ranking)
 
 DEP_anonadado=anonadado_utils
 DEP_anonadado_utils=
@@ -55,6 +55,9 @@ test_ranking_abc: $(FILES:%=bin/%.o) src/tests/test_ranking_abc.cpp lib/tests/te
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 test_ranking: $(FILES:%=bin/%.o) src/tests/test_ranking.cpp lib/tests/test_ranking.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
+
+extract_features_ranking: $(FILES:%=bin/%.o) src/tests/extract_features_ranking.cpp lib/tests/extract_features_ranking.hpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 generate_pairs_of_images_to_annotate: $(FILES:%=bin/%.o) src/generate_pairs_of_images_to_annotate.cpp lib/generate_pairs_of_images_to_annotate.hpp

@@ -98,25 +98,25 @@ int main(int argc, const char* argv[])
     argc--;
     argv++;
     srand(time(NULL));
-    
+
     vector<string> words;
     vector<sample> samples;
     vector< pair<int, int> > feedback_aux, feedback;
-    
+
     get_words(argv[0], words);
     get_order(words, feedback_aux);
     resample_feedback(feedback_aux, feedback, 0.6);
-    
+
     words_to_features(words, samples);
-    
+
     ranking r(0.3, 1000);
-    
+
     r.train(samples, feedback);
     r.rank(samples);
-    
+
     vector<string> output;
     features_to_words(samples, output);
-    
+
     int d = 0;
     for ( size_t i = 0; i < output.size(); i++ ){
         int next_d = distance(words, output, i);
@@ -124,9 +124,9 @@ int main(int argc, const char* argv[])
         
         cout << next_d << " " << words[i] << " " << output[i] << endl;
     }
-    
+
     cout << (float)d / (float)output.size() << endl;
     cout << "Bye!\n";
-    
+
     return 0;
 }

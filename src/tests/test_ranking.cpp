@@ -1,10 +1,5 @@
 #include "test_ranking.hpp"
 
-// #include "contrib/anonadado/anonadado.hpp"
-// #include "contrib/anonadado/anonadado.cpp"
-// #include "contrib/anonadado/utils.hpp"
-// #include "contrib/anonadado/utils.cpp"
-
 using namespace rank_learning;
 
 void get_video(string instance_filename,
@@ -13,7 +8,6 @@ void get_video(string instance_filename,
               )
 {
     anonadado::instance inst;
-    cout << instance_filename << endl;
     inst.read(instance_filename);
 
     vector<int> step_index;
@@ -75,6 +69,13 @@ int main(int argc, const char* argv[])
     hsv_fe hsv(&thrs);
     closest_transition_fe ct;
     
+    vector<feature_extractor*> fes;
+    fes.push_back(&sr);
+    fes.push_back(&cc);
+    fes.push_back(&hsv);
+    fes.push_back(&ct);
+    merge_fe mg(fes);
+    
     map<int, string>::iterator it;
     for (it = videos.begin(); it != videos.end(); ++it){
         vector<Mat> sequence;
@@ -85,21 +86,18 @@ int main(int argc, const char* argv[])
         instance.read(it->second);
         
         vector<float> out;
-        cout << "Loading done\n";
-        
+        cout << it->first << " " << sequence.size() << endl;
+
         for ( int i=0; i<sequence.size(); i++){
-            //sr.extract(sequence, i, out, &instance);
-            //cc.extract(sequence, i, out, &instance);
-            //hsv.extract(sequence, i, out, &instance);
-            ct.extract(sequence, i, out, &instance);
+            mg.extract(sequence, i, out, &instance);
             
             for (int j=0; j<out.size(); j++){
-                cout << out[j] << " ";
+                if ( j > 0 ){
+                    printf(" ");
+                }
+                printf("%0.4f", out[j]);
             }
             cout << endl;
-            
-            imshow("img", sequence[i]);
-            waitKey(0);
         }
     }
     

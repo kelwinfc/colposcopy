@@ -1,5 +1,5 @@
-#ifndef __COLPOSCOPY_TEST_RANKING
-#define __COLPOSCOPY_TEST_RANKING
+#ifndef __COLPOSCOPY_EXTRACT_FEATURES_RANKING
+#define __COLPOSCOPY_EXTRACT_FEATURES_RANKING
 
 #include <iomanip>
 #include <cstdio>

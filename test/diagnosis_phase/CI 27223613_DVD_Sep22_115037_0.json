@@ -1,0 +1,150 @@
+{
+    "sequence_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI 27223613_DVD_Sep22_115037_0", 
+    "domain": "../colposcopy/test/colposcopy_domain.json", 
+    "sequence": [
+        [
+            {
+                "frame": 0, 
+                "name": "roi", 
+                "features": [
+                    {
+                        "name": "roi", 
+                        "value": [
+                            [
+                                5, 
+                                5
+                            ], 
+                            [
+                                595, 
+                                468
+                            ]
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "frame": 1322, 
+                "name": "roi", 
+                "features": [
+                    {
+                        "name": "roi", 
+                        "value": [
+                            [
+                                5, 
+                                5
+                            ], 
+                            [
+                                595, 
+                                468
+                            ]
+                        ]
+                    }
+                ]
+            }
+        ], 
+        [
+            {
+                "frame": 0, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "plain"
+                    }
+                ]
+            }, 
+            {
+                "frame": 134, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "green"
+                    }
+                ]
+            }, 
+            {
+                "frame": 212, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 342, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 478, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 619, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 685, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "hinselmann"
+                    }
+                ]
+            }, 
+            {
+                "frame": 885, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "transition"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1175, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "schiller"
+                    }
+                ]
+            }, 
+            {
+                "frame": 1322, 
+                "name": "diagnosis_step", 
+                "features": [
+                    {
+                        "name": "step", 
+                        "value": "schiller"
+                    }
+                ]
+            }
+        ]
+    ], 
+    "name": "", 
+    "video_filename": "/home/kelwinfc/Escritorio/colposcopy/test/videos/CI 27223613_DVD_Sep22_115037_0.mpg\n"
+}

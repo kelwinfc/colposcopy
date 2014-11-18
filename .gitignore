@@ -48,3 +48,4 @@ test_motion
 generate_pairs_of_images_to_annotate
 test_ranking_abc
 test_ranking
+extract_features_ranking

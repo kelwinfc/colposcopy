@@ -2,8 +2,8 @@
 
 using namespace colposcopy;
 
-int rows = 64;
-int cols = 64;
+int rows = 48;
+int cols = 48;
 
 void get_sequence(const char* filename,
                   vector<Mat>& images,
@@ -95,6 +95,24 @@ void show_motion(vector<float>& m, int mrows, int mcols,
     }
 }
 
+void normalize_confusion_matrix(map< pair<label, label>, int >& src,
+                                map< pair<label, label>, float >& dst)
+{
+    map< pair<label, label>, int >::iterator it, end=src.end();
+    
+    int total = 0;
+    for ( it = src.begin(); it != end; ++it ){
+        total += it->second;
+    }
+    
+    for ( it = src.begin() ; it != end; ++it ){
+        if ( dst.find(it->first) == dst.end() ){
+            dst[it->first] = 0.0;
+        }
+        dst[it->first] += (float)it->second / (float)total;
+    }
+}
+
 void merge_confusion_matrix(map< pair<label, label>, float >& base_matrix,
                             map< pair<label, label>, int >& new_matrix,
                             int test_case)
@@ -155,38 +173,44 @@ int main(int argc, const char* argv[])
     }
 
     int mod_rate = 1;
-    
-    map< pair<label, label>, float> base_matrix;
-    map< pair<label, label>, int> next_matrix;
-    
+
     ifstream fin(argv[0]);
     string line;
     int test_case = 0;
     
-    threshold_cl thrs;
+    vector<threshold_cl*> thrs;
+    vector<classifier_dpd*> cls;
+    vector<int> neighborhood_size;
+    
+    for (int k = 0; k < 10; k++){
+        // Neighborhood size
+        neighborhood_size.push_back(k);
         
-    motion_fe f_cl(5, 1, 1);
-    thrs.set_feature_extractor(&f_cl);
-    thrs.set_threshold(1000000);
-    
-    classifier_dpd cl;
-    cl.set_classifier(&thrs);
-    
+        // Thresholding algorithm
+        motion_fe* f_cl = new motion_fe(k, 1, 1);
+        threshold_cl* next_thrs = new threshold_cl();
+        next_thrs->set_feature_extractor(f_cl);
+        next_thrs->set_threshold(1000000);
+        thrs.push_back(next_thrs);
+        
+        // Classifier
+        classifier_dpd* next_cl = new classifier_dpd();
+        next_cl->set_classifier(thrs[thrs.size() - 1]);
+        cls.push_back(next_cl);
+    }
+
     while ( getline(fin, line) )
     {
         cout << "Test " << test_case << ": " << line << endl;
-        
-        classifier_dpd d;
-        
+
         vector<Mat> images;
         vector<diagnosis_phase_detector::phase> labels;
 
+        // Load sequence
         get_sequence(line.c_str(), images, labels, mod_rate);
-        
-        int nr=8, nc=8;
-        motion_fe f(5, nr, nc);
+
+        // Read labels
         vector<Mat>::iterator it, end;
-        
         vector<label> cl_labels;
         for (size_t i = 0; i < labels.size(); i++ ){
             if ( labels[i] == diagnosis_phase_detector::diagnosis_transition ){
@@ -195,35 +219,40 @@ int main(int argc, const char* argv[])
                 cl_labels.push_back(0);
             }
         }
-        
-        //thrs.train(images, cl_labels);
-        thrs.log_values(images, cl_labels);
-        
-        Mat histogram;
-        thrs.plot_histogram(histogram, 50);
-        imshow("histogram", histogram);
-        
-        stringstream ss;
-        ss << "results/phase_timeline/motion/" << test_case << ".jpg";
-        string filename;
-        ss >> filename;
-        
-        cl.visualize(images, labels, filename.c_str());
-        waitKey(10);
-        
-        cout << "Accuracy: " << thrs.eval(images, cl_labels) << endl;
-        
-        //thrs.get_confusion_matrix(images, cl_labels, next_matrix);
-        thrs.get_confusion_matrix(images, cl_labels, next_matrix);
-        thrs.print_confusion_matrix(images, cl_labels);
-        
-        merge_confusion_matrix(base_matrix, next_matrix, test_case++);
-        
-        cout << endl;
-        print_confusion_matrix(base_matrix);
-        
+
+        for (size_t t = 0; t < thrs.size(); t++){
+            thrs[t]->log_values(images, cl_labels);
+
+            /*
+            Mat histogram;
+            thrs[t]->plot_histogram(histogram, 50);
+            imshow("histogram", histogram);
+            */
+
+            stringstream ss;
+            ss << "results/phase_timeline/motion/"
+               << neighborhood_size[t] << "_" << test_case << ".jpg";
+            string filename;
+            ss >> filename;
+
+            cls[t]->visualize(images, labels, filename.c_str());
+            
+            map< pair<label, label>, int> next_matrix;
+            map< pair<int, int>, float> normalized_matrix;
+            
+            thrs[t]->get_confusion_matrix(images, cl_labels, next_matrix);
+            normalize_confusion_matrix(next_matrix, normalized_matrix);
+            
+            float acc = thrs[t]->eval(images, cl_labels);
+
+            cout << "Accuracy (" << neighborhood_size[t] << "): "
+                 << acc << endl;
+
+            print_confusion_matrix(normalized_matrix);
+        }
+
         cout << "=========================" << endl;
-        
+        test_case++;
         /*
         {
             vector<label> predictions;
@@ -266,5 +295,4 @@ int main(int argc, const char* argv[])
     }
     
     waitKey(0);
-    
 }

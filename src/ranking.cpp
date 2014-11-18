@@ -40,12 +40,19 @@ void ranking::train(vector< sample >& samples,
         // Set the new weight vector
         this->update_weights(loss);
     }
+    /*
+    vector< pair<float, int> > wo;
+    for ( size_t i = 0; i < this->w.size(); i++ ){
+        wo.push_back(make_pair(-this->w[i], i));
+    }
+    sort(wo.begin(), wo.end());
     
     cout << "Weight:";
-    for ( size_t i = 0; i < this->w.size(); i++ ){
-        cout << " " << this->w[i];
+    for ( size_t i = 0; i < wo.size(); i++ ){
+        cout << " (" << wo[i].second << ", " << abs(wo[i].first) << ")";
     }
     cout << endl;
+    */
 }
 
 float ranking::predict(sample& a, sample& b)
@@ -74,6 +81,41 @@ void ranking::rank(vector<sample>& samples)
     }
     
     samples = aux;
+}
+
+void ranking::rank(std::vector<sample>& samples,
+                   std::vector<int>& positions)
+{
+    this->greedy_order(samples, positions);
+}
+
+float ranking::accuracy(std::vector<sample>& samples,
+                        std::vector< pair<int, int> >& feedback)
+{
+    if ( feedback.size() == 0 )
+        return 1.0;
+
+    vector<int> order;
+    this->rank(samples, order);
+
+    int tt = 0;
+    int ff = 0;
+
+    for (size_t i = 0; i < feedback.size(); i++)
+    {
+        int f = feedback[i].first;
+        int s = feedback[i].second;
+
+        if ( order[f] > order[s] ){
+            tt++;
+        } else if ( order[f] < order[s] ){
+            ff++;
+        } else {
+
+        }
+    }
+
+    return ((float)tt) / ((float)(tt + ff));
 }
 
 float ranking::Z()

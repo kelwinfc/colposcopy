@@ -108,14 +108,14 @@ void get_sequence(const char* filename,
         {
             continue;
         }
-        
+        /*
         Mat img, aux;
         inst.get_frame(f, img);
         
         if ( !img.data ){
             continue;
         }
-        
+        */
         diagnosis_phase_detector::phase step = 
            diagnosis_phase_detector::string_to_phase(step_feature->get_value());
         
@@ -243,9 +243,11 @@ int main(int argc, const char* argv[])
             cout << "LEVEL " << level << endl;
             //boost::this_thread::sleep( boost::posix_time::seconds(1) );
             
-            vector< pair< pair<int, int>,
-                          pair<int, int>
-                        > > pairs;
+            vector< pair<int, pair< pair<int, int>,
+                                    pair<int, int>
+                                  >
+                        >
+                  > pairs;
             
             // Generate pairs <(video, frame), (video, frame)> for this level
             for ( size_t va = 0; va < instances.size(); va++ ){
@@ -262,9 +264,17 @@ int main(int argc, const char* argv[])
                                 continue;
                             }
 
+                            int priority = 
+                                min(db.num_annotated_frames(v_index[va]),
+                                    db.num_annotated_frames(v_index[vb]));
+
                             pairs.push_back(
-                                make_pair(make_pair(va, framesl_a[fa]),
-                                          make_pair(vb, framesl_b[fb])
+                                make_pair(priority,
+                                          make_pair(make_pair(va,
+                                                              framesl_a[fa]),
+                                                    make_pair(vb,
+                                                              framesl_b[fb])
+                                                   )
                                          )
                             );
                         }
@@ -280,17 +290,31 @@ int main(int argc, const char* argv[])
             }
             
             // Randomly sort these pairs
-            random_shuffle(pairs.begin(), pairs.end());
+            vector<int> change_priorities;
+            sort(pairs.begin(), pairs.end());
             
+            change_priorities.push_back(0);
+            for (size_t i = 1; i < pairs.size(); i++){
+                if ( pairs[i].first != pairs[i - 1].first ){
+                    change_priorities.push_back(i);
+                }
+            }
+            change_priorities.push_back(pairs.size());
+            
+            for (size_t i = 0; i + 1 < change_priorities.size(); i++){
+                random_shuffle(pairs.begin() + change_priorities[i],
+                               pairs.begin() + change_priorities[i + 1]);
+            }
+
             // Eval these pairs
             for ( size_t i = 0; i < pairs.size() && !go_to_next_phase; i++ ){
+                int va = pairs[i].second.first.first;
+                int fa = pairs[i].second.first.second;
                 
-                int va = pairs[i].first.first;
-                int fa = pairs[i].first.second;
+                int vb = pairs[i].second.second.first;
+                int fb = pairs[i].second.second.second;
                 
-                int vb = pairs[i].second.first;
-                int fb = pairs[i].second.second;
-                
+                cout << filenames[va] << " " << filenames[vb] << endl;
                 cout << "(" << va << ":" << fa << ") "
                      << "(" << vb << ":" << fb << ") " << endl;
                 
@@ -303,6 +327,7 @@ int main(int argc, const char* argv[])
                 }
                 
                 better = -1;
+                bool save = true;
                 
                 while ( true ){
                     Mat a, b, dst;
@@ -323,6 +348,9 @@ int main(int argc, const char* argv[])
                         exit = true;
                         has = false;
                         break;
+                    } else if ( key == 115 ){       // Skip
+                       save = false;
+                       break;
                     } else {
                         better = -1;
                     }
@@ -333,10 +361,12 @@ int main(int argc, const char* argv[])
                 }
                 
                 // Save the annotation
-                db.insert_annotation(cphase,
-                                     v_index[va], frames[va][cphase][fa],
-                                     v_index[vb], frames[vb][cphase][fb],
-                                     better);
+                if ( save ){
+                    db.insert_annotation(cphase,
+                                         v_index[va], frames[va][cphase][fa],
+                                         v_index[vb], frames[vb][cphase][fb],
+                                         better);
+                }
                 
                 cout << "remaining " << remaining << endl;
                 
