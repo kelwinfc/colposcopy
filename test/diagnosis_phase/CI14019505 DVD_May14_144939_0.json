@@ -44,16 +44,6 @@
         ], 
         [
             {
-                "frame": 0, 
-                "name": "diagnosis_step", 
-                "features": [
-                    {
-                        "name": "step", 
-                        "value": "green"
-                    }
-                ]
-            }, 
-            {
                 "frame": 117, 
                 "name": "diagnosis_step", 
                 "features": [
@@ -69,7 +59,7 @@
                 "features": [
                     {
                         "name": "step", 
-                        "value": "hinselmann"
+                        "value": "plain"
                     }
                 ]
             }, 
