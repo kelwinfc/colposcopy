@@ -8,11 +8,12 @@ FILES=utils\
 	feature_extractor distance classifier\
 	diagnosis_phase\
 	db_ranking ranking\
+	cervix_segmentation\
 	$(ANONADADO_FILES)
 
 EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers\
 	test_motion generate_pairs_of_images_to_annotate test_ranking_abc\
-	test_ranking extract_features_ranking
+	test_ranking extract_features_ranking test_watershed
 
 ANONADADO_FILES=anonadado anonadado_utils
 
@@ -24,6 +25,7 @@ DEP_classifier=utils feature_extractor
 DEP_diagnosis_phase=utils feature_extractor distance classifier specular_reflection
 DEP_db_ranking=utils diagnosis_phase
 DEP_ranking=utils db_ranking diagnosis_phase
+DEP_cervix_segmentation=utils
 
 DEP_test_specular_reflection=$(DEP_specular_reflection) specular_reflection
 DEP_test_diagnosis_phase=$(DEP_diagnosis_phase) diagnosis_phase  $(ANONADADO_FILES)
@@ -33,6 +35,7 @@ DEP_generate_pairs_of_images_to_annotate=$(DEP_diagnosis_phase) $(ANONADADO_FILE
 DEP_extract_features_ranking=$(DEP_ranking) $(DEP_db_ranking) $(ANONADADO_FILES)
 DEP_test_ranking_abc=$(DEP_ranking) $(DEP_db_ranking)
 DEP_test_ranking=$(DEP_ranking) $(DEP_db_ranking)
+DEP_test_watershed=
 
 DEP_anonadado=anonadado_utils
 DEP_anonadado_utils=
@@ -63,6 +66,9 @@ extract_features_ranking: $(FILES:%=bin/%.o) src/tests/extract_features_ranking.
 generate_pairs_of_images_to_annotate: $(FILES:%=bin/%.o) src/generate_pairs_of_images_to_annotate.cpp lib/generate_pairs_of_images_to_annotate.hpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
+test_watershed: $(FILES:%=bin/%.o) src/tests/test_watershed.cpp lib/tests/test_watershed.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
+
 #General rule for compiling
 bin/%.o: src/%.cpp lib/%.hpp
 	$(GCC) -c $< -o $@ $(GCC_FLAGS)
@@ -77,6 +83,7 @@ bin/ranking.o: $(DEP_ranking:%=src/%.cpp) $(DEP_ranking:%=lib/%.hpp)
 bin/db_ranking.o: $(DEP_db_ranking:%=src/%.cpp) $(DEP_db_ranking:%=lib/%.hpp)
 bin/anonadado.o: $(DEP_anonadado:%=src/%.cpp) $(DEP_anonadado:%=lib/%.hpp)
 bin/anonadado_utils.o: $(DEP_anonadado_utils:%=src/%.cpp) $(DEP_anonadado_utils:%=lib/%.hpp)
+bin/cervix_segmentation.o: $(DEP_cervix_segmentation:%=src/%.cpp) $(DEP_cervix_segmentation:%=lib/%.hpp)
 
 clean:
 	rm -rf *~ */*~ */*/*~ *.pyc */*.pyc $(EXECUTABLES) bin/*.o

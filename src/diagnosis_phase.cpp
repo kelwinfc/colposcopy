@@ -247,6 +247,113 @@ void diagnosis_phase_detector::visualize(vector<Mat>& src,
     imwrite(filename.c_str(), dst);
 }
 
+void diagnosis_phase_detector::get_equidistant_frames(
+                                              vector<string>& videos,
+                                              vector<Mat>& images,
+                                              vector<phase>& labels,
+                                              int frames_per_phase,
+                                              int rows, int cols)
+{
+    images.clear();
+    labels.clear();
+
+    /* For each video get equidistant frames */
+    for (size_t v = 0; v < videos.size(); v++){
+        anonadado::instance inst;
+        inst.read(videos[v]);
+        vector<int> step_index;
+        vector<int> roi_index;
+        
+        inst.get_annotations("diagnosis_step", step_index);
+        inst.get_annotations("roi", roi_index);
+        
+        int num_frames = inst.num_frames();
+        
+        map< phase, vector<int> > frames;
+        for ( int f = 0; f < num_frames; f++ ){
+            anonadado::annotation* a = 
+                inst.get_active_annotation(step_index[0], f);
+            anonadado::annotation* roi = 
+                inst.get_active_annotation(roi_index[0], f);
+            
+            if ( !a || !roi )
+                continue;
+            
+            anonadado::choice_feature* step_feature =
+                            (anonadado::choice_feature*)a->get_feature("step");
+            phase next_phase = diagnosis_phase_detector::string_to_phase(
+                                                    step_feature->get_value());
+            
+            if ( next_phase == diagnosis_phase_detector::diagnosis_transition )
+                continue;
+            
+            if ( frames.find(next_phase) == frames.end() ){
+                vector<int> n;
+                frames[next_phase] = n;
+            }
+            
+            frames[next_phase].push_back(f);
+        }
+        
+        phase phs[] = {
+                       diagnosis_phase_detector::diagnosis_plain,
+                       diagnosis_phase_detector::diagnosis_green,
+                       diagnosis_phase_detector::diagnosis_hinselmann,
+                       diagnosis_phase_detector::diagnosis_schiller
+                      };
+        
+        for(int ph_index = 0; ph_index < 4; ph_index++){
+            phase next_ph = phs[ph_index];
+            size_t frames_to_retrieve = min((size_t)frames_per_phase,
+                                            frames[next_ph].size());
+
+            float frames_step = ((float)frames[next_ph].size()) / 
+                                ((float)(frames_to_retrieve + 1));
+
+            for (size_t f = 0; f < frames_to_retrieve; f++){
+                int next_frame = frames[next_ph][(int)((f + 1) * frames_step)];
+                
+                anonadado::annotation* a = 
+                    inst.get_active_annotation(step_index[0], next_frame);
+                anonadado::annotation* roi = 
+                    inst.get_active_annotation(roi_index[0], next_frame);
+
+                if ( !a || !roi ){
+                    continue;
+                }
+                
+                Mat img, aux;
+                inst.get_frame(next_frame, img);
+                
+                if ( !img.data ){
+                    continue;
+                }
+                
+                
+                anonadado::bbox_feature* roi_feature =
+                            (anonadado::bbox_feature*)roi->get_feature("roi");
+                BBOX roi_value = roi_feature->get_value();
+                
+                Rect region_of_interest =
+                    Rect(roi_value.first.first,
+                         roi_value.first.second,
+                         roi_value.second.first - roi_value.first.first,
+                         roi_value.second.second - roi_value.first.second);
+                
+                resize(img, aux, Size(600, 474));
+                aux.copyTo(img);
+                
+                img = img(region_of_interest);
+                
+                resize(img, aux, Size(rows, cols));
+                
+                images.push_back(aux);
+                labels.push_back(next_ph);
+            }
+        }
+    }
+}
+
 /*****************************************************************************
  *                 Histogram-Based Diagnosis Phase Detector                  *
  *****************************************************************************/
@@ -938,6 +1045,176 @@ void final_dpd::detect(vector<Mat>& src, vector<phase>& dst)
         } else {
             dst[i] = phase_out[mapping[i]];
         }
+    }
+}
+
+/*****************************************************************************
+ *                           Final Phase Detector                            *
+ *****************************************************************************/
+
+
+temporal_dpd::temporal_dpd()
+{
+    this->underlying = 0;
+}
+
+temporal_dpd::temporal_dpd(diagnosis_phase_detector* u)
+{
+    this->underlying = u;
+}
+
+void temporal_dpd::read(const rapidjson::Value& json)
+{
+    // TODO
+}
+
+void temporal_dpd::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    // TODO
+}
+
+void temporal_dpd::train(vector<Mat>& src, vector<phase>& labels)
+{
+    if ( this->underlying != 0 ){
+        this->underlying->train(src, labels);
+    }
+}
+
+float temporal_dpd::eval(vector<Mat>& src, vector<phase>& labels)
+{
+    return diagnosis_phase_detector::eval(src, labels);
+}
+
+void temporal_dpd::detect(vector<Mat>& src, vector<phase>& dst)
+{
+    vector<phase> intermidiate;
+    this->underlying->detect(src, intermidiate);
+    map<pair<int, phase> , int> knowledge;
+    
+    int result = this->dp(intermidiate, 0, diagnosis_plain, knowledge);
+    this->traverse(intermidiate, knowledge, result, 0, diagnosis_plain, dst);
+}
+
+int temporal_dpd::dp(vector<phase>& sequence, int i, phase step,
+                     map<pair<int, phase>, int>& knowledge)
+{
+    if ( i == sequence.size() ){
+        return 0;
+    }
+    pair<int, phase> key = make_pair(i, step);
+    
+    if ( knowledge.find(key) != knowledge.end() ){
+        return knowledge[key];
+    }
+    
+    int ret = 0;
+    
+    // Transition or match
+    if ( sequence[i] == diagnosis_transition || 
+         sequence[i] == step ||
+         sequence[i] == diagnosis_unknown
+       )
+    {
+        ret = this->dp(sequence, i + 1, step, knowledge);
+    }
+    // Special case wit Plain and Hinselmann
+    else if ( step == diagnosis_plain && 
+              sequence[i] == diagnosis_hinselmann
+            )
+    {
+        ret = min(this->dp(sequence, i + 1, step, knowledge),
+                  this->dp(sequence, i, sequence[i], knowledge));
+    }
+    // Special case wit Hinselmann and Plain
+    else if ( step == diagnosis_hinselmann && sequence[i] == diagnosis_plain )
+    {
+        ret = this->dp(sequence, i + 1, step, knowledge);
+    }
+    // Has next step
+    else if ( this->has_next(step) ){
+        ret = min(this->dp(sequence, i, this->next_step(step), knowledge),
+                  1 + this->dp(sequence, i + 1, step, knowledge));
+    }
+    // Doesn't have next step
+    else {
+        ret = 1 + this->dp(sequence, i + 1, step, knowledge);
+    }
+    
+    return knowledge[key] = ret;
+}
+
+bool temporal_dpd::has_next(phase step)
+{
+    return step != diagnosis_schiller;
+}
+
+diagnosis_phase_detector::phase temporal_dpd::next_step(phase step)
+{
+    switch (step){
+        case diagnosis_plain:
+            return diagnosis_green;
+        case diagnosis_green:
+            return diagnosis_hinselmann;
+        case diagnosis_hinselmann:
+            return diagnosis_schiller;
+        default:
+            return diagnosis_transition;
+    }
+}
+
+void temporal_dpd::traverse(vector<phase>& sequence,
+                            map<pair<int, phase>, int>& knowledge,
+                            int goal, int i, phase step, vector<phase>& dst)
+{
+    if ( i == sequence.size() ){
+        return;
+    }
+    
+    pair<int, phase> key = make_pair(i, step);
+    
+    // Transition or match
+    if ( sequence[i] == diagnosis_transition ||
+        sequence[i] == step ||
+         sequence[i] == diagnosis_unknown
+       )
+    {
+        dst.push_back(sequence[i]);
+        this->traverse(sequence, knowledge, goal, i + 1, step, dst);
+    }
+    // Special case wit Plain and Hinselmann
+    else if ( step == diagnosis_plain && sequence[i] == diagnosis_hinselmann)
+    {
+        if ( goal == knowledge[make_pair(i + 1, step)] ){
+            dst.push_back(diagnosis_plain);
+            this->traverse(sequence, knowledge, goal, i + 1, step, dst);
+        } else {
+            this->traverse(sequence, knowledge, goal, i, sequence[i],
+                           dst);
+        }
+    }
+    // Special case wit Hinselmann and Plain
+    else if ( step == diagnosis_hinselmann && sequence[i] == diagnosis_plain )
+    {
+        dst.push_back(step);
+        this->traverse(sequence, knowledge, goal, i + 1, step, dst);
+    }
+    // Has next step
+    else if ( this->has_next(step) ){
+        // Change step
+        if ( goal != 1 + knowledge[make_pair(i + 1, step)] ){
+            this->traverse(sequence, knowledge, goal, i,
+                           this->next_step(step), dst);
+        }
+        // Keep current step
+        else {
+            dst.push_back(step);
+            this->traverse(sequence, knowledge, goal - 1, i + 1, step, dst);
+        }
+    }
+    // Doesn't have next step
+    else {
+        dst.push_back(step);
+        this->traverse(sequence, knowledge, goal - 1, i + 1, step, dst);
     }
 }
 

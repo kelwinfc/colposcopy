@@ -59,9 +59,11 @@ void classifier::extract_features(vector<Mat>& src,
                                   vector<vector<float> >& h)
 {
     uint n = src.size();
+    h.clear();
     for ( uint i = 0; i < n; i++ ){
         vector<float> next_h;
-        this->extractor->extract(src,i, next_h);
+        
+        this->extractor->extract(src, i, next_h);
         h.push_back(next_h);
     }
 }
@@ -658,12 +660,25 @@ void knn::detect(vector< vector<float> >& src, vector<label>& dst)
     for ( uint i = 0; i < n; i++ ){
         map<label, float> r;
         priority_queue< pair<float, label> > q;
+        /*
+        Mat h_src;
+        plot_histogram(src[i], h_src);
+        imshow("h_src", h_src);
+        */
         
         for ( uint j = 0; j < this->index_features.size(); j++ ){
             float next_distance = this->distance->d(this->index_features[j],
                                                     src[i]);
             q.push( make_pair(-next_distance, this->index_label[j]) );
+            /*
+            if ( q.top().first == -next_distance ){
+                Mat closest;
+                plot_histogram(this->index_features[j], closest);
+                imshow("closest", closest);
+            }
+            */
         }
+        //waitKey(0);
         
         int kk = this->k;
         while ( !q.empty() && kk-- > 0 ){
@@ -744,7 +759,7 @@ void knn::plot_histograms(map<label, Scalar>& colors)
     }
     
     imshow("drawing", drawing);
-    waitKey(0);
+    //waitKey(0);
 }
 
 /*****************************************************************************

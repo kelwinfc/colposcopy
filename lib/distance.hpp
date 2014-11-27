@@ -26,14 +26,20 @@ using namespace std;
 using namespace cv;
 
 class v_distance {
+    protected:
+        int first;
+        int last;
+
     public:
-        v_distance();
+        v_distance(int first=0, int last=-1);
         virtual float d(vector<float>& a, vector<float>& b);
 
         virtual void read(string filename);
         virtual void read(const rapidjson::Value& json);
         virtual void write(string filename);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
+        void set_first_and_last(int first, int last);
 };
 
 class lk_distance : public v_distance {
@@ -42,8 +48,8 @@ class lk_distance : public v_distance {
         float k_inv;
 
     public:
-        lk_distance();
-        lk_distance(int k);
+        lk_distance(int first=0, int last=-1);
+        lk_distance(int k, int first=0, int last=-1);
         virtual float d(vector<float>& a, vector<float>& b);
 
         virtual void read(const rapidjson::Value& json);
@@ -52,15 +58,16 @@ class lk_distance : public v_distance {
 
 class manhattan_distance : public lk_distance {
     public:
-        manhattan_distance();
-
+        manhattan_distance(int first=0, int last=-1);
+        virtual float d(vector<float>& a, vector<float>& b);
+        
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
 };
 
 class euclidean_distance : public lk_distance {
     public:
-        euclidean_distance();
+        euclidean_distance(int first=0, int last=-1);
 
         virtual void read(const rapidjson::Value& json);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
@@ -68,7 +75,7 @@ class euclidean_distance : public lk_distance {
 
 class hi_distance : public v_distance {
     public:
-        hi_distance();
+        hi_distance(int first=0, int last=-1);
         virtual float d(vector<float>& a, vector<float>& b);
 
         virtual void read(const rapidjson::Value& json);
@@ -77,7 +84,7 @@ class hi_distance : public v_distance {
 
 class earth_movers_distance : public v_distance {
     public:
-        earth_movers_distance();
+        earth_movers_distance(int first=0, int last=-1);
         
         virtual float d(vector<float>& a, vector<float>& b);
 
@@ -90,7 +97,24 @@ class earth_movers_distance : public v_distance {
 
 class circular_emd : public earth_movers_distance {
     public:
-        circular_emd();
+        circular_emd(int first=0, int last=-1);
+        
+        virtual float d(vector<float>& a, vector<float>& b);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+};
+
+class merge_distances : public v_distance {
+    protected:
+        vector<int> sizes;
+        vector<int> shift;
+        
+        vector<v_distance*> distances;
+    
+    public:
+        merge_distances(vector<v_distance*>& distances,
+                        vector<int>& sizes);
         
         virtual float d(vector<float>& a, vector<float>& b);
 

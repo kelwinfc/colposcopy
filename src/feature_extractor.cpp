@@ -267,74 +267,187 @@ void merge_single_frame_fe::get_names(vector<string>& names)
 }
 
 /*****************************************************************************
- *                           Hue Feature Extractor                           *
+ *                  Selective HSV-Channel Feature Extractor                  *
  *****************************************************************************/
 
-hue_histogram_fe::hue_histogram_fe()
+selective_hsv_channel_histogram_fe::selective_hsv_channel_histogram_fe()
 {
     this->bindw = 10;
     this->normalize = true;
+    this->use[0] = this->use[1] = this->use[2] = 0;
+    this->name = "";
+    this->initialize();
 }
 
-hue_histogram_fe::hue_histogram_fe(int bindw, bool normalize)
+selective_hsv_channel_histogram_fe::selective_hsv_channel_histogram_fe(
+                                                    int bindw, bool normalize,
+                                                    int use_ch[3],
+                                                    string name)
 {
     this->bindw = bindw;
     this->normalize = normalize;
+    this->use[0] = use_ch[0];
+    this->use[1] = use_ch[1];
+    this->use[2] = use_ch[2];
+    this->name = name;
+    this->initialize();
 }
 
-void hue_histogram_fe::extract(vector<Mat>& in, int i, vector<float>& out,
-                               anonadado::instance* instance)
+void selective_hsv_channel_histogram_fe::initialize()
 {
-    Mat aux;
-    vector<Mat> hsv_planes;
+    this->hist_range[0] = 180;
+    this->hist_range[1] = 256;
+    this->hist_range[2] = 256;
+    
+    this->hist_size[0] = 180 / this->bindw + (180 % this->bindw != 0 ? 1 : 0);
+    this->hist_size[1] = 256 / this->bindw + (256 % this->bindw != 0 ? 1 : 0);
+    this->hist_size[2] = 256 / this->bindw + (256 % this->bindw != 0 ? 1 : 0);
+    
+    this->hist_shift[0] = 0;
+    this->hist_shift[1] = 0;
+    this->hist_shift[2] = 0;
+    
+    this->total = 0;
+    
+    for (int ch=0; ch<3; ch++){
+        this->hist_size[ch] *= this->use[ch];
+        
+        if ( ch > 0 ){
+            this->hist_shift[ch] = this->hist_shift[ch - 1] + 
+                                   this->hist_size[ch - 1];
+        }
+        
+        this->total += this->hist_size[ch];
+    }
+}
 
-    cvtColor(in[i], aux, CV_BGR2HSV);
-    split( aux, hsv_planes );
+float euclidean_d2(int x0, int y0, int x1, int y1)
+{
+    float diffx = x1 - x0;
+    float diffy = y1 - y0;
+    
+    return diffx * diffx + diffy * diffy;
+}
 
-    out.resize( 180 / this->bindw + (256 % this->bindw != 0 ? 1 : 0) );
-    fill(out.begin(), out.end(), 0.0);
+void draw_mask(Mat& src, Mat& dst, float ratio)
+{
+    int cr = src.rows / 2;
+    int cc = src.cols / 2;
+    float threshold = ratio * min(cr, cc);
+    threshold *= threshold;
 
-    for ( int r = 0; r < in[i].rows; r++ ){
-        for ( int c = 0; c < in[i].cols; c++ ){
-            int bh = hsv_planes[0].at<uchar>(r, c) / this->bindw;
-            out[bh] += 1.0;
+    dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
+    for ( int r = 0; r < src.rows; r++ ){
+        for ( int c = 0; c < dst.cols; c++ ){
+
+            if ( euclidean_d2(cr, cc, r, c) > threshold ){
+                continue;
+            }
+            
+            dst.at<Vec3b>(r, c) = Vec3b(255, 255, 255);
         }
     }
     
-    if ( this->normalize ){
-        
-        float total = 0.0;
-        for ( uint i = 0; i < out.size(); i++ ){
-            total += out[i];
-        }
-        
-        for ( uint i = 0; i < out.size(); i++ ){
-            out[i] /= total;
+    dst = cv::min(src, dst);
+}
+
+void selective_hsv_channel_histogram_fe::extract(vector<Mat>& in, int i,
+                                                 vector<float>& out,
+                                                 anonadado::instance* instance)
+{
+    float ratio = 0.75;
+    int cr = in[i].rows / 2;
+    int cc = in[i].cols / 2;
+    float threshold = ratio * min(cr, cc);
+    threshold *= threshold;
+    
+    Mat aux;
+    vector<Mat> hsv_planes;
+    
+    cvtColor(in[i], aux, CV_BGR2HSV);
+    split( aux, hsv_planes );
+    
+    out.resize(total);
+    fill(out.begin(), out.end(), 0.0);
+    /*
+    Mat mask;
+    draw_mask(in[i], mask, 0.75);
+    imshow("src", in[i]);
+    imshow("mask", mask);
+    waitKey(0);
+    */
+    for (int ch=0; ch<3; ch++){
+        if ( this->use[ch] ){
+            Mat dst;
+            hsv_planes[ch].copyTo(dst);
+            //medianBlur(dst, dst, 3);
+            
+            for ( int r = 0; r < in[i].rows; r++ ){
+                for ( int c = 0; c < in[i].cols; c++ ){
+                    if ( euclidean_d2(cr, cc, r, c) > threshold ){
+                        continue;
+                    }
+                    
+                    int bh = dst.at<uchar>(r, c) / this->bindw;
+                    out[this->hist_shift[ch] + bh] += 1.0;
+                }
+            }
+            
+            if ( this->normalize ){
+                float norm_total = 0.0;
+                for (uint k = this->hist_shift[ch];
+                     k < this->hist_shift[ch] + this->hist_size[ch];
+                     k++)
+                {
+                    /*
+                    if ( out[k] < (1.0 / this->hist_range[ch]) * 
+                                   in[i].rows * in[i].cols ){
+                        out[k] = 0.0;
+                    }
+                    */
+                    norm_total += out[k];
+                }
+
+                for (uint k = this->hist_shift[ch];
+                     k < this->hist_shift[ch] + this->hist_size[ch];
+                     k++)
+                {
+                    out[k] /= norm_total;
+                }
+            }
         }
     }
+    /*
+    cout << out.size() << endl;
+    Mat hist;
+    plot_histogram(out, hist);
+    imshow("hist", hist);
+    waitKey(0);
+    */
 }
 
-void hue_histogram_fe::read(const rapidjson::Value& json)
+void selective_hsv_channel_histogram_fe::read(const rapidjson::Value& json)
 {
     //TODO
 }
 
-void hue_histogram_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+void selective_hsv_channel_histogram_fe::write(rapidjson::Value& json,
+                                               rapidjson::Document& d)
 {
     //TODO
 }
 
-void hue_histogram_fe::get_names(vector<string>& names)
+void selective_hsv_channel_histogram_fe::get_names(vector<string>& names)
 {
     names.clear();
-    names.resize( 180 / this->bindw + (256 % this->bindw != 0 ? 1 : 0) );
+    names.resize(this->total);
     
     for (uint k = 0; k < names.size(); k++){
         stringstream ss;
         string n;
-        ss << "hue_" << k;
+        ss << this->name << k;
         ss >> n;
-        names.push_back(n);
+        names[k] = n;
     }
 }
 

@@ -115,14 +115,22 @@ class merge_single_frame_fe : public merge_fe {
         virtual void get_names(vector<string>& names);
 };
 
-class hue_histogram_fe : public feature_extractor {
+class selective_hsv_channel_histogram_fe : public feature_extractor {
     protected:
         int bindw;
         bool normalize;
-
+        int use[3];
+        string name;
+        
+        int hist_range[3];
+        int hist_size[3];
+        int hist_shift[3];
+        int total;
+    
     public:
-        hue_histogram_fe();
-        hue_histogram_fe(int bindw, bool normalize);
+        selective_hsv_channel_histogram_fe();
+        selective_hsv_channel_histogram_fe(int bindw, bool normalize,
+                                           int use_ch[3], string name);
         
         virtual void extract(vector<Mat>& in, int i, vector<float>& out,
                              anonadado::instance* instance=0);
@@ -131,6 +139,64 @@ class hue_histogram_fe : public feature_extractor {
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
         
         virtual void get_names(vector<string>& names);
+    protected:
+        void initialize();
+};
+
+static int hue_histogram_fe_usage[3] = {1, 0, 0};
+
+class hue_histogram_fe : public selective_hsv_channel_histogram_fe {
+    public:
+        hue_histogram_fe() 
+            : selective_hsv_channel_histogram_fe(10, true,
+                                                 hue_histogram_fe_usage,
+                                                 "sat"){}
+        hue_histogram_fe(int bindw, bool normalize)
+            : selective_hsv_channel_histogram_fe(bindw, normalize,
+                                                 hue_histogram_fe_usage,
+                                                 "hue"){}
+};
+
+static int saturation_histogram_fe_usage[3] = {0, 1, 0};
+
+class saturation_histogram_fe : public selective_hsv_channel_histogram_fe {
+    public:
+        saturation_histogram_fe() : 
+            selective_hsv_channel_histogram_fe(10, true,
+                                               saturation_histogram_fe_usage,
+                                               "sat"){}
+        saturation_histogram_fe(int bindw, bool normalize)
+            : selective_hsv_channel_histogram_fe(bindw, normalize,
+                                                 saturation_histogram_fe_usage,
+                                                 "sat"){}
+};
+
+static int hs_histogram_fe[3] = {1, 1, 0};
+
+class hue_sat_histogram_fe : public selective_hsv_channel_histogram_fe {
+    public:
+        hue_sat_histogram_fe() : 
+            selective_hsv_channel_histogram_fe(10, true,
+                                               hs_histogram_fe,
+                                               "hue_sat"){}
+        hue_sat_histogram_fe(int bindw, bool normalize)
+            : selective_hsv_channel_histogram_fe(bindw, normalize,
+                                                 hs_histogram_fe,
+                                                 "hue_sat"){}
+};
+
+static int full_hsv_histogram_fe[3] = {1, 1, 1};
+
+class hsv_histogram_fe : public selective_hsv_channel_histogram_fe {
+    public:
+        hsv_histogram_fe() : 
+            selective_hsv_channel_histogram_fe(10, true,
+                                               full_hsv_histogram_fe,
+                                               "hsv_hist"){}
+        hsv_histogram_fe(int bindw, bool normalize)
+            : selective_hsv_channel_histogram_fe(bindw, normalize,
+                                                 full_hsv_histogram_fe,
+                                                 "hsv_hist"){}
 };
 
 class motion_fe : public feature_extractor {

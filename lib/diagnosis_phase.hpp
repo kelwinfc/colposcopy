@@ -54,6 +54,12 @@ class diagnosis_phase_detector {
         virtual float eval(vector<Mat>& src, vector<phase>& labels);
         virtual void detect(vector<Mat>& src, vector<phase>& dst);
         
+        static void get_equidistant_frames(vector<string>& videos,
+                                           vector<Mat>& images,
+                                           vector<phase>& labels,
+                                           int frames_per_phase,
+                                           int rows=64, int cols=64);
+
         float get_confussion_matrix(vector<Mat>& src, vector<phase>& labels,
                                     map< pair<phase, phase>, int>& matrix);
         float print_confussion_matrix(vector<Mat>& src, vector<phase>& labels);
@@ -266,6 +272,31 @@ class final_dpd : public diagnosis_phase_detector {
         void extract_non_transition(vector<Mat>& src, vector<Mat>& dst,
                                     vector<phase>& transitions,
                                     vector<int>& mapping);
+};
+
+class temporal_dpd : public diagnosis_phase_detector {
+    protected:
+        diagnosis_phase_detector* underlying;
+    
+    public:
+        temporal_dpd();
+        temporal_dpd(diagnosis_phase_detector* u);
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
+        virtual void train(vector<Mat>& src, vector<phase>& labels);
+        virtual float eval(vector<Mat>& src, vector<phase>& labels);
+        virtual void detect(vector<Mat>& src, vector<phase>& dst);
+    
+    protected:
+        int dp(vector<phase>& sequence, int i, phase step,
+               map<pair<int, phase>, int>& knowledge);
+        bool has_next(phase);
+        phase next_step(phase step);
+        void traverse(vector<phase>& sequence,
+                      map<pair<int, phase>, int>& knowledge,
+                      int goal, int i, phase step, vector<phase>& dst);
 };
 
 };

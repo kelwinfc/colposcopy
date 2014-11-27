@@ -71,3 +71,35 @@ int64 GetTimeMs64()
         return ret;
     #endif
 }
+
+void all_but_k(std::vector<std::string>& src,
+               std::vector<std::string>& dst, int k)
+{
+    dst.clear();
+    std::vector<std::string>::iterator it=src.begin(), end=src.end();
+    size_t i = 0;
+    
+    for ( ; it != end; ++it ){
+        if ( i++ != k ){
+            dst.push_back(*it);
+        }
+    }
+}
+
+void plot_histogram(std::vector<float>& h, Mat& dst)
+{
+    int hist_w = 512; int hist_h = 400;
+    int histSize = h.size();
+    
+    int bin_w = cvRound( (double) hist_w / histSize );
+
+    dst = Mat(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+    
+    /// Draw for each channel
+    for( int i = 1; i < histSize; i++ )
+    {
+      line(dst, Point(bin_w*(i-1), hist_h - cvRound(h[i-1] * dst.rows)),
+                Point(bin_w*(i), hist_h - cvRound(h[i] * dst.rows)),
+                Scalar(255, 0, 0), 2, 8, 0);
+    }
+}
