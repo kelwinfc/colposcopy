@@ -26,6 +26,7 @@
 
 #include "utils.hpp"
 #include "specular_reflection.hpp"
+#include "cervix_segmentation.hpp"
 
 using namespace std;
 using namespace cv;
@@ -322,6 +323,24 @@ class edges_summations_fe : public feature_extractor {
     public:
         edges_summations_fe(specular_reflection_detection* sr_detection=0,
                             img_inpaint* inpainting=0);
+        
+        virtual void extract(vector<Mat>& in, int i, vector<float>& out,
+                             anonadado::instance* instance=0);
+
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        
+        virtual void get_names(vector<string>& names);
+};
+
+class cervix_region_fe : public feature_extractor {
+    protected:
+        cervix_segmentation* cervix;
+        cervix_segmentation* epithelium;
+        
+    public:
+        cervix_region_fe(cervix_segmentation* cervix=0,
+                         cervix_segmentation* epithelium=0);
         
         virtual void extract(vector<Mat>& in, int i, vector<float>& out,
                              anonadado::instance* instance=0);

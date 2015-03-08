@@ -126,6 +126,38 @@ void classifier::print_confusion_matrix(vector<Mat>& src, vector<label>& labels)
     }
 }
 
+int count_labels(vector<label>& labels){
+    set<label> num_labels;
+    for(size_t i = 0; i < labels.size(); i++){
+        num_labels.insert(labels[i]);
+    }
+    return num_labels.size();
+}
+
+pair<Mat, Mat> classifier::from_vector_to_mat(vector<Mat>& src,
+                                              vector<label>& labels)
+{
+    Mat ret_data;
+    Mat ret_labels;
+    /*
+    Mat ret_data(src.size(), src[0].cols, CV_32F),
+        ret_labels(src.size(), num_labels, CV_32F);
+    
+    for (size_t i=0; i<src.size(); i++){
+        vector<float> out;
+        this->fe->extract(src, i, out);
+        
+        for (size_t j=0; j<out.size(); j++){
+            ret_data.at<float>(i, j) = out[j];
+        }
+        for (size_t j=0; j<num_labels; j++){
+            //TODO
+        }
+    }
+    */
+    return make_pair(ret_data, ret_labels);
+}
+
 /*****************************************************************************
  *                       Neighborhood-based Classifier                       *
  *****************************************************************************/
@@ -989,6 +1021,69 @@ void threshold_cl::plot_histogram(Mat& img, int num_bins)
             }
         }
     }
+}
+
+mlp_cl::mlp_cl(int hidden_units)
+{
+    //this->num_hiddden_units = hidden_units;
+}
+
+mlp_cl::~mlp_cl()
+{
+    
+}
+
+void mlp_cl::read(const rapidjson::Value& json)
+{
+    
+}
+
+void mlp_cl::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    
+}
+
+void mlp_cl::train(vector<Mat>& src, vector<label>& labels)
+{
+    /*
+    Mat layers = Mat(3, 1, CV_32SC1);
+    int sz = src[0].cols;
+
+    layers.row(0) = Scalar(sz);
+    layers.row(1) = Scalar(this->num_hiddden_units);
+    layers.row(2) = Scalar(2);
+
+    this->criteria.max_iter = 1000;
+    this->criteria.epsilon  = 0.00001f;
+    this->criteria.type     = CV_TERMCRIT_ITER | CV_TERMCRIT_EPS;
+
+    this->params.train_method    = CvANN_MLP_TrainParams::BACKPROP;
+    this->params.bp_dw_scale     = 0.1f;
+    this->params.bp_moment_scale = 0.1f;
+    this->params.term_crit       = this->criteria;
+
+    this->mlp.create(layers, CvANN_MLP::SIGMOID_SYM);
+    this->mlp.train(trainData, trainLabels, Mat(), Mat(), this->params);*/
+}
+
+void mlp_cl::untrain()
+{
+    
+}
+
+float mlp_cl::eval(vector<Mat>& src, vector<label>& labels)
+{
+    
+}
+
+void mlp_cl::detect(vector<Mat>& src, vector<label>& dst)
+{
+    
+}
+
+label mlp_cl::predict(Mat& src)
+{
+    
 }
 
 /*****************************************************************************

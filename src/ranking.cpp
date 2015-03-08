@@ -4,14 +4,7 @@ using namespace rank_learning;
 
 ranking::ranking()
 {
-    this->beta = 0.5;
-    this->num_iterations = 100;
-}
-
-ranking::ranking(float B, size_t num_iterations)
-{
-    this->beta = B;
-    this->num_iterations = num_iterations;
+    
 }
 
 ranking::~ranking()
@@ -19,75 +12,28 @@ ranking::~ranking()
     
 }
 
-void ranking::train(vector< sample >& samples,
-                    vector< pair<int, int> >& feedback)
+void ranking::train(std::vector<sample>& samples,
+                    std::vector< pair<int, int> >& feedback)
 {
-    if ( samples.size() == 0 ){
-        this->w.clear();
-        return;
-    }
     
-    this->w.resize(samples[0].size());
-    fill(this->w.begin(), this->w.end(), 1.0);
-    this->normalize_weights();
-    
-    for ( size_t iteration = 0; iteration < this->num_iterations; iteration++ )
-    {
-        // Evaluate losses
-        vector<float> loss;
-        this->loss(samples, feedback, loss);
-        
-        // Set the new weight vector
-        this->update_weights(loss);
-    }
-    /*
-    vector< pair<float, int> > wo;
-    for ( size_t i = 0; i < this->w.size(); i++ ){
-        wo.push_back(make_pair(-this->w[i], i));
-    }
-    sort(wo.begin(), wo.end());
-    
-    cout << "Weight:";
-    for ( size_t i = 0; i < wo.size(); i++ ){
-        cout << " (" << wo[i].second << ", " << abs(wo[i].first) << ")";
-    }
-    cout << endl;
-    */
 }
 
 float ranking::predict(sample& a, sample& b)
 {
-    size_t n = min(a.size(), b.size());
-    float ret = 0.0;
     
-    for ( size_t i = 0; i < n; i++ ){
-        ret += this->w[i] * this->R(a, b, i);
-    }
-    
-    return ret;
 }
 
-void ranking::rank(vector<sample>& samples)
+void ranking::rank(std::vector<sample>& samples)
 {
-    vector<int> total_order;
-    greedy_order(samples, total_order);
-    size_t n = samples.size();
     
-    vector<sample> aux;
-    aux.resize(n);
-    
-    for ( size_t i = 0; i < n; i++ ){
-        aux[total_order[i]] = samples[i];
-    }
-    
-    samples = aux;
 }
 
 void ranking::rank(std::vector<sample>& samples,
                    std::vector<int>& positions)
 {
-    this->greedy_order(samples, positions);
+    
 }
+
 
 float ranking::accuracy(std::vector<sample>& samples,
                         std::vector< pair<int, int> >& feedback)
@@ -118,7 +64,89 @@ float ranking::accuracy(std::vector<sample>& samples,
     return ((float)tt) / ((float)(tt + ff));
 }
 
-float ranking::Z()
+l2r_ranking::l2r_ranking(float B, size_t num_iterations)
+{
+    this->beta = B;
+    this->num_iterations = num_iterations;
+}
+
+l2r_ranking::~l2r_ranking()
+{
+    
+}
+
+void l2r_ranking::train(vector< sample >& samples,
+                        vector< pair<int, int> >& feedback)
+{
+    if ( samples.size() == 0 ){
+        this->w.clear();
+        return;
+    }
+    
+    this->w.resize(samples[0].size());
+    fill(this->w.begin(), this->w.end(), 1.0);
+    this->normalize_weights();
+    
+    for ( size_t iteration = 0; iteration < this->num_iterations; iteration++ )
+    {
+        // Evaluate losses
+        vector<float> loss;
+        this->loss(samples, feedback, loss);
+        
+        // Set the new weight vector
+        this->update_weights(loss);
+    }
+    /*
+    */
+    vector< pair<float, int> > wo;
+    for ( size_t i = 0; i < this->w.size(); i++ ){
+        wo.push_back(make_pair(-this->w[i], i));
+    }
+    sort(wo.begin(), wo.end());
+    /*
+    cout << "Weight:";
+    for ( size_t i = 0; i < wo.size(); i++ ){
+        cout << " (" << wo[i].second << ", " << abs(wo[i].first) << ")";
+    }
+    cout << endl;
+    */
+}
+
+float l2r_ranking::predict(sample& a, sample& b)
+{
+    size_t n = min(a.size(), b.size());
+    float ret = 0.0;
+    
+    for ( size_t i = 0; i < n; i++ ){
+        ret += this->w[i] * this->R(a, b, i);
+    }
+    
+    return ret;
+}
+
+void l2r_ranking::rank(vector<sample>& samples)
+{
+    vector<int> total_order;
+    greedy_order(samples, total_order);
+    size_t n = samples.size();
+    
+    vector<sample> aux;
+    aux.resize(n);
+    
+    for ( size_t i = 0; i < n; i++ ){
+        aux[total_order[i]] = samples[i];
+    }
+    
+    samples = aux;
+}
+
+void l2r_ranking::rank(std::vector<sample>& samples,
+                       std::vector<int>& positions)
+{
+    this->greedy_order(samples, positions);
+}
+
+float l2r_ranking::Z()
 {
     float ret = 0.0;
     vector<float>::iterator it=this->w.begin(), end=this->w.end();
@@ -130,7 +158,7 @@ float ranking::Z()
     return ret;
 }
 
-void ranking::normalize_weights()
+void l2r_ranking::normalize_weights()
 {
     float z = this->Z();
     if ( z == 0.0 ){
@@ -144,10 +172,10 @@ void ranking::normalize_weights()
     }
 }
 
-void ranking::loss(vector<sample>& samples,
-                   vector< pair<int, int> >& feedback,
-                   vector<float>& loss
-                  )
+void l2r_ranking::loss(vector<sample>& samples,
+                       vector< pair<int, int> >& feedback,
+                       vector<float>& loss
+                      )
 {
     loss.resize(this->w.size());
     fill(loss.begin(), loss.end(), 1.0);
@@ -171,7 +199,7 @@ void ranking::loss(vector<sample>& samples,
     }
 }
 
-float ranking::R(sample& a, sample& b, int i)
+float l2r_ranking::R(sample& a, sample& b, int i)
 {
     float ret = 0.5;
     if ( abs(a[i] - b[i]) < 1e-5 ){
@@ -184,7 +212,7 @@ float ranking::R(sample& a, sample& b, int i)
     return ret;
 }
 
-void ranking::update_weights(vector<float>& loss)
+void l2r_ranking::update_weights(vector<float>& loss)
 {
     size_t n = this->w.size();
     
@@ -211,8 +239,8 @@ int get_max_v(vector<float>& V, vector<bool>& taken)
     return ret;
 }
 
-void ranking::update_V(vector<sample>& samples, vector<float>& V,
-                       vector<bool>& taken)
+void l2r_ranking::update_V(vector<sample>& samples, vector<float>& V,
+                           vector<bool>& taken)
 {
     size_t n = V.size();
     for ( size_t i = 0; i < n; i++ ){
@@ -222,8 +250,8 @@ void ranking::update_V(vector<sample>& samples, vector<float>& V,
     }
 }
 
-void ranking::greedy_order(vector<sample>& samples,
-                           vector<int>& total_order)
+void l2r_ranking::greedy_order(vector<sample>& samples,
+                               vector<int>& total_order)
 {
     vector<float> V;
     vector<bool> taken;
@@ -249,8 +277,8 @@ void ranking::greedy_order(vector<sample>& samples,
     }
 }
 
-float ranking::compute_greedy_V(vector<sample>& samples,
-                                int v, vector<bool>& taken)
+float l2r_ranking::compute_greedy_V(vector<sample>& samples,
+                                    int v, vector<bool>& taken)
 {
     float ret = 0.0;
     size_t n = samples.size();
@@ -263,4 +291,55 @@ float ranking::compute_greedy_V(vector<sample>& samples,
     }
     
     return ret;
+}
+
+classifier_ranking::classifier_ranking()
+{
+    this->cl = 0;
+}
+
+classifier_ranking::classifier_ranking(classifier* c)
+{
+    this-> cl = c;
+}
+            
+classifier_ranking::~classifier_ranking()
+{
+    
+}
+
+Mat from_samples(sample& a, sample& b)
+{
+    Mat ret(1, a.size(), CV_32F);
+    for (int j=0; j<a.size(); j++){
+        ret.at<float>(0, j) = (a[j] < b[j] ? 1.0 : 0.0);
+    }
+    return ret;
+}
+
+void classifier_ranking::train(std::vector<sample>& samples,
+                               std::vector< pair<int, int> >& feedback)
+{
+     int num_samples = feedback.size() * 2;
+     vector<Mat> tr_samples;
+     vector<label> labels;
+     
+     for(size_t i=0; i<feedback.size(); i++){
+         int f1 = feedback[i].first;
+         int f2 = feedback[i].second;
+         
+         Mat spos = from_samples(samples[f1], samples[f2]);
+         tr_samples.push_back(spos);
+         labels.push_back(1);
+         
+         Mat sneg = from_samples(samples[f1], samples[f2]);
+         tr_samples.push_back(sneg);
+         labels.push_back(0);
+     }
+}
+
+float classifier_ranking::predict(sample& a, sample& b)
+{
+    Mat s = from_samples(a, b);
+    return this->cl->predict(s);
 }

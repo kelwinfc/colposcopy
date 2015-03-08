@@ -1,5 +1,5 @@
-#ifndef __COLPOSCOPY_TEST_WATERSHED
-#define __COLPOSCOPY_TEST_WATERSHED
+#ifndef __COLPOSCOPY_TEST_CERVIX_SEGMENTATION
+#define __COLPOSCOPY_TEST_CERVIX_SEGMENTATION
 
 #include "cervix_segmentation.hpp"
 #include <string>

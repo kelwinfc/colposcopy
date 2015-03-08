@@ -1,0 +1,877 @@
+Hi!
+Loading videos... 
+1/25 15 sec
+2/25 1 sec
+3/25 25 sec
+4/25 24 sec
+5/25 21 sec
+6/25 13 sec
+7/25 14 sec
+8/25 26 sec
+9/25 14 sec
+10/25 31 sec
+11/25 2 sec
+12/25 21 sec
+13/25 17 sec
+14/25 27 sec
+15/25 30 sec
+16/25 45 sec
+17/25 97 sec
+18/25 21 sec
+19/25 20 sec
+20/25 30 sec
+21/25 28 sec
+22/25 47 sec
+23/25 31 sec
+24/25 32 sec
+25/25 17 sec
+Testing with video (0) test/diagnosis_phase/CI11590808 DVD_May14_145555_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 761   0   0   1   4 
+plain        0  14 127   0   0   0 
+green        0  10   1  83   0   0 
+hinselmann   0   9   0   1 360   0 
+schiller     0   3   0   0  16  88 
+3 sec
+Euclidean: 0.0399188
+unknown      0   0   0   0   0   0 
+transition   0 761   0   0   2   3 
+plain        0  14 127   0   0   0 
+green        0  10   1  83   0   0 
+hinselmann   0   9   0   1 360   0 
+schiller     0   3   0   0 103   1 
+2 sec
+HI: 0.0987821
+unknown      0   0   0   0   0   0 
+transition   0 761   0   0   2   3 
+plain        0  14 127   0   0   0 
+green        0  10   1  83   0   0 
+hinselmann   0   9   0   1 360   0 
+schiller     0   3   0   0 103   1 
+2 sec
+EMD: 0.0987821
+unknown      0   0   0   0   0   0 
+transition   0 761   0   0   1   4 
+plain        0  14 127   0   0   0 
+green        0  10   1  83   0   0 
+hinselmann   0   9   0   1 360   0 
+schiller     0   3   0   0  73  31 
+8 sec
+CEMD: 0.0784844
+Testing with video (1) test/diagnosis_phase/CI12304064 DVD_May14_152116_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0   0   0   0   0   0 
+plain        0   3 197   0   0   0 
+green        0   0   0   0   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+0 sec
+Euclidean: 0.015
+unknown      0   0   0   0   0   0 
+transition   0   0   0   0   0   0 
+plain        0   3 197   0   0   0 
+green        0   0   0   0   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+0 sec
+HI: 0.015
+unknown      0   0   0   0   0   0 
+transition   0   0   0   0   0   0 
+plain        0   3 197   0   0   0 
+green        0   0   0   0   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+0 sec
+EMD: 0.015
+unknown      0   0   0   0   0   0 
+transition   0   0   0   0   0   0 
+plain        0   3 197   0   0   0 
+green        0   0   0   0   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+2 sec
+CEMD: 0.015
+Testing with video (2) test/diagnosis_phase/CI12615466 DVD_May14_141422_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1364   69    0   20   15 
+plain         0   18  921    0    0    0 
+green         0   16    1  140    0    0 
+hinselmann    0    4    0    1  500    0 
+schiller      0    0    0    0    1  307 
+9 sec
+Euclidean: 0.0429375
+unknown       0    0    0    0    0    0 
+transition    0 1364   69    0   15   20 
+plain         0   18  921    0    0    0 
+green         0   16    1  140    0    0 
+hinselmann    0    4    0    1  500    0 
+schiller      0    0    0    0  305    3 
+6 sec
+HI: 0.132958
+unknown       0    0    0    0    0    0 
+transition    0 1364   69    0   25   10 
+plain         0   18  921    0    0    0 
+green         0   16    1  140    0    0 
+hinselmann    0    4    0    1  500    0 
+schiller      0    0    0    0  308    0 
+5 sec
+EMD: 0.133847
+unknown       0    0    0    0    0    0 
+transition    0 1364   69    0   25   10 
+plain         0   18  921    0    0    0 
+green         0   16    1  140    0    0 
+hinselmann    0    4    0    1  500    0 
+schiller      0    0    0    0   52  256 
+22 sec
+CEMD: 0.0580397
+Testing with video (3) test/diagnosis_phase/CI14019505 DVD_May08_154134_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1515   30    2   89   44 
+plain         0   71 1045    0    0    0 
+green         0   76    1  342    0    0 
+hinselmann    0   18    0    1  406    1 
+schiller      0    3    0    0    0    0 
+9 sec
+Euclidean: 0.0922064
+unknown       0    0    0    0    0    0 
+transition    0 1515   30    2   71   62 
+plain         0   71 1045    0    0    0 
+green         0   76    0  343    0    0 
+hinselmann    0   18    0    1  398    9 
+schiller      0    3    0    0    0    0 
+7 sec
+HI: 0.0941273
+unknown       0    0    0    0    0    0 
+transition    0 1515   30    2   76   57 
+plain         0   71 1045    0    0    0 
+green         0   76    1  342    0    0 
+hinselmann    0   18    0    1  406    1 
+schiller      0    3    0    0    0    0 
+6 sec
+EMD: 0.0922064
+unknown       0    0    0    0    0    0 
+transition    0 1515   30    2   96   37 
+plain         0   71 1045    0    0    0 
+green         0   76    1  342    0    0 
+hinselmann    0   18    0    1  406    1 
+schiller      0    3    0    0    0    0 
+23 sec
+CEMD: 0.0922064
+Testing with video (4) test/diagnosis_phase/CI14019505 DVD_May14_144939_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0  858    0    0  108   22 
+plain         0    0    0    0    0    0 
+green         0   34    0  208    1    0 
+hinselmann    0   34    0    2 1231    0 
+schiller      0    4    0    0    0   86 
+7 sec
+Euclidean: 0.0792117
+unknown       0    0    0    0    0    0 
+transition    0  858    0    0  109   21 
+plain         0    0    0    0    0    0 
+green         0   34    0  208    1    0 
+hinselmann    0   34    0    2 1231    0 
+schiller      0    4    0    0    0   86 
+5 sec
+HI: 0.0792117
+unknown       0    0    0    0    0    0 
+transition    0  858    0    0  108   22 
+plain         0    0    0    0    0    0 
+green         0   34    0  208    1    0 
+hinselmann    0   34    0    2 1231    0 
+schiller      0    4    0    0    0   86 
+4 sec
+EMD: 0.0792117
+unknown       0    0    0    0    0    0 
+transition    0  858    0    0  110   20 
+plain         0    0    0    0    0    0 
+green         0   34    0  208    1    0 
+hinselmann    0   34    0    2 1231    0 
+schiller      0    4    0    0    0   86 
+19 sec
+CEMD: 0.0792117
+Testing with video (5) test/diagnosis_phase/CI14991891 DVD_May07_174319_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 902   0   0   9  20 
+plain        0  23 133   0   0   0 
+green        0  40   1 148   0   0 
+hinselmann   0  31   0   1 691   0 
+schiller     0   9   0   0  78  72 
+5 sec
+Euclidean: 0.0982391
+unknown      0   0   0   0   0   0 
+transition   0 902   0   0  23   6 
+plain        0  23 133   0   0   0 
+green        0  40   1 148   0   0 
+hinselmann   0  31   0   1 686   5 
+schiller     0   9   0   0 130  20 
+4 sec
+HI: 0.124652
+unknown      0   0   0   0   0   0 
+transition   0 902   0   0  26   3 
+plain        0  23 133   0   0   0 
+green        0  40   1 148   0   0 
+hinselmann   0  31   0   1 691   0 
+schiller     0   9   0   0 132  18 
+3 sec
+EMD: 0.123262
+unknown      0   0   0   0   0   0 
+transition   0 902   0   0  12  17 
+plain        0  23 133   0   0   0 
+green        0  40   1 148   0   0 
+hinselmann   0  31   0   1 691   0 
+schiller     0   9   0   0  77  73 
+13 sec
+CEMD: 0.0977757
+Testing with video (6) test/diagnosis_phase/CI17630063 DVD_May07_165622_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 789   1  30  85  13 
+plain        0  23  58   1  24   0 
+green        0  52   0  90   1   0 
+hinselmann   0  26   0   1 674   0 
+schiller     0  93   0   0   0 146 
+5 sec
+Euclidean: 0.166113
+unknown      0   0   0   0   0   0 
+transition   0 789   1  30  36  62 
+plain        0  23  58   1  24   0 
+green        0  52   0  90   1   0 
+hinselmann   0  26   0   1   5 669 
+schiller     0  93   0   0   0 146 
+4 sec
+HI: 0.483626
+unknown      0   0   0   0   0   0 
+transition   0 789   1  30  93   5 
+plain        0  23  58   1  24   0 
+green        0  52   0  90   1   0 
+hinselmann   0  26   0   1 673   1 
+schiller     0  93   0   0   1 145 
+3 sec
+EMD: 0.167062
+unknown      0   0   0   0   0   0 
+transition   0 789   1  30  96   2 
+plain        0  23  58   1  24   0 
+green        0  52   0  90   1   0 
+hinselmann   0  26   0   1 674   0 
+schiller     0  93   0   0   1 145 
+13 sec
+CEMD: 0.166588
+Testing with video (7) test/diagnosis_phase/CI18750840 DVD_May14_142500_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0  940    0    0  310   35 
+plain         0    8  122    0    0    0 
+green         0   13    1   92    0    0 
+hinselmann    0   91    0    1 1645    0 
+schiller      0    0    0    0    0   44 
+9 sec
+Euclidean: 0.139007
+unknown       0    0    0    0    0    0 
+transition    0  940    0    0  306   39 
+plain         0    8  122    0    0    0 
+green         0   13    1   92    0    0 
+hinselmann    0   91    0    1 1624   21 
+schiller      0    0    0    0    0   44 
+7 sec
+HI: 0.145366
+unknown       0    0    0    0    0    0 
+transition    0  940    0    0  310   35 
+plain         0    8  122    0    0    0 
+green         0   13    1   92    0    0 
+hinselmann    0   91    0    1 1645    0 
+schiller      0    0    0    0    0   44 
+6 sec
+EMD: 0.139007
+unknown       0    0    0    0    0    0 
+transition    0  940    0    0  310   35 
+plain         0    8  122    0    0    0 
+green         0   13    1   92    0    0 
+hinselmann    0   91    0    1 1644    1 
+schiller      0    0    0    0    0   44 
+25 sec
+CEMD: 0.13931
+Testing with video (8) test/diagnosis_phase/CI19398284 DVD_May14_152537_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 792   0   1  11  11 
+plain        0   6 114   0   0   0 
+green        0   5   1 152   0   0 
+hinselmann   0  19   0   0 433   0 
+schiller     0  11   0   0  66   3 
+4 sec
+Euclidean: 0.0806154
+unknown      0   0   0   0   0   0 
+transition   0 792   0   1  10  12 
+plain        0   6 114   0   0   0 
+green        0   5   1 152   0   0 
+hinselmann   0  19   0   0 424   9 
+schiller     0  11   0   0  61   8 
+3 sec
+HI: 0.0830769
+unknown      0   0   0   0   0   0 
+transition   0 792   0   1   8  14 
+plain        0   6 114   0   0   0 
+green        0   5   1 152   0   0 
+hinselmann   0  19   0   0 432   1 
+schiller     0  11   0   0  66   3 
+2 sec
+EMD: 0.0812308
+unknown      0   0   0   0   0   0 
+transition   0 792   0   1   8  14 
+plain        0   6 114   0   0   0 
+green        0   5   1 152   0   0 
+hinselmann   0  19   0   0 432   1 
+schiller     0  11   0   0  65   4 
+9 sec
+CEMD: 0.0806154
+Testing with video (9) test/diagnosis_phase/CI5402738 DVD_May07_155509_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1237  222    1   41   29 
+plain         0   61 1319    0    0    0 
+green         0  159    1  194    0    0 
+hinselmann    0   13    0    0  571    0 
+schiller      0   98    0    0    0  214 
+11 sec
+Euclidean: 0.15024
+unknown       0    0    0    0    0    0 
+transition    0 1237  222    2   30   39 
+plain         0   61 1319    0    0    0 
+green         0  159    1  194    0    0 
+hinselmann    0   13    0    0  542   29 
+schiller      0   98    0    0    0  214 
+8 sec
+HI: 0.157212
+unknown       0    0    0    0    0    0 
+transition    0 1237  222    1   42   28 
+plain         0   61 1319    0    0    0 
+green         0  159    1  194    0    0 
+hinselmann    0   13    0    0  571    0 
+schiller      0   98    0    0    0  214 
+7 sec
+EMD: 0.15024
+unknown       0    0    0    0    0    0 
+transition    0 1237  222    1   42   28 
+plain         0   61 1319    0    0    0 
+green         0  159    1  194    0    0 
+hinselmann    0   13    0    0  571    0 
+schiller      0   98    0    0    0  214 
+29 sec
+CEMD: 0.15024
+Testing with video (10) test/diagnosis_phase/CI5567415 DVD_May14_151459_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0  75   1   0   0   0 
+plain        0   1 116   0   0   0 
+green        0  43   1  44   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+0 sec
+Euclidean: 0.163701
+unknown      0   0   0   0   0   0 
+transition   0  75   1   0   0   0 
+plain        0   1 116   0   0   0 
+green        0  43   1  44   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+0 sec
+HI: 0.163701
+unknown      0   0   0   0   0   0 
+transition   0  75   1   0   0   0 
+plain        0   1 116   0   0   0 
+green        0  43   1  44   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+0 sec
+EMD: 0.163701
+unknown      0   0   0   0   0   0 
+transition   0  75   1   0   0   0 
+plain        0   1 116   0   0   0 
+green        0  43   1  44   0   0 
+hinselmann   0   0   0   0   0   0 
+schiller     0   0   0   0   0   0 
+1 sec
+CEMD: 0.163701
+Testing with video (11) test/diagnosis_phase/CI6427509 DVD_May14_135957_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 880   0   0   3  20 
+plain        0  12 223   0   0   0 
+green        0  12   1 323   0   0 
+hinselmann   0  11   0   1 936   0 
+schiller     0   0   0   0   0   1 
+7 sec
+Euclidean: 0.0247627
+unknown      0   0   0   0   0   0 
+transition   0 880   0   0   5  18 
+plain        0  12 223   0   0   0 
+green        0  12   1 323   0   0 
+hinselmann   0  11   0   1 914  22 
+schiller     0   0   0   0   0   1 
+5 sec
+HI: 0.0338423
+unknown      0   0   0   0   0   0 
+transition   0 880   0   0   2  21 
+plain        0  12 223   0   0   0 
+green        0  12   1 323   0   0 
+hinselmann   0  11   0   1 936   0 
+schiller     0   0   0   0   0   1 
+4 sec
+EMD: 0.0247627
+unknown      0   0   0   0   0   0 
+transition   0 880   0   0   3  20 
+plain        0  12 223   0   0   0 
+green        0  12   1 323   0   0 
+hinselmann   0  11   0   1 936   0 
+schiller     0   0   0   0   0   1 
+17 sec
+CEMD: 0.0247627
+Testing with video (12) test/diagnosis_phase/CI81989318 DVD_May07_162141_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 736   0   0  56  25 
+plain        0  18 108   0   0   0 
+green        0  21   1 109   0   0 
+hinselmann   0  29   0   1 795   1 
+schiller     0  18   0   0   0 517 
+7 sec
+Euclidean: 0.0698152
+unknown      0   0   0   0   0   0 
+transition   0 736   0   0   1  80 
+plain        0  18 108   0   0   0 
+green        0  21   1 109   0   0 
+hinselmann   0  29   0   1 488 308 
+schiller     0  18   0   0   0 517 
+5 sec
+HI: 0.195893
+unknown      0   0   0   0   0   0 
+transition   0 736   0   0  29  52 
+plain        0  18 108   0   0   0 
+green        0  21   1 109   0   0 
+hinselmann   0  29   0   1 796   0 
+schiller     0  18   0   0   0 517 
+4 sec
+EMD: 0.0694045
+unknown      0   0   0   0   0   0 
+transition   0 736   0   0  60  21 
+plain        0  18 108   0   0   0 
+green        0  21   1 109   0   0 
+hinselmann   0  29   0   1 796   0 
+schiller     0  18   0   0 440  77 
+18 sec
+CEMD: 0.250103
+Testing with video (13) test/diagnosis_phase/CI9324788 DVD_May07_171503_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1330   68    0    3    4 
+plain         0   13 1147    0    0    0 
+green         0   56    1  108    0    0 
+hinselmann    0   24    0    1 1112    0 
+schiller      0    7    0    0    6    7 
+11 sec
+Euclidean: 0.04708
+unknown       0    0    0    0    0    0 
+transition    0 1330   68    0    3    4 
+plain         0   13 1147    0    0    0 
+green         0   56    1  108    0    0 
+hinselmann    0   24    0    1 1101   11 
+schiller      0    7    0    0    8    5 
+7 sec
+HI: 0.0504245
+unknown       0    0    0    0    0    0 
+transition    0 1330   68    0    3    4 
+plain         0   13 1147    0    0    0 
+green         0   56    1  108    0    0 
+hinselmann    0   24    0    1 1112    0 
+schiller      0    7    0    0    6    7 
+6 sec
+EMD: 0.04708
+unknown       0    0    0    0    0    0 
+transition    0 1330   68    0    3    4 
+plain         0   13 1147    0    0    0 
+green         0   56    1  108    0    0 
+hinselmann    0   24    0    1 1112    0 
+schiller      0    7    0    0    3   10 
+27 sec
+CEMD: 0.0463082
+Testing with video (14) test/diagnosis_phase/CI9979757 DVD_May08_153213_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1283   19   11   41  139 
+plain         0    7  484    0    0    0 
+green         0   26    0  684    0    0 
+hinselmann    0    8    0    0  547    0 
+schiller      0    5    0    0    0  348 
+10 sec
+Euclidean: 0.0710716
+unknown       0    0    0    0    0    0 
+transition    0 1283   19   11    6  174 
+plain         0    7  484    0    0    0 
+green         0   26    0  684    0    0 
+hinselmann    0    8    0    0  542    5 
+schiller      0    5    0    0    0  348 
+7 sec
+HI: 0.0724597
+unknown       0    0    0    0    0    0 
+transition    0 1283   19   11   38  142 
+plain         0    7  484    0    0    0 
+green         0   26    0  684    0    0 
+hinselmann    0    8    0    0  546    1 
+schiller      0    5    0    0    0  348 
+6 sec
+EMD: 0.0713492
+unknown       0    0    0    0    0    0 
+transition    0 1283   19   11   39  141 
+plain         0    7  484    0    0    0 
+green         0   26    0  684    0    0 
+hinselmann    0    8    0    0  546    1 
+schiller      0    5    0    0    0  348 
+25 sec
+CEMD: 0.0713492
+Testing with video (15) test/diagnosis_phase/DVD_Feb06_150356_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1862   34   96  354  275 
+plain         0  101  268    0    0    0 
+green         0  176    0  591    0    0 
+hinselmann    0   42    0    0  561    0 
+schiller      0  112    0    0    0   48 
+11 sec
+Euclidean: 0.263274
+unknown       0    0    0    0    0    0 
+transition    0 1862   34   96  317  312 
+plain         0  101  268    0    0    0 
+green         0  176    0  591    0    0 
+hinselmann    0   42    0    0  560    1 
+schiller      0  112    0    0    0   48 
+8 sec
+HI: 0.263496
+unknown       0    0    0    0    0    0 
+transition    0 1862   34   96  320  309 
+plain         0  101  268    0    0    0 
+green         0  176    0  591    0    0 
+hinselmann    0   42    0    0  561    0 
+schiller      0  112    0    0    0   48 
+7 sec
+EMD: 0.263274
+unknown       0    0    0    0    0    0 
+transition    0 1862   34   96  335  294 
+plain         0  101  268    0    0    0 
+green         0  176    0  591    0    0 
+hinselmann    0   42    0    0  561    0 
+schiller      0  112    0    0    0   48 
+27 sec
+CEMD: 0.263274
+Testing with video (16) test/diagnosis_phase/DVD_Feb06_161008_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 4650  153  104 1456  125 
+plain         0  224  555    0    0    0 
+green         0  100    1  438    0    0 
+hinselmann    0  144    0    0 1284   12 
+schiller      0  481    0    0 2193   78 
+31 sec
+Euclidean: 0.416153
+unknown       0    0    0    0    0    0 
+transition    0 4650    2  114 1456  266 
+plain         0  224   76    2  353  124 
+green         0  100    0  438    1    0 
+hinselmann    0  144    0    0 1264   32 
+schiller      0  481    0    3 1887  381 
+22 sec
+HI: 0.432489
+unknown       0    0    0    0    0    0 
+transition    0 4650  153  109 1349  227 
+plain         0  224  555    0    0    0 
+green         0  100    1  438    0    0 
+hinselmann    0  144    0    0 1293    3 
+schiller      0  481    0    0 1554  717 
+20 sec
+EMD: 0.362144
+unknown       0    0    0    0    0    0 
+transition    0 4650  153  109 1449  127 
+plain         0  224  555    0    0    0 
+green         0  100    1  438    0    0 
+hinselmann    0  144    0    0 1296    0 
+schiller      0  481    0    1 2209   61 
+70 sec
+CEMD: 0.416569
+Testing with video (17) test/diagnosis_phase/DVD_Jun10_135439_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 889   0   0   1   1 
+plain        0  10  98   0   0   0 
+green        0  14   1  85   0   0 
+hinselmann   0  30   0   1 939   0 
+schiller     0   5   0   0   0  55 
+5 sec
+Euclidean: 0.0295914
+unknown      0   0   0   0   0   0 
+transition   0 889   0   0   1   1 
+plain        0  10  98   0   0   0 
+green        0  14   1  85   0   0 
+hinselmann   0  30   0   2 933   5 
+schiller     0   5   0   0   0  55 
+4 sec
+HI: 0.0324096
+unknown      0   0   0   0   0   0 
+transition   0 889   0   0   1   1 
+plain        0  10  98   0   0   0 
+green        0  14   1  85   0   0 
+hinselmann   0  30   0   1 939   0 
+schiller     0   5   0   0   0  55 
+3 sec
+EMD: 0.0295914
+unknown      0   0   0   0   0   0 
+transition   0 889   0   0   1   1 
+plain        0  10  98   0   0   0 
+green        0  14   1  85   0   0 
+hinselmann   0  30   0   1 939   0 
+schiller     0   5   0   0   0  55 
+13 sec
+CEMD: 0.0295914
+Testing with video (18) test/diagnosis_phase/DVD_Jun10_140612_0.json
+Training done
+unknown      0   0   0   0   0   0 
+transition   0 467   0   0  17  67 
+plain        0  10 166   0   0   0 
+green        0 126   1 105   0   0 
+hinselmann   0  10   0   1 881   0 
+schiller     0   0   0   0   0 631 
+7 sec
+Euclidean: 0.093473
+unknown      0   0   0   0   0   0 
+transition   0 467   0   0  34  50 
+plain        0  10 166   0   0   0 
+green        0 126   1 105   0   0 
+hinselmann   0  10   0   1 860  21 
+schiller     0   0   0   0   0 631 
+5 sec
+HI: 0.101934
+unknown      0   0   0   0   0   0 
+transition   0 467   0   0  35  49 
+plain        0  10 166   0   0   0 
+green        0 126   1 105   0   0 
+hinselmann   0  10   0   1 881   0 
+schiller     0   0   0   0   0 631 
+4 sec
+EMD: 0.093473
+unknown      0   0   0   0   0   0 
+transition   0 467   0   0  24  60 
+plain        0  10 166   0   0   0 
+green        0 126   1 105   0   0 
+hinselmann   0  10   0   1 881   0 
+schiller     0   0   0   0   0 631 
+20 sec
+CEMD: 0.093473
+Testing with video (19) test/diagnosis_phase/DVD_Jun10_141846_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0  872    0    0    8   28 
+plain         0   13  513    0    0    0 
+green         0   15    1  208    0    0 
+hinselmann    0   12    0    1 1311    0 
+schiller      0   66    0    0    0  443 
+10 sec
+Euclidean: 0.0412489
+unknown       0    0    0    0    0    0 
+transition    0  872    0    0    4   32 
+plain         0   13  513    0    0    0 
+green         0   15    1  208    0    0 
+hinselmann    0   12    0    2 1302    8 
+schiller      0   66    0    0   10  433 
+7 sec
+HI: 0.0466915
+unknown       0    0    0    0    0    0 
+transition    0  872    0    0    6   30 
+plain         0   13  513    0    0    0 
+green         0   15    1  208    0    0 
+hinselmann    0   12    0    1 1311    0 
+schiller      0   66    0    0   19  424 
+6 sec
+EMD: 0.0466915
+unknown       0    0    0    0    0    0 
+transition    0  872    0    0    7   29 
+plain         0   13  513    0    0    0 
+green         0   15    1  208    0    0 
+hinselmann    0   12    0    1 1311    0 
+schiller      0   66    0    0    6  437 
+27 sec
+CEMD: 0.0429676
+Testing with video (20) test/diagnosis_phase/DVD_Jun10_143016_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0  625   72    0   36   29 
+plain         0    8  527    0    0    0 
+green         0   13    1  122    0    0 
+hinselmann    0   21    0    1 1117    0 
+schiller      0    9    0    0    0  298 
+9 sec
+Euclidean: 0.0659951
+unknown       0    0    0    0    0    0 
+transition    0  625   72    0   25   40 
+plain         0    8  527    0    0    0 
+green         0   13    2  121    0    0 
+hinselmann    0   21    0    1 1116    1 
+schiller      0    9    0    0    0  298 
+6 sec
+HI: 0.0666898
+unknown       0    0    0    0    0    0 
+transition    0  625   72    0   30   35 
+plain         0    8  527    0    0    0 
+green         0   13    1  122    0    0 
+hinselmann    0   21    0    1 1116    1 
+schiller      0    9    0    0    0  298 
+5 sec
+EMD: 0.0663425
+unknown       0    0    0    0    0    0 
+transition    0  625   72    0   36   29 
+plain         0    8  527    0    0    0 
+green         0   13    1  122    0    0 
+hinselmann    0   21    0    1 1117    0 
+schiller      0    9    0    0    0  298 
+24 sec
+CEMD: 0.0659951
+Testing with video (21) test/diagnosis_phase/DVD_Jun10_145111_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1224   56    0   52  141 
+plain         0   12  382    0    0    0 
+green         0   21    1  180    0    0 
+hinselmann    0   12    0    1 2091    0 
+schiller      0   10    0    0    0  232 
+13 sec
+Euclidean: 0.0693092
+unknown       0    0    0    0    0    0 
+transition    0 1224   56    0   51  142 
+plain         0   12  382    0    0    0 
+green         0   21    1  180    0    0 
+hinselmann    0   12    0    1 2087    4 
+schiller      0   10    0    0    0  232 
+9 sec
+HI: 0.0702152
+unknown       0    0    0    0    0    0 
+transition    0 1224   56    0   49  144 
+plain         0   12  382    0    0    0 
+green         0   21    1  180    0    0 
+hinselmann    0   12    0    1 2091    0 
+schiller      0   10    0    0    0  232 
+8 sec
+EMD: 0.0693092
+unknown       0    0    0    0    0    0 
+transition    0 1224   56    0   52  141 
+plain         0   12  382    0    0    0 
+green         0   21    1  180    0    0 
+hinselmann    0   12    0    1 2091    0 
+schiller      0   10    0    0    4  228 
+34 sec
+CEMD: 0.0702152
+Testing with video (22) test/diagnosis_phase/DVD_Jun10_151101_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0 1468    0    0    8   16 
+plain         0   22  322    0    0    0 
+green         0   34    1  215    0    0 
+hinselmann    0   16    0    1  457  378 
+schiller      0  219    0    0    0  433 
+9 sec
+Euclidean: 0.193593
+unknown       0    0    0    0    0    0 
+transition    0 1468    0    0    1   23 
+plain         0   22  322    0    0    0 
+green         0   34    1  215    0    0 
+hinselmann    0   16    0    2  821   13 
+schiller      0  219    0    0    0  433 
+7 sec
+HI: 0.0922006
+unknown       0    0    0    0    0    0 
+transition    0 1468    0    0    8   16 
+plain         0   22  322    0    0    0 
+green         0   34    1  215    0    0 
+hinselmann    0   16    0    1  824   11 
+schiller      0  219    0    0    3  430 
+6 sec
+EMD: 0.0922006
+unknown       0    0    0    0    0    0 
+transition    0 1468    0    0    8   16 
+plain         0   22  322    0    0    0 
+green         0   34    1  215    0    0 
+hinselmann    0   16    0    1  832    3 
+schiller      0  219    0    0    0  433 
+21 sec
+CEMD: 0.0891365
+Testing with video (23) test/diagnosis_phase/DVD_Jun10_152537_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0  770   47    0   10    4 
+plain         0   12  151    0    0    0 
+green         0    9    1  204    0    0 
+hinselmann    0    8    0    1 1311    0 
+schiller      0  153    0    0    0 1055 
+11 sec
+Euclidean: 0.0655782
+unknown       0    0    0    0    0    0 
+transition    0  770   47    0   10    4 
+plain         0   12  151    0    0    0 
+green         0    9    1  204    0    0 
+hinselmann    0    8    0    1 1311    0 
+schiller      0  153    0    0    0 1055 
+8 sec
+HI: 0.0655782
+unknown       0    0    0    0    0    0 
+transition    0  770   47    0   10    4 
+plain         0   12  151    0    0    0 
+green         0    9    1  204    0    0 
+hinselmann    0    8    0    1 1311    0 
+schiller      0  153    0    0  127  928 
+7 sec
+EMD: 0.0995717
+unknown       0    0    0    0    0    0 
+transition    0  770   47    0   10    4 
+plain         0   12  151    0    0    0 
+green         0    9    1  204    0    0 
+hinselmann    0    8    0    1 1311    0 
+schiller      0  153    0    0    0 1055 
+30 sec
+CEMD: 0.0655782
+Testing with video (24) test/diagnosis_phase/DVD_Jun10_160941_0.json
+Training done
+unknown       0    0    0    0    0    0 
+transition    0  488    0    0    4    2 
+plain         0   22 1160    0    0    0 
+green         0   11    1  161    0    0 
+hinselmann    0   10    0    1    5  105 
+schiller      0    0    0    0    0    0 
+6 sec
+Euclidean: 0.0791878
+unknown       0    0    0    0    0    0 
+transition    0  488    0    0    2    4 
+plain         0   22 1160    0    0    0 
+green         0   11    1  161    0    0 
+hinselmann    0   10    0    1  110    0 
+schiller      0    0    0    0    0    0 
+4 sec
+HI: 0.0258883
+unknown       0    0    0    0    0    0 
+transition    0  488    0    0    5    1 
+plain         0   22 1160    0    0    0 
+green         0   11    1  161    0    0 
+hinselmann    0   10    0    1  109    1 
+schiller      0    0    0    0    0    0 
+3 sec
+EMD: 0.0263959
+unknown       0    0    0    0    0    0 
+transition    0  488    0    0    5    1 
+plain         0   22 1160    0    0    0 
+green         0   11    1  161    0    0 
+hinselmann    0   10    0    1  109    1 
+schiller      0    0    0    0    0    0 
+16 sec
+CEMD: 0.0263959

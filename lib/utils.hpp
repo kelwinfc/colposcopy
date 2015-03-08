@@ -37,4 +37,8 @@ void all_but_k(std::vector<std::string>& src,
 
 void plot_histogram(std::vector<float>& h, Mat& dst);
 
+std::pair<int, int> get_center(Mat& src);
+
+float pair_distance(std::pair<int, int>& a, std::pair<int, int>& b);
+
 #endif

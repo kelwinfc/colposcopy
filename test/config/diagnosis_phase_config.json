@@ -1,0 +1,23 @@
+{
+    "type": "unknown",
+    "config": {
+        "underlying": {
+            "type": "context",
+            "config": {
+                "underlying": {
+                    "type": "window",
+                    "config": {
+                        "w": 3,
+                        "underlying": {
+                            "type": "classifier",
+                            "config": {
+                                "classifier": {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

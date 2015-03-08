@@ -1,0 +1,7 @@
+{
+    "media": "src/demos/temporal/media",
+    "tmp": "src/demos/temporal/tmp",
+    "default": "src/demos/temporal/media/default.jpg",
+    "refresh-rate": 250,
+    "colors-rate": 5
+}

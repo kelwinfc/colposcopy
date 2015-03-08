@@ -224,7 +224,7 @@ for id_exp, exp in enumerate(results_per_experiment):
             print ("\multirow{" + str(num_alg) + "}{*}{" + methods[cl] + "}" \
                     if alg == 0 else methods[-1]), "&",
             print alg_names[alg] + " & " + \
-                  " & ".join(map(lambda x: "%0.4f" % round(x, 4),
+                  " & ".join(map(lambda x: "%0.2f" % round(x, 4),
                                  results_per_alg[alg][cl])) + "\\\\"
         print "\\hline"
     print

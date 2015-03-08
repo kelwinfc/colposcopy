@@ -129,7 +129,7 @@ plt.axis([0,
           0.6])
 
 axis_font = {'size':'18'}
-plt.xlabel('K - Neighborhood size', **axis_font)
+plt.xlabel('W - Neighborhood size', **axis_font)
 plt.ylabel('Error rate', **axis_font)
 
 f = os.path.join("results", "phase_timeline", "motion_K.png")
@@ -143,7 +143,7 @@ plt.boxplot(accs, notch=False, sym='b+',
             positions=None, widths=None, patch_artist=False,
             bootstrap=None, usermedians=None, conf_intervals=None)
 plt.xticks(range(num_k + 1), [""] + map(str, range(num_k + 1)))
-plt.xlabel('K - Neighborhood size', **axis_font)
+plt.xlabel('W - Neighborhood size', **axis_font)
 plt.ylabel('Error rate', **axis_font)
 f = os.path.join("results", "phase_timeline", "motion_K_boxplots.png")
 plt.savefig(f)

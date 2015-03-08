@@ -24,6 +24,7 @@
 #include <ctime>
 
 #include "utils.hpp"
+#include "classifier.hpp"
 
 using namespace std;
 
@@ -32,15 +33,8 @@ namespace rank_learning {
     typedef std::vector<float> sample;
 
     class ranking {
-        protected:
-            std::vector<float> w;
-            float beta;
-            size_t num_iterations;
-        
         public:
             ranking();
-            ranking(float B=0.5, size_t num_iterations=100);
-            
             ~ranking();
 
             virtual void train(std::vector<sample>& samples,
@@ -52,6 +46,26 @@ namespace rank_learning {
             
             virtual float accuracy(std::vector<sample>& samples,
                                    std::vector< pair<int, int> >& feedback);
+    };
+    
+    class l2r_ranking : public ranking {
+        protected:
+            std::vector<float> w;
+            float beta;
+            size_t num_iterations;
+        
+        public:
+            l2r_ranking(float B=0.5, size_t num_iterations=100);
+            
+            ~l2r_ranking();
+
+            virtual void train(std::vector<sample>& samples,
+                               std::vector< pair<int, int> >& feedback);
+            virtual float predict(sample& a, sample& b);
+            virtual void rank(std::vector<sample>& samples);
+            virtual void rank(std::vector<sample>& samples,
+                              std::vector<int>& positions);
+        
         protected:
             float R(sample& a, sample& b, int i);
             float Z();
@@ -70,6 +84,21 @@ namespace rank_learning {
                                    int v, vector<bool>& taken);
             void update_V(vector<sample>& samples, vector<float>& V,
                           vector<bool>& taken);
+    };
+    
+    class classifier_ranking : public l2r_ranking {
+        protected:
+            classifier* cl;
+        
+        public:
+            classifier_ranking();
+            classifier_ranking(classifier* c);
+            
+            ~classifier_ranking();
+
+            virtual void train(std::vector<sample>& samples,
+                               std::vector< pair<int, int> >& feedback);
+            virtual float predict(sample& a, sample& b);
     };
 };
 

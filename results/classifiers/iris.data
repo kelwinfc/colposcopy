@@ -1,0 +1,87 @@
+150
+
+===== KNN - Euclidean =====
+Training
+Weights: (0,0.333333) (1,0.333333) (2,0.333333) 
+Done
+120 Training
+Weights: (0,0.333333) (1,0.333333) (2,0.333333) 
+Done
+120 Training
+Weights: (0,0.333333) (1,0.333333) (2,0.333333) 
+Done
+120 Training
+Weights: (0,0.333333) (1,0.333333) (2,0.333333) 
+Done
+120 Training
+Weights: (0,0.333333) (1,0.333333) (2,0.333333) 
+Done
+120 
+ -1:   0   0   0   0
+  0:   0  44   5   1
+  1:   0   6  28  16
+  2:   0   1  14  35
+Accuracy: 0.713333
+
+===== Incremental - Euclidean =====
+Training
+Features computed
+Thresholds computed
+Reliability computed
+Include (class 0) 116: 0.6750 (total: 1)
+Include (class 2) 109: 0.3583 (total: 2)
+Include (class 1) 112: 0.3250 (total: 3)
+Include (class 0) 115: 0.3250 (total: 4)
+Done
+4 Training
+Features computed
+Thresholds computed
+Reliability computed
+Include (class 0) 116: 0.6917 (total: 1)
+Include (class 2)  48: 0.4333 (total: 2)
+Include (class 1) 107: 0.2917 (total: 3)
+Include (class 2) 108: 0.2833 (total: 4)
+Include (class 0)  38: 0.2750 (total: 5)
+Include (class 0) 117: 0.2750 (total: 6)
+Done
+6 Training
+Features computed
+Thresholds computed
+Reliability computed
+Include (class 2) 113: 0.6917 (total: 1)
+Include (class 0) 111: 0.3917 (total: 2)
+Include (class 1) 118: 0.3333 (total: 3)
+Include (class 1)   7: 0.2917 (total: 4)
+Include (class 2) 107: 0.2833 (total: 5)
+Include (class 0)  38: 0.2750 (total: 6)
+Include (class 0) 119: 0.2750 (total: 7)
+Done
+7 Training
+Features computed
+Thresholds computed
+Reliability computed
+Include (class 2) 113: 0.7000 (total: 1)
+Include (class 0) 117: 0.4083 (total: 2)
+Include (class 1) 118: 0.2833 (total: 3)
+Include (class 1)  17: 0.2583 (total: 4)
+Include (class 2) 109: 0.2500 (total: 5)
+Include (class 0)  38: 0.2417 (total: 6)
+Include (class 0) 119: 0.2417 (total: 7)
+Done
+7 Training
+Features computed
+Thresholds computed
+Reliability computed
+Include (class 0) 118: 0.7000 (total: 1)
+Include (class 2)  66: 0.4250 (total: 2)
+Include (class 1) 109: 0.2417 (total: 3)
+Include (class 0)  40: 0.2333 (total: 4)
+Include (class 0) 117: 0.2333 (total: 5)
+Done
+5 
+ -1:   0   0   0   0
+  0:   1  42   5   2
+  1:   0   8  22  20
+  2:   1   1  11  37
+Accuracy: 0.673333
+Bye!

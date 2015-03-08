@@ -749,6 +749,7 @@ int color_cascade_fe::num_features()
         s = s << 1;
         ret += s;
     }
+    cout << ret << endl;
     
     return ret;
 }
@@ -1021,4 +1022,68 @@ void edges_summations_fe::get_names(vector<string>& names)
 {
     names.clear();
     names.push_back("edges");
+}
+
+/*****************************************************************************
+ *                         Cervix Feature Extractor                          *
+ *****************************************************************************/
+
+cervix_region_fe::cervix_region_fe(cervix_segmentation* cervix,
+                                   cervix_segmentation* epithelium)
+{
+    this->cervix = cervix;
+    this->epithelium = epithelium;
+}
+
+void cervix_region_fe::extract(vector<Mat>& in, int i, vector<float>& out,
+                               anonadado::instance* instance)
+{
+    pair<int, int> img_center = make_pair(in[i].rows / 2,
+                                          in[i].cols / 2);
+    pair<int, int> zero = make_pair(0, 0);
+    float max_distance = pair_distance(zero, img_center);
+    
+    Mat dst_cervix, dst_epithelium;
+    this->cervix->segment(in[i], dst_cervix);
+    this->epithelium->segment(in[i], dst_epithelium);
+    
+    out.clear();
+    
+    // Area
+    out.push_back((sum(dst_cervix)[0] / 255.0) / 
+                  (float)(in[i].rows * in[i].cols));
+    
+    // Cervix Center
+    pair<int, int> cervix_center = get_center(dst_cervix);
+    out.push_back(pair_distance(cervix_center, img_center) / max_distance);
+    
+    // Epithelium Centered in region
+    if ( sum(dst_epithelium)[0] > 0 ){
+        //out.push_back(1.0);
+        pair<int, int> epithelium_center = get_center(dst_epithelium);
+        out.push_back(pair_distance(cervix_center, epithelium_center) / 
+                      max_distance);
+    } else {
+        //out.push_back(0.0);
+        out.push_back(max_distance);
+    }
+}
+
+void cervix_region_fe::read(const rapidjson::Value& json)
+{
+    
+}
+
+void cervix_region_fe::write(rapidjson::Value& json, rapidjson::Document& d)
+{
+    
+}
+
+void cervix_region_fe::get_names(vector<string>& names)
+{
+    names.clear();
+    names.push_back("cervix::area");
+    names.push_back("cervix::center_of_mass");
+    names.push_back("cervix::has_epithelium");
+    names.push_back("cervix::epithelium_center");
 }

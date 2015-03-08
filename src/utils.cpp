@@ -103,3 +103,33 @@ void plot_histogram(std::vector<float>& h, Mat& dst)
                 Scalar(255, 0, 0), 2, 8, 0);
     }
 }
+
+std::pair<int, int> get_center(Mat& src){
+    int ret_x = 0;
+    int ret_y = 0;
+    int n = 0;
+    
+    for (int i=0; i<src.rows; i++){
+        for (int j=0; j<src.cols; j++){
+            if ( src.at<uchar>(i, j) != 0 ){
+                ret_x += i;
+                ret_y += j;
+                n++;
+            }
+        }
+    }
+    
+    if ( n == 0 ){
+        return std::make_pair(src.rows / 2, src.cols / 2);
+    }
+    
+    return std::make_pair(ret_x / n, ret_y / n);
+}
+
+float pair_distance(std::pair<int, int>& a, std::pair<int, int>& b)
+{
+    float diffx = a.first - b.first;
+    float diffy = a.second - b.second;
+    
+    return sqrt(diffx * diffx + diffy * diffy);
+}

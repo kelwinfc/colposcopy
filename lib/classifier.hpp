@@ -58,6 +58,9 @@ class classifier {
     
     protected:
         void extract_features(vector<Mat>& src, vector< vector<float> >& h);
+        
+        pair<Mat, Mat> from_vector_to_mat(vector<Mat>& src,
+                                          vector<label>& labels);
 };
 
 class neighborhood_based_classifier : public classifier {
@@ -177,6 +180,27 @@ class threshold_cl : public classifier {
         void set_threshold(int k);
         void log_values(vector<Mat>& src, vector<label>& labels);
         void plot_histogram(Mat& img, int num_bins);
+};
+
+class mlp_cl : public classifier {
+    protected:
+        int num_hidden_units;
+        CvANN_MLP mlp;
+        CvANN_MLP_TrainParams params;
+        CvTermCriteria criteria;
+
+    public:
+        mlp_cl(int hidden_units=20);
+        ~mlp_cl();
+        
+        virtual void read(const rapidjson::Value& json);
+        virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        virtual void train(vector<Mat>& src, vector<label>& labels);
+        virtual void untrain();
+        
+        virtual float eval(vector<Mat>& src, vector<label>& labels);
+        virtual void detect(vector<Mat>& src, vector<label>& dst);
+        virtual label predict(Mat& src);
 };
 
 #endif
