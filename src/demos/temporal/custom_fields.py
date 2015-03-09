@@ -61,4 +61,3 @@ class YesNoField(wx.Panel):
         self.sizer.Add(self.yesRadio, 0, wx.ALL, 5)
         self.sizer.Add(self.noRadio, 0, wx.ALL, 5)
         self.SetSizer(self.sizer)
-        

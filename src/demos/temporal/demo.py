@@ -16,6 +16,8 @@ import wx
 
 from video import *
 from patient_info import *
+from diagnosis import *
+from about import *
 
 class ColposcopicScreening(wx.Frame):
 
@@ -34,8 +36,13 @@ class ColposcopicScreening(wx.Frame):
         nestedNotebook = wx.Notebook(pnl, wx.NewId())
         self.patientTab = PatientPanel(nestedNotebook)
         self.videoTab = VideoPanel(nestedNotebook)
+        self.diagnosisTab = DiagnosisPanel(nestedNotebook)
+        self.aboutTab = AboutPanel(nestedNotebook)
+        
         nestedNotebook.AddPage(self.patientTab, "Patient")
         nestedNotebook.AddPage(self.videoTab, "Video")
+        nestedNotebook.AddPage(self.diagnosisTab, "Diagnosis")
+        nestedNotebook.AddPage(self.aboutTab, "About")
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(nestedNotebook, 1, wx.ALL | wx.EXPAND, 5)
