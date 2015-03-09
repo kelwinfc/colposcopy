@@ -1,35 +1,75 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import wx
-import wx.grid
 from matplotlib import pyplot as plt
-import os
+from threading import *
+import cv2.cv as cv
+import numpy as np
 import tempfile
+import wx.grid
 import shutil
 import utils
-import cv2.cv as cv
+import time
 import cv2
-import numpy as np
+import os
+import wx
 
+EVT_RESULT_ID = wx.NewId()
+
+class ResultEvent(wx.PyEvent):
+    def __init__(self, data):
+        wx.PyEvent.__init__(self)
+        self.SetEventType(EVT_RESULT_ID)
+        self.data = data
+
+class WorkerThread(Thread):
+    def __init__(self, notify_window, parent, index):
+        Thread.__init__(self)
+        self.parent = parent
+        self.index = index
+        self._notify_window = notify_window
+        self._want_abort = 0
+        self.start()
+
+    def run(self):
+        b = [0] + self.parent.boundaries + [self.parent.num_of_frames]
+        num_frames = b[self.index + 1] - b[self.index]
+        for frame in range(b[self.index], b[self.index + 1]):
+            wx.PostEvent(self._notify_window, ResultEvent(frame))
+            time.sleep(1.0 / self.parent.fps)
+
+            if self._want_abort:
+                wx.PostEvent(self._notify_window, ResultEvent(None))
+                break
+
+        wx.PostEvent(self._notify_window, ResultEvent(None))
+
+    def abort(self):
+        self._want_abort = 1
 
 class FrameWidget(wx.Panel):
     def __init__(self, parent, name, index, id):
         wx.Panel.__init__(self, parent, id)
         
+        self.index = index
         self.parent = parent
         self.config = self.parent.config
         self.name = name
+        
+        self.is_running = False
+        self.previous_representative = None
+        self.worker = None
 
+        self.setLayout()
         self.addTooltips()
         self.bindControls()
-        self.setLayout()
 
     def addTooltips(self):
         pass
 
     def bindControls(self):
-        pass
+        self.play.Bind(wx.EVT_BUTTON, self.OnPlay)
+        self.Connect(-1, -1, EVT_RESULT_ID, self.OnPlayingResult)
 
     def setLayout(self, extra_values=[]):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -41,6 +81,7 @@ class FrameWidget(wx.Panel):
                                                                  "play")),
                                                      style=wx.NO_BORDER,
                                                      pos=(0, 0))
+
         self.headerSizer.Add(self.label, 0, wx.ALL, 0)
         self.headerSizer.Add(self.play, 0, wx.ALL, -1)
 
@@ -62,6 +103,38 @@ class FrameWidget(wx.Panel):
         self.img_bitmap.SetBitmap(self.img)
         self.Update()
         self.Refresh()
+
+    def OnPlay(self, event):
+        if self.parent.num_of_frames == 0:
+            return
+        
+        if self.worker is None:
+            self.is_running = True
+            self.previous_representative = \
+                self.parent.representatives[self.index]
+            self.play.SetBitmapLabel(wx.Bitmap(utils.media(self.config,
+                                                           "stop")))
+            self.worker = WorkerThread(self, self.parent, self.index)
+        else:
+            self.OnStop(event)
+
+    def OnPlayingResult(self, event):
+        if event.data is not None:
+            self.parent.representatives[self.index] = event.data
+            self.parent.update_representatives(False)
+        else:
+            self.OnStop(event)
+
+    def OnStop(self, event=None):
+        self.is_running = False
+        self.parent.representatives[self.index] = \
+            self.previous_representative
+        self.parent.update_representatives(False)
+        self.play.SetBitmapLabel(wx.Bitmap(utils.media(self.config,
+                                                  "play")))
+        if self.worker is not None:
+            self.worker.abort()
+            self.worker = None
 
 class Colposcopy(wx.Frame):
     def __init__(self, config_file="src/demos/temporal/config.json",
@@ -109,7 +182,7 @@ class Colposcopy(wx.Frame):
         # Input file
         self.fileLabel = wx.StaticText(self, label="Video:")
         self.fileInput = wx.TextCtrl(self,
-                                     value="CI 57170067_MPEG1_Aug20_155015_0.mpg",
+                                     value="",
                                      size=(0.4 * self.width, -1),
                                      style=wx.TE_LEFT)
         self.videoFilenameButton = \
@@ -178,7 +251,7 @@ class Colposcopy(wx.Frame):
         self.frames = [self.macro, self.green, self.hinselmann, self.schiller]
         self.boundaries = [0, 0, 0]
         self.representatives = [None, None, None, None]
-
+        self.previous_representatives = [None, None, None, None]
         self.topFramesSizer.Add(self.macro, 0, wx.LEFT, 5)
         self.topFramesSizer.Add(self.green, 0, wx.LEFT, 10)
         self.bottomFramesSizer.Add(self.hinselmann, 0, wx.LEFT, 5)
@@ -232,6 +305,11 @@ class Colposcopy(wx.Frame):
         index = 0
         keepGoing = True
         num_frames = cap.get(cv.CV_CAP_PROP_FRAME_COUNT)
+
+        try:
+            self.fps = int(round(cap.get(cv.CV_CAP_PROP_FPS)))
+        except:
+            self.fps = 30
 
         progress_dlg = wx.ProgressDialog(
                         "Please wait.",
@@ -300,7 +378,8 @@ class Colposcopy(wx.Frame):
 
     def scale_image(self):
         self.image = self.scale_image_size(self.image,
-                                           0.4 * self.width, 0.5 * self.height)
+                                           0.4 * self.width,
+                                           0.517 * self.height)
 
     def scale_image_size(self, image, width, height):
         image = wx.ImageFromBitmap(image)
@@ -344,7 +423,10 @@ class Colposcopy(wx.Frame):
             for r in xrange(left, right):
                 img[r] = colors[i]
 
-        for b in self.boundaries:
+        for b in self.representatives:
+            if b is None:
+                continue
+
             for c in xrange(10):
                 for r in xrange(3):
                     img[int(float(b) / (self.num_of_frames  + 1) * \
@@ -366,6 +448,9 @@ class Colposcopy(wx.Frame):
         self.go_to_frame()
 
     def OnSetLast(self, event):
+        if self.num_of_frames == 0:
+            return
+
         self.current_frame = self.tracker.GetValue()
         boundary = self.stageChoice.GetCurrentSelection()
         
@@ -376,25 +461,31 @@ class Colposcopy(wx.Frame):
                                          self.current_frame)
             self.update_boundaries()
 
-    def update_representatives(self):
-        print self.representatives
+    def update_representatives(self, update=True):
         for i in range(4):
-            if self.representatives[i] is not None:
-                filename = os.path.join(self.config["tmp"],
-                                        str(self.representatives[i]) + ".jpg")
-                self.frames[i].setImage(filename)
+            if self.previous_representatives[i] != self.representatives[i]:
+                f = self.config["default"]
+                if self.representatives[i] is not None:
+                    f = os.path.join(self.config["tmp"],
+                                     str(self.representatives[i]) + ".jpg")
+                self.frames[i].setImage(f)
+                self.previous_representatives[i] = self.representatives[i]
+
+        if update:
+            self.update_boundaries()
 
     def OnSetRepresentative(self, event):
-        self.current_frame = self.tracker.GetValue()
-        stage = self.stageChoice.GetCurrentSelection()
-        
+        f = self.tracker.GetValue()
+        stage = None
         boundaries = [0] + self.boundaries + [self.num_of_frames]
-        if boundaries[stage] <= self.current_frame and \
-               self.current_frame < boundaries[stage + 1]:
-            self.representatives[stage] = self.current_frame
-        else:
-            self.representatives[stage] = None
-        self.update_representatives()
+
+        for i in range(4):
+            if boundaries[i] <= f and f < boundaries[i + 1]:
+                stage = i
+                self.stageChoice.SetSelection(i)
+                self.representatives[i] = f
+                self.update_representatives()
+                break
 
 app = wx.App()
 Colposcopy()
