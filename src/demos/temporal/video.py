@@ -14,6 +14,9 @@ import cv2
 import os
 import wx
 
+from diagnosis import *
+
+
 EVT_RESULT_ID = wx.NewId()
 
 class ResultEvent(wx.PyEvent):
@@ -160,6 +163,7 @@ class VideoPanel(wx.Panel):
 
     def setLayout(self, extra_values=[]):
         # Sizers
+        self.globalSizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.subSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.leftSizer = wx.BoxSizer(wx.VERTICAL)
@@ -170,6 +174,10 @@ class VideoPanel(wx.Panel):
         self.topFramesSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.bottomFramesSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        self.globalSizer.AddStretchSpacer(1)
+        self.globalSizer.Add(self.sizer, 0, wx.ALIGN_CENTER, 0)
+        self.globalSizer.AddStretchSpacer(1)
+        
         self.sizer.Add(self.fileSizer, 0, wx.ALL|wx.CENTER, 10)
         self.sizer.Add(self.subSizer, 0, wx.ALL|wx.CENTER, 10)
 
@@ -257,8 +265,10 @@ class VideoPanel(wx.Panel):
         self.rightSizer.Add(self.framesSizer)
         self.framesSizer.Add(self.topFramesSizer)
         self.framesSizer.Add(self.bottomFramesSizer, 0, wx.TOP, 5)
-
-        self.SetSizer(self.sizer)
+        
+        self.rightSizer.Add(wx.StaticLine(self, size=(0.48 * self.width, -1)),
+                            0, wx.ALL, 10)
+        self.SetSizer(self.globalSizer)
 
     def addTooltips(self):
         self.fileInput.SetToolTip(wx.ToolTip("Input video"))

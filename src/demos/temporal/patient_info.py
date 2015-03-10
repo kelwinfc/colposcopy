@@ -35,7 +35,8 @@ class PatientPanel(wx.Panel):
 
     def setLayout(self, extra_values=[]):
         # Sizers
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.subSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.leftSizer = wx.BoxSizer(wx.VERTICAL)
         self.rightSizer = wx.BoxSizer(wx.VERTICAL)
         
@@ -45,14 +46,19 @@ class PatientPanel(wx.Panel):
         self.sexualitySizer = wx.BoxSizer(wx.VERTICAL)
         self.diseasesSizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.sizer.Add(self.leftSizer, 0, wx.ALL, 0)
-        self.sizer.Add(self.rightSizer, 0, wx.LEFT, 20)
+        self.sizer.AddStretchSpacer(1)
+        self.sizer.Add(self.subSizer, 0, wx.ALIGN_CENTER, 0)
+        self.sizer.AddStretchSpacer(1)
         
-        self.leftSizer.Add(self.infoSizer, 0, wx.ALL, 20)
-        self.leftSizer.Add(self.tobaccoSizer, 0, wx.ALL, 20)
-        self.leftSizer.Add(self.contraceptivesSizer, 0, wx.ALL, 20)
-        self.rightSizer.Add(self.sexualitySizer, 0, wx.ALL, 20)
-        self.rightSizer.Add(self.diseasesSizer, 0, wx.ALL, 20)
+        self.subSizer.Add(self.leftSizer)
+        self.subSizer.Add(self.rightSizer, 0, wx.LEFT, 50)
+        
+        self.leftSizer.Add(self.infoSizer, 0)
+        self.leftSizer.Add(self.tobaccoSizer, 0, wx.TOP, 50)
+        self.leftSizer.Add(self.contraceptivesSizer, 0, wx.TOP, 50)
+
+        self.rightSizer.Add(self.sexualitySizer)
+        self.rightSizer.Add(self.diseasesSizer, 0, wx.TOP, 50)
 
         # Personal Info
         ls = (0.08 * self.width, -1)
@@ -172,7 +178,7 @@ class PatientPanel(wx.Panel):
                       default="", label_size=(0.29 * self.width, -1),
                       text_size=ts)
         
-        self.sexualitySizer.Add(self.num_partners, 0, wx.TOP, 10)
+        self.sexualitySizer.Add(self.num_partners, 0, wx.TOP, 20)
         self.sexualitySizer.Add(self.first_intercourse, 0, wx.TOP, 10)
         self.sexualitySizer.Add(self.pregnancies, 0, wx.TOP, 10)
 
@@ -238,7 +244,7 @@ class PatientPanel(wx.Panel):
         
         self.pathologyBottom.Add(self.excisional, 0, wx.TOP, 0)
         self.pathologyBottom.Add(self.workflow, 0, wx.TOP, 0)
-        
+
         self.SetSizer(self.sizer)
 
     def addTooltips(self):
