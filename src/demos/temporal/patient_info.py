@@ -18,6 +18,7 @@ import wx
 
 from custom_fields import *
 
+
 class PatientPanel(wx.Panel):
     def __init__(self, parent=None,
                  config_file="src/demos/temporal/config.json"):
@@ -39,7 +40,7 @@ class PatientPanel(wx.Panel):
         self.subSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.leftSizer = wx.BoxSizer(wx.VERTICAL)
         self.rightSizer = wx.BoxSizer(wx.VERTICAL)
-        
+
         self.infoSizer = wx.BoxSizer(wx.VERTICAL)
         self.tobaccoSizer = wx.BoxSizer(wx.VERTICAL)
         self.contraceptivesSizer = wx.BoxSizer(wx.VERTICAL)
@@ -49,10 +50,10 @@ class PatientPanel(wx.Panel):
         self.sizer.AddStretchSpacer(1)
         self.sizer.Add(self.subSizer, 0, wx.ALIGN_CENTER, 0)
         self.sizer.AddStretchSpacer(1)
-        
+
         self.subSizer.Add(self.leftSizer)
         self.subSizer.Add(self.rightSizer, 0, wx.LEFT, 50)
-        
+
         self.leftSizer.Add(self.infoSizer, 0)
         self.leftSizer.Add(self.tobaccoSizer, 0, wx.TOP, 50)
         self.leftSizer.Add(self.contraceptivesSizer, 0, wx.TOP, 50)
@@ -91,12 +92,12 @@ class PatientPanel(wx.Panel):
         self.idSizer.Add(self.patientId, 0, wx.ALL, 0)
         self.idSizer.Add(self.patientDNI, 0, wx.LEFT, 20)
         self.infoSizer.Add(self.idSizer, 0, wx.TOP, 20)
-        
+
         self.nameSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.nameSizer.Add(self.patientFirstName, 0, wx.ALL, 0)
         self.nameSizer.Add(self.patientLastName, 0, wx.LEFT, 20)
         self.infoSizer.Add(self.nameSizer, 0, wx.TOP, 10)
-        
+
         self.otherSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.otherSizer.Add(self.patientTelephone, 0, wx.ALL, 0)
         self.otherSizer.Add(self.patientAge, 0, wx.LEFT, 20)
@@ -133,9 +134,9 @@ class PatientPanel(wx.Panel):
 
         self.contraceptives_first = wx.BoxSizer(wx.HORIZONTAL)
         self.contraceptives_second = wx.BoxSizer(wx.HORIZONTAL)
-        
-        self.hormonal = YesNoField(self, wx.ID_ANY, label="Hormonal", default=0,
-                                   label_size=ls,
+
+        self.hormonal = YesNoField(self, wx.ID_ANY, label="Hormonal",
+                                   default=0, label_size=ls,
                                    option_size=(0.045 * self.width, -1))
         self.hormonalYears = TextField(self, wx.ID_ANY,
                                        label="Years", default="0",
@@ -177,14 +178,14 @@ class PatientPanel(wx.Panel):
             TextField(self, wx.ID_ANY, label="Number of pregnancies",
                       default="", label_size=(0.29 * self.width, -1),
                       text_size=ts)
-        
+
         self.sexualitySizer.Add(self.num_partners, 0, wx.TOP, 20)
         self.sexualitySizer.Add(self.first_intercourse, 0, wx.TOP, 10)
         self.sexualitySizer.Add(self.pregnancies, 0, wx.TOP, 10)
 
         # Diseases
         self.subDiseaseSizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         self.diseasesSizer.Add(wx.StaticText(self, label="Diseases",
                                              size=(0.18 * self.width, -1)))
         self.diseasesSizer.Add(wx.StaticLine(self, size=(0.40 * self.width,
@@ -195,17 +196,15 @@ class PatientPanel(wx.Panel):
                               label="Sexually Transmitted Infections",
                               default=0, label_size=(0.30 * self.width, -1),
                               option_size=(0.045 * self.width, -1))
-        
-        
-        self.stiInfo = TextField(self, wx.ID_ANY,
-                                 label="Infection", default="",
-                                 label_size=ls, text_size=ts)
-        
+
+        self.stiInfo = TextField(self, wx.ID_ANY, label="Infection",
+                                 default="", label_size=ls, text_size=ts)
+
         self.stiDate = TextField(self, wx.ID_ANY,
                                  label="Diagnosis date", default="DD/MM/YYYY",
                                  label_size=ls, text_size=ts,
                                  style=wx.TE_RIGHT)
-        
+
         self.diseasesSizer.Add(self.sti, 0, wx.TOP, 20)
         self.diseasesSizer.Add(self.subDiseaseSizer, 0, wx.TOP, 5)
         self.subDiseaseSizer.Add(self.stiInfo, 0, wx.ALL, 0)
@@ -217,7 +216,7 @@ class PatientPanel(wx.Panel):
                               option_size=(0.045 * self.width, -1))
         self.pathologyTop = wx.BoxSizer(wx.HORIZONTAL)
         self.pathologyBottom = wx.BoxSizer(wx.VERTICAL)
-        
+
         self.pathologyInfo = TextField(self, wx.ID_ANY,
                                  label="Pathology", default="",
                                  label_size=ls, text_size=ts)
@@ -241,7 +240,7 @@ class PatientPanel(wx.Panel):
 
         self.pathologyTop.Add(self.pathologyInfo, 0, wx.TOP, 0)
         self.pathologyTop.Add(self.pathologyDate, 0, wx.LEFT, 20)
-        
+
         self.pathologyBottom.Add(self.excisional, 0, wx.TOP, 0)
         self.pathologyBottom.Add(self.workflow, 0, wx.TOP, 0)
 
@@ -263,6 +262,6 @@ class PatientPanel(wx.Panel):
 
     def restartHormonal(self, event):
         self.hormonalYears.content.SetValue("0")
-        
+
     def restartIUD(self, event):
         self.iudYears.content.SetValue("0")

@@ -9,11 +9,12 @@ import math
 import os
 import wx
 
+
 class TextField(wx.Panel):
     def __init__(self, parent, id, label="", default="",
                  label_size=(20, -1), text_size=(20, -1), style=wx.TE_LEFT):
         wx.Panel.__init__(self, parent, id)
-        
+
         self.txt_label = label
         self.label_size = label_size
         self.text_size = text_size
@@ -32,11 +33,12 @@ class TextField(wx.Panel):
         self.sizer.Add(self.content, 0, wx.ALL, 5)
         self.SetSizer(self.sizer)
 
+
 class YesNoField(wx.Panel):
     def __init__(self, parent, id, label="", default=0, label_size=(20, -1),
                  option_size=(20, -1)):
         wx.Panel.__init__(self, parent, id)
-        
+
         self.txt_label = label
         self.label_size = label_size
         self.option_size = option_size
@@ -48,7 +50,7 @@ class YesNoField(wx.Panel):
         self.label = wx.StaticText(self, label=self.txt_label,
                                    size=self.label_size)
 
-        self.yesRadio = wx.RadioButton(self, label="Yes", style = wx.RB_GROUP,
+        self.yesRadio = wx.RadioButton(self, label="Yes", style=wx.RB_GROUP,
                                        size=self.option_size)
         self.noRadio = wx.RadioButton(self, label="No", size=self.option_size)
         if self.default == 0:
@@ -91,7 +93,7 @@ class Cervix(wx.Panel):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.draw_image()
         self.load_image()
-        
+
         self.sizer.Add(self.img, 0, wx.ALL, 0)
         self.img.Bind(wx.EVT_LEFT_DOWN, self.OnMouseDown)
         self.img.Bind(wx.EVT_MOTION, self.OnMouseDrag)
@@ -108,7 +110,7 @@ class Cervix(wx.Panel):
         y -= 0.5
 
         ret = math.atan2(x, y) * 6.0 / np.pi
-        
+
         if ret < 0:
             ret = 12.0 + ret
 
@@ -159,7 +161,7 @@ class Cervix(wx.Panel):
 
     def draw_image(self):
         plt.clf()
-        center = (0.5,0.5)
+        center = (0.5, 0.5)
         r = .5
         circle = plt.Circle(center, r, color=self.big_color, alpha=1.0)
         circle_edge = plt.Circle(center, r, color='k', fill=False)
@@ -195,7 +197,7 @@ class Cervix(wx.Panel):
         circle_image = circle_image.Scale(self.width, self.height,
                                           wx.IMAGE_QUALITY_HIGH)
         circle_image = wx.BitmapFromImage(circle_image)
-        
+
         if self.img is None:
             self.img = wx.StaticBitmap(self, -1, bitmap=circle_image)
         else:

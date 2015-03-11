@@ -19,6 +19,7 @@ from patient_info import *
 from diagnosis import *
 from about import *
 
+
 class ColposcopicScreening(wx.Frame):
 
     def __init__(self, parent):
@@ -38,7 +39,7 @@ class ColposcopicScreening(wx.Frame):
         self.videoTab = VideoPanel(nestedNotebook)
         self.diagnosisTab = DiagnosisPanel(nestedNotebook)
         self.aboutTab = AboutPanel(nestedNotebook)
-        
+
         # TODO: change order
         nestedNotebook.AddPage(self.patientTab, "Patient")
         nestedNotebook.AddPage(self.videoTab, "Video")

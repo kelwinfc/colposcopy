@@ -20,11 +20,13 @@ from diagnosis import *
 
 EVT_RESULT_ID = wx.NewId()
 
+
 class ResultEvent(wx.PyEvent):
     def __init__(self, data):
         wx.PyEvent.__init__(self)
         self.SetEventType(EVT_RESULT_ID)
         self.data = data
+
 
 class VideoPlayer(Thread):
     def __init__(self, notify_window, parent, index):
@@ -54,6 +56,7 @@ class VideoPlayer(Thread):
     def abort(self):
         self._want_abort = 1
 
+
 class TemporalSegmentation(Thread):
     def __init__(self, notify_window, parent):
         Thread.__init__(self)
@@ -69,15 +72,16 @@ class TemporalSegmentation(Thread):
     def abort(self):
         self._want_abort = 1
 
+
 class FrameWidget(wx.Panel):
     def __init__(self, parent, name, index, id):
         wx.Panel.__init__(self, parent, id)
-        
+
         self.index = index
         self.parent = parent
         self.config = self.parent.config
         self.name = name
-        
+
         self.is_running = False
         self.previous_representative = None
         self.worker = None
@@ -96,7 +100,7 @@ class FrameWidget(wx.Panel):
     def setLayout(self, extra_values=[]):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.headerSizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         self.label = wx.StaticText(self, label=self.name)
         self.play = wx.BitmapButton(self, id=wx.ID_ANY,
                                     bitmap=wx.Bitmap(utils.media(self.config,
@@ -116,7 +120,7 @@ class FrameWidget(wx.Panel):
         self.sizer.Add(self.headerSizer, 0, wx.ALL, 0)
         self.sizer.Add(self.img_bitmap, 0, wx.ALL, 0)
         self.SetSizer(self.sizer)
-    
+
     def setImage(self, filename):
         self.img = wx.Bitmap(filename)
         self.img = self.parent.scale_image_size(self.img,
@@ -129,7 +133,7 @@ class FrameWidget(wx.Panel):
     def OnPlay(self, event):
         if self.parent.num_of_frames == 0:
             return
-        
+
         if self.worker is None:
             self.is_running = True
             self.previous_representative = \
@@ -200,9 +204,9 @@ class VideoPanel(wx.Panel):
         self.globalSizer.AddStretchSpacer(1)
         self.globalSizer.Add(self.sizer, 0, wx.ALIGN_CENTER, 0)
         self.globalSizer.AddStretchSpacer(1)
-        
-        self.sizer.Add(self.fileSizer, 0, wx.ALL|wx.CENTER, 10)
-        self.sizer.Add(self.subSizer, 0, wx.ALL|wx.CENTER, 10)
+
+        self.sizer.Add(self.fileSizer, 0, wx.ALL | wx.CENTER, 10)
+        self.sizer.Add(self.subSizer, 0, wx.ALL | wx.CENTER, 10)
 
         self.subSizer.Add(self.leftSizer, 0, wx.TOP, 0)
         self.subSizer.Add(self.rightSizer, 0, wx.TOP, 0)
@@ -219,7 +223,7 @@ class VideoPanel(wx.Panel):
                                                          "video")),
                                              style=wx.NO_BORDER,
                                              pos=(0, 0))
-                            
+
         self.fileSizer.Add(self.fileLabel, 0, wx.TOP, 5)
         self.fileSizer.Add(self.fileInput, 0, wx.ALL, 0)
         self.fileSizer.Add(self.videoFilenameButton, 0, wx.ALL, 0)
@@ -231,7 +235,7 @@ class VideoPanel(wx.Panel):
         self.imageControl = wx.StaticBitmap(self, -1, self.image)
         self.leftSizer.Add(self.imageLabel, 0, wx.TOP, 2)
         self.leftSizer.Add(self.imageControl, 0, wx.TOP, 5)
-        
+
         # Colors and Tracker
         self.colors = wx.Bitmap(self.config["default"])
         self.colors = self.scale_image_size(self.colors,
@@ -269,7 +273,7 @@ class VideoPanel(wx.Panel):
         self.leftSizer.Add(self.topBoundariesMarkers, 0, wx.TOP, 10)
         self.leftSizer.Add(self.colorsImg, 0, wx.TOP, 2)
         self.leftSizer.Add(self.bottomBoundariesMarkers, 0, wx.TOP, 2)
-        self.leftSizer.Add(self.controllerSizer, 0, wx.TOP|wx.CENTER, 20)
+        self.leftSizer.Add(self.controllerSizer, 0, wx.TOP | wx.CENTER, 20)
 
         # Chosen frames
         self.macro = FrameWidget(self, "Macroscopic", 0, wx.ID_ANY)
@@ -288,7 +292,7 @@ class VideoPanel(wx.Panel):
         self.rightSizer.Add(self.framesSizer)
         self.framesSizer.Add(self.topFramesSizer)
         self.framesSizer.Add(self.bottomFramesSizer, 0, wx.TOP, 5)
-        
+
         self.rightSizer.Add(wx.StaticLine(self, size=(0.48 * self.width, -1)),
                             0, wx.ALL, 10)
 
@@ -299,12 +303,13 @@ class VideoPanel(wx.Panel):
         self.ts_progress.SetFont(font)
 
         self.ts_statistics = wx.GridSizer(3, 4, 10, 0)
-        
+
         self.statisticsSizer = wx.BoxSizer(wx.VERTICAL)
         self.statisticsSizer.Add(self.ts_progress, 0, wx.LEFT, 10)
         self.statisticsSizer.Add(self.ts_statistics, 0, wx.ALL, 10)
 
-        self.rightSizer.Add(self.statisticsSizer, 0, wx.TOP|wx.ALIGN_CENTER, 0)
+        self.rightSizer.Add(self.statisticsSizer, 0,
+                            wx.TOP | wx.ALIGN_CENTER, 0)
 
         self.SetSizer(self.globalSizer)
 
@@ -370,13 +375,13 @@ class VideoPanel(wx.Panel):
                               | wx.PD_APP_MODAL
                               | wx.PD_AUTO_HIDE
                         )
-        
+
         self.num_of_frames = num_frames
         self.colors = []
-        
+
         if self.num_of_frames == 0:
             progress_dlg.Destroy()
-            wx.MessageBox('Invalid video', 'Error', 
+            wx.MessageBox('Invalid video', 'Error',
                           wx.ICON_ERROR)
             return
 
@@ -424,7 +429,6 @@ class VideoPanel(wx.Panel):
         self.current_frame = 0
         self.go_to_frame()
 
-
     def scale_image(self):
         self.image = self.scale_image_size(self.image,
                                            0.4 * self.width,
@@ -461,17 +465,17 @@ class VideoPanel(wx.Panel):
                               str(self.num_of_frames),
                               self.config["temporal-segmentation-model"]
                              ],
-                             stdout=subprocess.PIPE, 
+                             stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         out, err = p.communicate()
-        
+
         labels = [int(x.strip()) for x in out.splitlines(True)]
         labels = zip(labels, range(len(labels)))
-        
+
         self.statistics["total"] = self.num_of_frames
-        
+
         names = ["macroscopic", "green", "hinselmann", "schiller"]
-        
+
         for phase in range(4):
             phase_labels = [i for (p, i) in labels if p - 2 == phase]
             phase_labels.sort()
@@ -502,7 +506,7 @@ class VideoPanel(wx.Panel):
                            cv2.COLOR_BGR2RGB)
 
         boundaries = [0] + self.boundaries + [self.num_of_frames]
-        colors  = [[0, 0, 255], [0, 255, 0], [255, 255, 255], [0, 64, 128]]
+        colors = [[0, 0, 255], [0, 255, 0], [255, 255, 255], [0, 64, 128]]
 
         for i in range(4):
             left = int(float(boundaries[i]) / self.num_of_frames * \
@@ -526,7 +530,7 @@ class VideoPanel(wx.Panel):
                     img[int(float(b) / self.num_of_frames * img.shape[0])] = \
                         np.asarray([0, 0, 0])
         img = np.transpose(img, axes=(1, 0, 2))
-        
+
         path = os.path.join(self.config["tmp"], "boundaries.jpg")
         cv2.imwrite(path, img)
 
@@ -550,7 +554,7 @@ class VideoPanel(wx.Panel):
 
         self.current_frame = self.tracker.GetValue()
         boundary = self.stageChoice.GetCurrentSelection()
-        
+
         if 0 <= boundary and boundary < 3:
             self.boundaries[boundary] = self.current_frame
             for b in range(boundary + 1, 3):
@@ -586,9 +590,9 @@ class VideoPanel(wx.Panel):
 
     def OnTemporalSegmentationStart(self):
         self.is_transition = [False for _ in xrange(self.num_of_frames)]
-        
+
         self.ts_progress.SetLabel("Computing temporal segmentation...")
-        
+
         self.rightSizer.Layout()
         self.ts_worker = TemporalSegmentation(self, self)
 
@@ -603,9 +607,9 @@ class VideoPanel(wx.Panel):
                   "Schiller         "]
         names = ["total", "transitions", "macroscopic", "green",
                  "hinselmann", "schiller"]
-        
+
         self.ts_progress.SetLabel("Number of frames")
-                                  
+
         for l, n in zip(labels, names):
             l = wx.StaticText(self, wx.ID_ANY, label=l)
             font = wx.Font(pointSize=10, family=wx.FONTFAMILY_DECORATIVE,
@@ -615,10 +619,10 @@ class VideoPanel(wx.Panel):
                               label=(str(self.statistics[n])),
                               size=(50, -1))
             self.ts_statistics.Add(l, 0, wx.LEFT, 0)
-            self.ts_statistics.Add(n, 0, wx.RIGHT|wx.ALIGN_RIGHT, 10)
+            self.ts_statistics.Add(n, 0, wx.RIGHT | wx.ALIGN_RIGHT, 10)
 
         self.rightSizer.Layout()
-        
+
         if self.ts_worker is not None:
             self.ts_worker.abort()
             self.ts_worker = None

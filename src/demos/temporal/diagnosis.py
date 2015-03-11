@@ -21,6 +21,8 @@ from macroscopic import *
 from green import *
 from hinselmann import *
 from schiller import *
+from citology import *
+
 
 class DiagnosisPanel(wx.Panel):
     def __init__(self, parent=None,
@@ -48,7 +50,16 @@ class DiagnosisPanel(wx.Panel):
 
         ls = (0.08 * self.width, -1)
         ts = (0.10 * self.width, -1)
-        
+
+        self.title = wx.StaticText(self, wx.ID_ANY, label="Colposcopy")
+        font = wx.Font(pointSize=12, family=wx.FONTFAMILY_DECORATIVE,
+                       style=wx.NORMAL, weight=wx.FONTWEIGHT_BOLD)
+        self.title.SetFont(font)
+
+        self.sizer.Add(self.title, 0)
+        self.sizer.Add(wx.StaticLine(self, wx.ID_ANY,
+                                     size=(0.58 * self.width, -1)), 0)
+
         self.satisfactory = YesNoField(self, wx.ID_ANY,
                                        label="Satisfactory colposcopy",
                                        default=0,
@@ -62,7 +73,7 @@ class DiagnosisPanel(wx.Panel):
         self.limitationsLabel = wx.StaticText(self, label="Limitations",
                                               size=ls)
         self.limitationsVaginal = wx.CheckBox(self, -1,
-                                              label="Vaginal fluid")
+                                              label="Vaginal discharge")
         self.limitationsWalls = wx.CheckBox(self, -1,
                                             label="Prolapsed vaginal walls")
         self.limitationsOther = TextField(self, wx.ID_ANY,
@@ -79,13 +90,13 @@ class DiagnosisPanel(wx.Panel):
         self.diagnosis_second.Add(self.limitationsWalls, 0, wx.ALL, 2)
         self.diagnosis_second.Add(self.limitationsOther, 0, wx.LEFT, 10)
 
-        self.stagesSizer = wx.GridSizer(4, 1, 0, 0) 
+        self.stagesSizer = wx.GridSizer(2, 2, 10, 10)
         self.macroscopic = MacroscopicResults(self)
         self.green = GreenResults(self)
         self.hinselmann = HinselmannResults(self)
         self.schiller = SchillerResults(self)
-        
-        self.sizer.Add(self.diagnosis_first, 0, wx.ALL, 0)
+
+        self.sizer.Add(self.diagnosis_first, 0, wx.TOP, 10)
         self.sizer.Add(self.diagnosis_second, 0, wx.ALL, 0)
 
         self.stagesSizer.Add(self.macroscopic, 0, wx.LEFT, 5)
@@ -93,6 +104,9 @@ class DiagnosisPanel(wx.Panel):
         self.stagesSizer.Add(self.hinselmann, 0, wx.LEFT, 5)
         self.stagesSizer.Add(self.schiller, 0, wx.LEFT, 5)
         self.sizer.Add(self.stagesSizer, 0)
+
+        self.citology = CitologyResults(self)
+        self.sizer.Add(self.citology, 0, wx.TOP, 10)
 
         self.SetSizer(self.globalSizer)
 

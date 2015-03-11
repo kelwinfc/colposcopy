@@ -18,6 +18,7 @@ import wx
 
 from custom_fields import *
 
+
 class AboutPanel(wx.Panel):
     def __init__(self, parent=None,
                  config_file="src/demos/temporal/config.json"):

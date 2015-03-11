@@ -4,6 +4,7 @@
 import json
 import os
 
+
 def load_config(filename):
     f = open(filename)
     ret = json.loads(f.read())
