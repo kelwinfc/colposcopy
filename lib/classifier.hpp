@@ -93,7 +93,7 @@ class incremental_nbc : public neighborhood_based_classifier {
         float max_error;
         int max_samples;
         float min_convergence;
-    
+
     public:
         incremental_nbc();
         
@@ -143,15 +143,17 @@ class knn : public incremental_nbc {
     protected:
         int k;
         map<label, float> weight;
-    
+
     public:
         knn();
         knn(int k);
-        
+
         void set_k(int k);
-        
+
         virtual void read(const rapidjson::Value& json);
+        virtual void read(string filename);
         virtual void write(rapidjson::Value& json, rapidjson::Document& d);
+        virtual void write(string filename);
         virtual void train(vector<Mat>& src, vector<label>& labels);
         
         void plot_histograms(map<label, Scalar>& colors);

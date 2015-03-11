@@ -632,6 +632,103 @@ void knn::write(rapidjson::Value& json, rapidjson::Document& d)
     //TODO
 }
 
+void knn::read(string filename)
+{
+    int n, m;
+    ifstream fin(filename.c_str());
+    fin >> n >> m;
+    for(size_t i = 0; i < n; i++){
+        sample next;
+        for(size_t j = 0; j < m; j++){
+            float next_value;
+            fin >> next_value;
+            next.push_back(next_value);
+        }
+        this->index_features.push_back(next);
+    }
+    
+    fin >> n;
+    for(size_t i = 0; i < n; i++){
+        label next;
+        fin >> next;
+        this->index_label.push_back(next);
+    }
+
+    fin >> n;
+    for(size_t i = 0; i < n; i++){
+        float next;
+        fin >> next;
+        this->index_threshold.push_back(next);
+    }
+
+    fin >> n;
+    for(size_t i = 0; i < n; i++){
+        float next;
+        fin >> next;
+        this->index_reliability.push_back(next);
+    }
+
+    fin >> this->max_error >> this->max_samples >> this->min_convergence
+        >> this->k >> n;
+    
+    for(int i = 0; i < n; i++){
+        label next_label;
+        float next_weight;
+        
+        fin >> next_label >> next_weight;
+        this->weight[next_label] = next_weight;
+    }
+
+    fin.close();
+}
+
+void knn::write(string filename)
+{
+    ofstream fout(filename.c_str());
+    fout << this->index_features.size() << " "
+         << (this->index_features.size() > 0 ?
+             this->index_features[0].size(): 0) << endl;
+    for(size_t i = 0; i < this->index_features.size(); i++){
+        for(size_t j = 0; j < this->index_features[i].size(); j++){
+            fout << this->index_features[i][j] << " ";
+        }
+        fout << endl;
+    }
+    
+    fout << this->index_label.size() << endl;
+    for(size_t i = 0; i < this->index_label.size(); i++){
+        fout << this->index_label[i] << " ";
+    }
+    fout << endl;
+
+    fout << this->index_threshold.size() << endl;
+    for(size_t i = 0; i < this->index_threshold.size(); i++){
+        fout << this->index_threshold[i] << " ";
+    }
+    fout << endl;
+
+    fout << this->index_reliability.size() << endl;
+    for(size_t i = 0; i < this->index_reliability.size(); i++){
+        fout << this->index_reliability[i] << " ";
+    }
+    fout << endl;
+
+    fout << this->max_error << endl;
+    fout << this->max_samples << endl;
+    fout << this->min_convergence << endl;
+    
+    fout << this->k << endl;
+    
+    map<label, float>::iterator it = this->weight.begin(),
+                                end = this->weight.end();
+    fout << this->weight.size() << endl;
+    for(; it != end; ++it){
+        fout << it->first << " " << it->second << endl;
+    }
+        
+    fout.close();
+}
+
 void knn::train(vector<Mat>& src, vector<label>& labels)
 {
     #if __COLPOSCOPY_VERBOSE

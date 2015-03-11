@@ -13,7 +13,8 @@ FILES=utils\
 
 EXECUTABLES=test_specular_reflection test_diagnosis_phase test_classifiers\
 	test_motion generate_pairs_of_images_to_annotate test_ranking_abc\
-	test_ranking extract_features_ranking test_cervix_segmentation
+	test_ranking extract_features_ranking test_cervix_segmentation\
+	temporal_segmentation train_temporal_segmentation
 
 ANONADADO_FILES=anonadado anonadado_utils
 
@@ -36,6 +37,8 @@ DEP_extract_features_ranking=$(DEP_ranking) $(DEP_db_ranking) $(ANONADADO_FILES)
 DEP_test_ranking_abc=$(DEP_ranking) $(DEP_db_ranking)
 DEP_test_ranking=$(DEP_ranking) $(DEP_db_ranking)
 DEP_test_cervix_segmentation=
+DEP_temporal_segmentation=diagnosis_phase
+DEP_train_temporal_segmentation=diagnosis_phase
 
 DEP_anonadado=anonadado_utils
 DEP_anonadado_utils=
@@ -67,6 +70,12 @@ generate_pairs_of_images_to_annotate: $(FILES:%=bin/%.o) src/generate_pairs_of_i
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 test_cervix_segmentation: $(FILES:%=bin/%.o) src/tests/test_cervix_segmentation.cpp lib/tests/test_cervix_segmentation.hpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
+
+temporal_segmentation: $(FILES:%=bin/%.o) src/tests/temporal_segmentation.cpp
+	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
+
+train_temporal_segmentation: $(FILES:%=bin/%.o) src/tests/train_temporal_segmentation.cpp
 	$(GCC) $^ -o $@ $(MAIN_FLAGS) -I"lib/tests"
 
 #General rule for compiling

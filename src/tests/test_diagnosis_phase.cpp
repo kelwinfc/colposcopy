@@ -15,7 +15,7 @@ void get_sequence(const char* filename,
     inst.read(filename);
     vector<int> step_index;
     vector<int> roi_index;
-    
+
     inst.get_annotations("diagnosis_step", step_index);
     inst.get_annotations("roi", roi_index);
     
@@ -262,9 +262,9 @@ int main(int argc, const char* argv[])
             start_t = GetTimeMs64();
             get_sequence(videos[i].c_str(), images, labels, 1);
             end_t = GetTimeMs64();
-            
+
             float load_sequence_t = (end_t - start_t) / 1000.;
-            
+
             float error, next_time;
             /*
             dpd_manhattan.visualize(images, labels,
@@ -280,7 +280,7 @@ int main(int argc, const char* argv[])
                  << load_sequence_t << " sec "
                  << ((float)images.size() / load_sequence_t)
                  << " fps" << endl;
-            
+
             // Eval the models and print the results
             start_t = GetTimeMs64();
             error = dpd_manhattan.print_confussion_matrix(images, labels);
