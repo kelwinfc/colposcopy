@@ -14,9 +14,13 @@ void get_sequence(const char* path, int num_frames, vector<Mat>& images)
     for ( int f = 0; f < num_frames; f++ ){
         string filename;
         stringstream ss;
-        ss << path << f << ".jpg";
+        ss << f << ".jpg";
         ss >> filename;
-        
+
+        fs::path dir(path);
+        fs::path file(filename);
+        filename = (dir / file).string();
+
         Mat img, aux;
         img = imread(filename);
 
@@ -53,8 +57,7 @@ int main(int argc, const char* argv[])
     // KNN model configuration
     knn_manhattan.set_feature_extractor(&f);
     knn_manhattan.set_distance(&manhattan);
-    knn_manhattan.read((string)"src/demos/temporal/knn.model");
-
+    knn_manhattan.read((string)argv[2]);
     // Classifier
     classifier_dpd hd_manhattan;
     hd_manhattan.set_classifier(&knn_manhattan);
