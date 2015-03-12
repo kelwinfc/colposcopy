@@ -8,6 +8,7 @@ bin/*.obj
 *.so
 *.dylib
 *.dll
+*.pyc
 
 # Compiled Static libraries
 *.lai
@@ -28,3 +29,11 @@ bin/*.obj
 *.mpeg
 
 *~
+
+src/demos/temporal/tex/macros.log
+src/demos/temporal/tex/macros.tex
+src/demos/temporal/tex/main.aux
+src/demos/temporal/tex/main.log
+src/demos/temporal/tex/main.pdf
+src/demos/temporal/knn.model
+

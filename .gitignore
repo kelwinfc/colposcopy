@@ -14,6 +14,7 @@ libraries
 *.so
 *.dylib
 *.dll
+*.pyc
 
 #
 Compiled
@@ -41,6 +42,14 @@ videos
 *.mpeg
 
 *~
+
+src/demos/temporal/tex/macros.log
+src/demos/temporal/tex/macros.tex
+src/demos/temporal/tex/main.aux
+src/demos/temporal/tex/main.log
+src/demos/temporal/tex/main.pdf
+src/demos/temporal/knn.model
+
 test_specular_reflection
 test_diagnosis_phase
 test_classifiers

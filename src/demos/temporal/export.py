@@ -408,8 +408,9 @@ class ExportData(wx.Panel):
         f.writelines(lines)
         f.close()
 
-        proc = subprocess.Popen(['pdflatex', 'main.tex'])
-
+        for _ in range(3):
+            proc = subprocess.Popen(['pdflatex', 'main.tex'])
+        
         os.chdir(prev_dir)
         shutil.move(os.path.join(self.config["pdf-dir"], "main.pdf"),
                     filename)
