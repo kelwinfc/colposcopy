@@ -56,17 +56,7 @@ class MacroscopicResults(wx.Panel):
                                         "Architectural distortion"],
                                size=(0.16 * self.width, -1))
 
-        self.title = wx.StaticText(self, wx.ID_ANY, label="Macroscopic View")
-        font = wx.Font(pointSize=10, family=wx.FONTFAMILY_DECORATIVE,
-                       style=wx.NORMAL, weight=wx.FONTWEIGHT_BOLD)
-
-        self.title.SetFont(font)
-
-        self.top.Add(self.lfirst, 0)
-        self.top.Add(wx.StaticLine(self, wx.ID_ANY,
-                                   size=(0.28 * self.width, -1)), 0)
         self.top.Add(self.lsecond, 0, wx.TOP, 10)
-        self.lfirst.Add(self.title, 0)
         self.lsecond.Add(self.label, 0, wx.ALL, 0)
         self.lsecond.Add(self.state, 0, wx.ALL, 0)
 
@@ -92,11 +82,11 @@ class MacroscopicResults(wx.Panel):
                                 label_size=(0.08 * self.width - 10, -1),
                                 text_size=(0.10 * self.width, -1),
                                 style=wx.TE_RIGHT)
-        self.rthird.Add(self.length, 0, wx.LEFT, -5)
+        self.rthird.Add(self.length, 0, wx.LEFT, 0)
 
         self.cervix = Cervix(self, name="macroscopic")
 
-        self.bottom.Add(self.cervix, 0, wx.ALL, 0)
+        self.bottom.Add(self.cervix, 0, wx.LEFT, 0)
         self.bottom.Add(self.bottomRight, 0, wx.LEFT, 10)
         self.bottomRight.Add(self.rfirst, 0, wx.TOP, -1)
         self.bottomRight.Add(self.rsecond, 0, wx.TOP, -1)
@@ -124,8 +114,14 @@ class MacroscopicResults(wx.Panel):
             self.cervix.enable(True)
 
         self.Layout()
-        if self.parent is not None:
-            self.parent.Layout()
+
+        parent = self.parent
+        try:
+            while parent is not None:
+                parent.Layout()
+                parent = parent.parent
+        except:
+            pass  # Finished layout
 
     def hide_lesion(self):
         self.lesionLabel.Hide()

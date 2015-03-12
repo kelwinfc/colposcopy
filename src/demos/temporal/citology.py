@@ -62,9 +62,9 @@ class CitologyResults(wx.Panel):
         self.sampleChoice = \
             wx.Choice(self, wx.ID_ANY,
                       choices=["Satisfactory",
-                               "Unsatisfactory - insufficient",
-                               "Unsatisfactory - inflammatory",
-                               "Unsatisfactory - hematic"])
+                               "Unsatisfactory (insufficient)",
+                               "Unsatisfactory (inflammatory)",
+                               "Unsatisfactory (hematic)"])
 
         self.resultSizer.Add(self.sampleLabel, 0, wx.LEFT, 10)
         self.resultSizer.Add(self.sampleChoice, 0, wx.LEFT, 5)
@@ -87,9 +87,9 @@ class CitologyResults(wx.Panel):
                   self.carcinoma, self.ascus, self.asgus, self.squamous,
                   self.asch, self.glandular]:
             self.selectionSizer.Add(x, 0)
-        
+
         self.top.Add(self.selectionSizer, 0, wx.TOP, 10)
-        
+
         self.sizer.Add(self.top, 0, wx.LEFT, 0)
 
         self.SetSizer(self.sizer)

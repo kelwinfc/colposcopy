@@ -43,15 +43,6 @@ class SchillerResults(wx.Panel):
         self.sizer.Add(self.top, 0, wx.TOP, 0)
         self.sizer.Add(self.bottom, 0, wx.TOP, 10)
 
-        self.title = wx.StaticText(self, wx.ID_ANY, label="Schiller")
-        font = wx.Font(pointSize=10, family=wx.FONTFAMILY_DECORATIVE,
-                       style=wx.NORMAL, weight=wx.FONTWEIGHT_BOLD)
-
-        self.title.SetFont(font)
-        self.top.Add(self.title, 0)
-        self.top.Add(wx.StaticLine(self, wx.ID_ANY,
-                                   size=(0.28 * self.width, -1)), 0)
-
         self.label = wx.StaticText(self, wx.ID_ANY, label="Diagnosis",
                                    size=(0.06 * self.width, -1))
         self.state = wx.Choice(self, wx.ID_ANY,
@@ -70,15 +61,15 @@ class SchillerResults(wx.Panel):
 
         self.hipo = YesNoField(self, wx.ID_ANY, label="Generalized cold",
                                default=0,
-                               label_size=(0.08 * self.width, -1),
+                               label_size=(0.065 * self.width, -1),
                                option_size=(0.045 * self.width, -1))
-        self.alergic = YesNoField(self, wx.ID_ANY, label="Allergic to iodine",
+        self.allergic = YesNoField(self, wx.ID_ANY, label="Allergic to iodine",
                                   default=0,
-                                  label_size=(0.08 * self.width, -1),
+                                  label_size=(0.065 * self.width, -1),
                                   option_size=(0.045 * self.width, -1))
 
         self.bottomRight.Add(self.hipo, 0, wx.ALL, 0)
-        self.bottomRight.Add(self.alergic, 0, wx.ALL, 0)
+        self.bottomRight.Add(self.allergic, 0, wx.ALL, 0)
 
         self.SetSizer(self.sizer)
         self.hide_lesion()

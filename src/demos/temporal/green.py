@@ -49,14 +49,6 @@ class GreenResults(wx.Panel):
                                choices=["No injuries", "Vessel atypia"],
                                size=(0.16 * self.width, -1))
 
-        self.title = wx.StaticText(self, wx.ID_ANY, label="Green Light")
-        font = wx.Font(pointSize=10, family=wx.FONTFAMILY_DECORATIVE,
-                       style=wx.NORMAL, weight=wx.FONTWEIGHT_BOLD)
-        self.title.SetFont(font)
-
-        self.top.Add(self.title, 0)
-        self.top.Add(wx.StaticLine(self, wx.ID_ANY,
-                                    size=(0.28 * self.width, -1)), 0)
         self.top.Add(self.lfirst, 0, wx.TOP, 10)
 
         self.lfirst.Add(self.label, 0, wx.ALL, 0)

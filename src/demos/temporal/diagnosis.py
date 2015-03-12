@@ -17,11 +17,10 @@ import os
 import wx
 
 from custom_fields import *
-from macroscopic import *
-from green import *
-from hinselmann import *
-from schiller import *
+from colposcopy import *
 from citology import *
+from biopsy import *
+from export import *
 
 
 class DiagnosisPanel(wx.Panel):
@@ -40,73 +39,27 @@ class DiagnosisPanel(wx.Panel):
 
     def setLayout(self, extra_values=[]):
         self.globalSizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.diagnosis_first = wx.BoxSizer(wx.HORIZONTAL)
-        self.diagnosis_second = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.globalSizer.AddStretchSpacer(1)
         self.globalSizer.Add(self.sizer, 0, wx.ALIGN_CENTER, 0)
         self.globalSizer.AddStretchSpacer(1)
-
-        ls = (0.08 * self.width, -1)
-        ts = (0.10 * self.width, -1)
-
-        self.title = wx.StaticText(self, wx.ID_ANY, label="Colposcopy")
-        font = wx.Font(pointSize=12, family=wx.FONTFAMILY_DECORATIVE,
-                       style=wx.NORMAL, weight=wx.FONTWEIGHT_BOLD)
-        self.title.SetFont(font)
-
-        self.sizer.Add(self.title, 0)
-        self.sizer.Add(wx.StaticLine(self, wx.ID_ANY,
-                                     size=(0.58 * self.width, -1)), 0)
-
-        self.satisfactory = YesNoField(self, wx.ID_ANY,
-                                       label="Satisfactory colposcopy",
-                                       default=0,
-                                       label_size=(0.14 * self.width, -1),
-                                       option_size=(0.045 * self.width, -1))
-        self.tr_zoneLabel = wx.StaticText(self, label="Transformation zone",
-                                          size=(0.16 * self.width, -1))
-        self.transformation_zone = wx.Choice(self, wx.ID_ANY,
-                                             choices=["Type 2", "Type 3"])
-
-        self.limitationsLabel = wx.StaticText(self, label="Limitations",
-                                              size=ls)
-        self.limitationsVaginal = wx.CheckBox(self, -1,
-                                              label="Vaginal discharge")
-        self.limitationsWalls = wx.CheckBox(self, -1,
-                                            label="Prolapsed vaginal walls")
-        self.limitationsOther = TextField(self, wx.ID_ANY,
-                                          label="Other", default="",
-                                          label_size=(0.04 * self.width, -1),
-                                                      text_size=ts)
-
-        self.diagnosis_first.Add(self.satisfactory, 0, wx.TOP, 0)
-        self.diagnosis_first.Add(self.tr_zoneLabel, 0, wx.TOP, 10)
-        self.diagnosis_first.Add(self.transformation_zone, 0, wx.LEFT, 5)
-
-        self.diagnosis_second.Add(self.limitationsLabel, 0, wx.ALL, 5)
-        self.diagnosis_second.Add(self.limitationsVaginal, 0, wx.TOP, 2)
-        self.diagnosis_second.Add(self.limitationsWalls, 0, wx.ALL, 2)
-        self.diagnosis_second.Add(self.limitationsOther, 0, wx.LEFT, 10)
-
-        self.stagesSizer = wx.GridSizer(2, 2, 10, 10)
-        self.macroscopic = MacroscopicResults(self)
-        self.green = GreenResults(self)
-        self.hinselmann = HinselmannResults(self)
-        self.schiller = SchillerResults(self)
-
-        self.sizer.Add(self.diagnosis_first, 0, wx.TOP, 10)
-        self.sizer.Add(self.diagnosis_second, 0, wx.ALL, 0)
-
-        self.stagesSizer.Add(self.macroscopic, 0, wx.LEFT, 5)
-        self.stagesSizer.Add(self.green, 0, wx.LEFT, 5)
-        self.stagesSizer.Add(self.hinselmann, 0, wx.LEFT, 5)
-        self.stagesSizer.Add(self.schiller, 0, wx.LEFT, 5)
-        self.sizer.Add(self.stagesSizer, 0)
-
+        
+        self.colposcopy = ColposcopyResults(self)
         self.citology = CitologyResults(self)
-        self.sizer.Add(self.citology, 0, wx.TOP, 10)
+        self.biopsy = BiopsyResults(self)
+        self.export = ExportData(self)
+        
+        self.leftSizer = wx.BoxSizer(wx.VERTICAL)
+        self.leftSizer.Add(self.colposcopy, 0, wx.TOP, 0)
+        self.leftSizer.Add(self.citology, 0, wx.TOP, 30)
+        self.leftSizer.Add(self.biopsy, 0, wx.TOP, 30)
+
+        self.rightSizer = wx.BoxSizer(wx.VERTICAL)
+        self.rightSizer.Add(self.export, 0, wx.LEFT, 10)
+
+        self.sizer.Add(self.leftSizer, 0)
+        self.sizer.Add(self.rightSizer, 0, wx.LEFT, 30)
 
         self.SetSizer(self.globalSizer)
 
@@ -114,17 +67,4 @@ class DiagnosisPanel(wx.Panel):
         pass
 
     def bindControls(self):
-        self.Bind(wx.EVT_RADIOBUTTON, self.showTRzone,
-                  self.satisfactory.noRadio)
-        self.Bind(wx.EVT_RADIOBUTTON, self.hideTRzone,
-                  self.satisfactory.yesRadio)
-
-    def showTRzone(self, event):
-        self.tr_zoneLabel.Show()
-        self.transformation_zone.Show()
-        self.Layout()
-
-    def hideTRzone(self, event):
-        self.tr_zoneLabel.Hide()
-        self.transformation_zone.Hide()
-        self.Layout()
+        pass

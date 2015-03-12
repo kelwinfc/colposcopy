@@ -41,9 +41,9 @@ class ColposcopicScreening(wx.Frame):
         self.aboutTab = AboutPanel(nestedNotebook)
 
         # TODO: change order
+        nestedNotebook.AddPage(self.diagnosisTab, "Diagnosis")
         nestedNotebook.AddPage(self.patientTab, "Patient")
         nestedNotebook.AddPage(self.videoTab, "Video")
-        nestedNotebook.AddPage(self.diagnosisTab, "Diagnosis")
         nestedNotebook.AddPage(self.aboutTab, "About")
 
         sizer = wx.BoxSizer(wx.VERTICAL)

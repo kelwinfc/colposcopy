@@ -168,15 +168,15 @@ class PatientPanel(wx.Panel):
 
         self.num_partners = \
             TextField(self, wx.ID_ANY, label="Number of sexual partners",
-                      default="", label_size=(0.29 * self.width, -1),
+                      default="0", label_size=(0.29 * self.width, -1),
                       text_size=ts)
         self.first_intercourse = \
             TextField(self, wx.ID_ANY, label="First sexual intercourse (age)",
-                      default="", label_size=(0.29 * self.width, -1),
+                      default="0", label_size=(0.29 * self.width, -1),
                       text_size=ts)
         self.pregnancies = \
             TextField(self, wx.ID_ANY, label="Number of pregnancies",
-                      default="", label_size=(0.29 * self.width, -1),
+                      default="0", label_size=(0.29 * self.width, -1),
                       text_size=ts)
 
         self.sexualitySizer.Add(self.num_partners, 0, wx.TOP, 20)
@@ -229,7 +229,7 @@ class PatientPanel(wx.Panel):
                               default=0, label_size=(0.30 * self.width, -1),
                               option_size=(0.045 * self.width, -1))
         self.workflow = YesNoField(self, wx.ID_ANY,
-                                   label="Does patient follow the workflow?",
+                                   label="Workflow adherence",
                                    default=0, label_size=(0.30 * self.width,
                                                           -1),
                                    option_size=(0.045 * self.width, -1))

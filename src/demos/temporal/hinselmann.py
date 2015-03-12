@@ -43,15 +43,6 @@ class HinselmannResults(wx.Panel):
         self.sizer.Add(self.top, 0, wx.LEFT, 0)
         self.sizer.Add(self.bottom, 0, wx.TOP, 10)
 
-        self.title = wx.StaticText(self, wx.ID_ANY, label="Hinselmann")
-        font = wx.Font(pointSize=10, family=wx.FONTFAMILY_DECORATIVE,
-                       style=wx.NORMAL, weight=wx.FONTWEIGHT_BOLD)
-
-        self.title.SetFont(font)
-        self.top.Add(self.title, 0)
-        self.top.Add(wx.StaticLine(self, wx.ID_ANY,
-                                    size=(0.28 * self.width, -1)), 0)
-
         self.label = wx.StaticText(self, wx.ID_ANY, label="Diagnosis",
                                    size=(0.06 * self.width, -1))
         self.state = wx.Choice(self, wx.ID_ANY,
@@ -76,7 +67,7 @@ class HinselmannResults(wx.Panel):
                                               "Fine punctation",
                                               "Coarse punctation"
                                              ],
-                                     size=(0.10 * self.width, -1))
+                                     size=(0.13 * self.width, -1))
         self.bottomRight.Add(self.lesionLabel, 0, wx.ALL, 0)
         self.bottomRight.Add(self.lesionState, 0, wx.ALL, 0)
 

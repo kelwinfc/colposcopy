@@ -29,8 +29,8 @@ class TextField(wx.Panel):
                                    size=self.label_size)
         self.content = wx.TextCtrl(self, value=self.default,
                                    size=self.text_size, style=self.style)
-        self.sizer.Add(self.label, 0, wx.ALL, 5)
-        self.sizer.Add(self.content, 0, wx.ALL, 5)
+        self.sizer.Add(self.label, 0, wx.ALL, 0)
+        self.sizer.Add(self.content, 0, wx.ALL, 10)
         self.SetSizer(self.sizer)
 
 

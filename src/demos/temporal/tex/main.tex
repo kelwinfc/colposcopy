@@ -1,0 +1,291 @@
+\documentclass[6pt,letterpaper,spanish]{article}
+\usepackage[T1]{fontenc}
+\usepackage{selinput}
+\SelectInputMappings{%
+}
+\usepackage{babel}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{graphicx}
+
+\addtolength{\oddsidemargin}{-1.1in}
+\addtolength{\evensidemargin}{-1.1in}
+\addtolength{\textwidth}{2.0in}
+
+\addtolength{\topmargin}{-1.5in}
+\addtolength{\textheight}{2.6in}
+	
+\renewcommand{\familydefault}{\sfdefault}
+
+\newcommand{\checkfor}[2]{%
+  \ifcsname#1\endcsname%
+    #2
+  \else%
+  \fi%
+}
+
+\input{macros}
+
+\begin{document}
+\pagenumbering{gobble}
+
+\begin{flushright}
+\fbox{
+	\begin{tabular}{rl}
+	\textbf{Physician} & \demophysician\\
+	\textbf{Date} & \demodate\\
+	\end{tabular}
+}
+\end{flushright}
+
+\checkfor{demopersonalid}{
+\begin{minipage}{\textwidth}
+\begin{center}
+\begin{minipage}[t]{0.29\textwidth}
+	\begin{tabular}{rl}
+	\textbf{ID} & \demopersonalid\\
+	\textbf{First Name} & \demopersonalfirstname\\
+	\end{tabular}
+\end{minipage}
+\begin{minipage}[t]{0.29\textwidth}
+	\begin{tabular}{rl}
+	\textbf{DNI} & \demopersonaldni\\
+	\textbf{Last Name} & \demopersonallastname\\
+	\end{tabular}
+\end{minipage}
+\begin{minipage}[t]{0.29\textwidth}
+	\begin{tabular}{rl}
+	\textbf{Phone} & \demopersonalphone\\
+	\textbf{Age} & \demopersonalage\\
+	\end{tabular}
+\end{minipage}
+\end{center}
+\end{minipage}
+}
+
+\checkfor{demorisktobacco}{
+\begin{minipage}{\textwidth}
+	\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+	\begin{center}
+	\begin{Large}
+	\textbf{Risk Factors}
+	\end{Large}
+	\end{center}
+	\vspace*{-0.5cm}
+	\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+
+	\vspace*{-0.1cm}
+	\begin{center}
+	\fbox{
+	\begin{tabular}{rr}
+		\multicolumn{2}{c}{\textbf{Tobacco Consumption}}\\
+		\textbf{Smokes} & \demorisktobacco\\
+		\textbf{Years} & \demorisktobaccoyears\\	
+		\end{tabular}
+	}\hspace{0.1cm}
+	\fbox{
+	\begin{tabular}{rlrl}
+		\multicolumn{4}{c}{\textbf{Contraceptives}}\\
+		\textbf{Hormonal} & \demoriskhormonal & 
+		\textbf{Years} & \demoriskhormonalyears\\
+		\textbf{IUD} & \demoriskiud  & 
+		\textbf{Years} & \demoriskiudyears\\
+		\end{tabular}
+	}\hspace{0.1cm}
+	\fbox{
+	\begin{tabular}{rl}
+	\multicolumn{1}{r}{\textbf{Number of Sexual Partners}} & 	
+			\demorisknumpartners\\
+	\multicolumn{1}{r}{\textbf{First sexual intercourse (age)}} &
+		\demoriskintercourse\\
+	\multicolumn{1}{r}{\textbf{Number of Pregnancies}} &
+		\demorisknumpregnancies\\
+	\end{tabular}
+	}
+	
+	\vspace*{0.1cm}
+	\fbox{
+		\begin{minipage}{0.44\textwidth}
+			\begin{tabular}{rl}
+				\\
+				\textbf{STI} & \demorisksti\\
+				\textbf{Specify} & \demoriskstiinfo\\
+				\textbf{Diagnosis Date} & \demoriskstidate\\
+				\\
+			\end{tabular}
+		\end{minipage}
+	}\hspace*{0.1cm}%
+	\fbox{
+		\begin{minipage}{0.44\textwidth}
+			\begin{tabular}{rl}
+				\textbf{Cervical Pathologies} & \demoriskcervicalpathology\\
+				\textbf{Specify} & \demoriskcervicalpathologyinfo\\
+				\textbf{Diagnosis Date} & \demoriskcervicalpathologydate\\
+				\textbf{Excisional Treatment} & \demoriskexcisional\\
+				\textbf{Workflow Adherence} & \demoriskworkflow\\
+			\end{tabular}
+		\end{minipage}
+	}
+	\end{center}
+\end{minipage}
+\vspace*{0.1cm}
+}
+
+\checkfor{democolposcopysatisfactory}{%
+\begin{minipage}{\textwidth}
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+\begin{center}
+\begin{Large}
+\textbf{Colposcopy}
+\end{Large}
+\end{center}
+\vspace*{-0.5cm}
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+
+\begin{tabular}{p{0.3\textwidth}|rlrl}
+	\\
+	\textbf{General Information}
+	& \textbf{Satisfactory} & \democolposcopysatisfactory
+	\checkfor{democolposcopytransformation}{
+	& \textbf{Transformation Zone} & \democolposcopytransformation
+	}\\
+	& \textbf{Vaginal discharge} & \democolposcopylimitationsvaginaldischarge
+	& \textbf{Prolapsed vaginal walls} & \democolposcopylimitationsvaginalwalls\\
+	& \textbf{Other Limitations} & \multicolumn{3}{l}{\democolposcopylimitationsother}\\
+	\\
+	\checkfor{democolposcopymacroscopicdiagnosis}{
+	\textbf{Macroscopic View}
+	& \textbf{Diagnosis} & \multicolumn{3}{l}{\democolposcopymacroscopicdiagnosis}\\
+	\checkfor{democolposcopymacroscopiclesion}{
+		& \textbf{Lesion} & \democolposcopymacroscopiclesion
+		& \textbf{Reach} & \democolposcopymacroscopicregion\\
+		& \textbf{Extension (hours)} & \democolposcopymacroscopicangle
+		& \textbf{Diameter (cm)} & \democolposcopymacroscopicdiameter\\
+	}
+	}
+	\\
+	\checkfor{democolposcopygreendiagnosis}{
+	\textbf{Green Light}
+	& \textbf{Diagnosis} & \multicolumn{3}{l}{\democolposcopygreendiagnosis}\\
+		\checkfor{democolposcopygreenangle}{
+			& \textbf{Extension (hours)} & \democolposcopygreenangle\\
+		}
+	}
+	\\
+	\checkfor{democolposcopyhinselmanndiagnosis}{
+	\textbf{Hinselmann}
+	& \textbf{Diagnosis} & \multicolumn{3}{l}{\democolposcopyhinselmanndiagnosis}\\
+		\checkfor{democolposcopyhinselmanndescription}{
+			& \textbf{Description} & 
+				\multicolumn{3}{l}{\democolposcopyhinselmanndescription}\\
+			& \textbf{Extension (hours)} & \democolposcopyhinselmannangle\\
+		}
+	}
+	\\
+	\checkfor{democolposcopyschillerdiagnosis}{
+	\textbf{Schiller}
+	& \textbf{Diagnosis} & \democolposcopyschillerdiagnosis
+    & \textbf{Extension (hours)} & \democolposcopyschillerangle\\
+	& \textbf{Generalized Cold} & \democolposcopyschillercold
+	& \textbf{Allergic to iodine} & \democolposcopyschillerallergic\\
+	}
+\end{tabular}%
+\begin{center}
+\checkfor{democolposcopyframesmacroscopic}
+{
+	\begin{minipage}{0.2\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{\democolposcopyframesmacroscopic}
+	\end{minipage}	
+}%
+\checkfor{democolposcopyframesgreen}
+{
+	\begin{minipage}{0.2\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{\democolposcopyframesgreen}
+	\end{minipage}	
+}%
+\checkfor{democolposcopyframeshinselmann}
+{
+	\begin{minipage}{0.2\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{\democolposcopyframeshinselmann}
+	\end{minipage}
+}%
+\checkfor{democolposcopyframesschiller}
+{
+	\begin{minipage}{0.2\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{\democolposcopyframesschiller}
+	\end{minipage}
+	
+}
+\end{center}
+\end{minipage}
+}
+
+
+\checkfor{democitologysample}{%
+\begin{minipage}{\textwidth}
+\vspace*{0.1cm}
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+\begin{center}
+\begin{Large}
+\textbf{Citology}
+\end{Large}
+\end{center}
+\vspace*{-0.5cm}
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+\vspace*{-0.5cm}
+\begin{center}
+\begin{tabular}{rlrl}
+\textbf{Transformation Zone} & \democitologytransformationzone &
+\textbf{Sample Status} & \democitologysample\\
+\end{tabular}
+
+\bigskip
+\begin{tabular}{rlrlrl}
+\textbf{No evidence} & \democitologynoevidence & 
+\textbf{Low grade lesion} & \democitologylowGrade & 
+\textbf{High grade lesion} & \democitologyhighGrade\\
+\textbf{Invasive carcinoma} & \democitologycarcinoma & 
+\textbf{ASCUS} & \democitologyascus & 
+\textbf{ASGUS} & \democitologyasgus\\
+\textbf{Atypical squamous cells} & \democitologysquamous & 
+\textbf{ASC-H} & \democitologyasch & 
+\textbf{Atypical glandular cells} & \democitologyglandular\\
+\end{tabular}
+\end{center}
+\end{minipage}
+\vspace*{-0.5cm}
+}
+
+\bigskip
+\checkfor{demobiopsyresult}{
+	\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+	\begin{center}
+	\begin{Large}
+	\textbf{Biopsy}
+	\end{Large}
+	\end{center}
+	\vspace*{-0.3cm}
+	\noindent\makebox[\linewidth]{\rule{\textwidth}{0.1pt}}
+
+\begin{center}
+\begin{tabular}{rlllll}
+\textbf{Assessed Area} & \demobiopsyangle\\
+\\
+\textbf{Procedure} & 
+\textbf{Incisional Biopsy} & \demobiopsyincisional &
+\textbf{Excisional Biopsy} & \demobiopsyexcisional\\
+& \textbf{LETZ} & \demobiopsyletz &
+\textbf{Cone Biopsy} & \demobiopsycone\\
+& \textbf{Endocervical curettage} & \demobiopsyendocervical\\
+\end{tabular}
+}
+\end{center}
+
+\end{document}
